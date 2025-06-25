@@ -1,11 +1,14 @@
 "use client";
 
+import { MinimalisticContainer } from "@/components/minimalistic-container";
 import { MinimalisticTimerView } from "@/components/minimalistic-timer-view";
 import { TimerControls } from "@/components/timer-controls";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { NumberInput } from "@/components/ui/number-input";
+import { StatCard } from "@/components/ui/stat-card";
 import { useTimerState } from "@/hooks/use-timer-state";
 import { formatTime, getProgress, timerToasts } from "@/lib/timer-utils";
 import {
@@ -13,7 +16,7 @@ import {
   getIntervalTypeForDisplay,
   mapIntervalTypeToTimerType,
 } from "@/utils/timer-shared";
-import { Minus, Plus, Settings, Trash2 } from "lucide-react";
+import { Plus, Trash2 } from "lucide-react";
 import { useEffect, useState } from "react";
 
 interface IntervalStep {
@@ -300,67 +303,61 @@ export function AdvancedTimer() {
     <div className="relative space-y-6">
       {/* Hide main workout timer tabs when timer is running */}
       {isMinimalisticView && (
-        <Card className="relative flex min-h-[80vh] flex-col">
-          <CardContent className="relative flex flex-1 flex-col justify-center overflow-hidden pt-4">
-            <MinimalisticTimerView
-              timeLeft={timeLeft}
-              state={state}
-              currentSet={currentSet}
-              totalSets={config.sets}
-              intervalType={getIntervalTypeForDisplay(currentType)}
-              currentIntervalName={getCurrentIntervalName()}
-              progress={getTimerProgress()}
-              overallProgress={getOverallProgress()}
-              totalTimeRemaining={getTotalTimeRemaining()}
-              showStepCounter={true}
-              currentStep={currentIntervalIndex + 1}
-              totalSteps={config.intervals.length}
-              isHolding={isHolding}
-              holdProgress={holdProgress}
-              onFastBackward={fastBackward}
-              onFastForward={fastForward}
-              onHoldStart={handleHoldStart}
-              onHoldEnd={handleHoldEnd}
-              onPlay={startTimer}
-              onPause={pauseTimer}
-            />
-          </CardContent>
-        </Card>
+        <MinimalisticContainer>
+          <MinimalisticTimerView
+            timeLeft={timeLeft}
+            state={state}
+            currentSet={currentSet}
+            totalSets={config.sets}
+            intervalType={getIntervalTypeForDisplay(currentType)}
+            currentIntervalName={getCurrentIntervalName()}
+            progress={getTimerProgress()}
+            overallProgress={getOverallProgress()}
+            totalTimeRemaining={getTotalTimeRemaining()}
+            showStepCounter={true}
+            currentStep={currentIntervalIndex + 1}
+            totalSteps={config.intervals.length}
+            isHolding={isHolding}
+            holdProgress={holdProgress}
+            onFastBackward={fastBackward}
+            onFastForward={fastForward}
+            onHoldStart={handleHoldStart}
+            onHoldEnd={handleHoldEnd}
+            onPlay={startTimer}
+            onPause={pauseTimer}
+          />
+        </MinimalisticContainer>
       )}
 
       {!isMinimalisticView && (
         <Card>
-          <CardHeader>
+          {/* <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Settings size={20} />
               Advanced Workout Timer
             </CardTitle>
-          </CardHeader>
+          </CardHeader> */}
 
-          <CardContent className="space-y-6">
+          <CardContent className="space-y-6 pt-6">
             <div className="space-y-4 text-center">
               <div className="flex items-center justify-center gap-4">
-                <div className="rounded-lg bg-secondary px-4 py-2">
-                  <div className="text-sm text-muted-foreground">
-                    Total Session Time
-                  </div>
-                  <div className="font-mono text-2xl font-bold">
-                    {formatTime(getTotalSessionTime())}
-                  </div>
-                </div>
-                <div className="rounded-lg bg-secondary px-4 py-2">
-                  <div className="text-sm text-muted-foreground">Sets</div>
-                  <div className="text-2xl font-bold">{config.sets}</div>
-                </div>
-                <div className="rounded-lg bg-secondary px-4 py-2">
-                  <div className="text-sm text-muted-foreground">Intervals</div>
-                  <div className="text-2xl font-bold">
-                    {config.intervals.length}
-                  </div>
-                </div>
+                <StatCard
+                  label="Total Session Time"
+                  value={formatTime(getTotalSessionTime())}
+                />
+                <StatCard
+                  label="Sets"
+                  value={config.sets}
+                  valueClassName="text-2xl font-bold"
+                />
+                <StatCard
+                  label="Intervals"
+                  value={config.intervals.length}
+                  valueClassName="text-2xl font-bold"
+                />
               </div>
 
-              {config.intervals.length > 0 && (
+              {/* {config.intervals.length > 0 && (
                 <div className="mx-auto max-w-md">
                   <div className="mb-2 text-sm text-muted-foreground">
                     Interval Breakdown
@@ -383,7 +380,7 @@ export function AdvancedTimer() {
                     ))}
                   </div>
                 </div>
-              )}
+              )} */}
             </div>
 
             <div className="space-y-4">
@@ -419,46 +416,15 @@ export function AdvancedTimer() {
                       placeholder="Exercise name"
                     />
 
-                    <div className="flex items-center gap-1">
-                      <Button
-                        variant="outline"
-                        size="icon"
-                        onClick={() =>
-                          updateInterval(
-                            interval.id,
-                            "duration",
-                            interval.duration - 5,
-                          )
-                        }
-                      >
-                        <Minus size={12} />
-                      </Button>
-                      <Input
-                        type="number"
-                        value={interval.duration}
-                        onChange={(e) =>
-                          updateInterval(
-                            interval.id,
-                            "duration",
-                            parseInt(e.target.value) || 1,
-                          )
-                        }
-                        className="w-20 text-center"
-                      />
-                      <Button
-                        variant="outline"
-                        size="icon"
-                        onClick={() =>
-                          updateInterval(
-                            interval.id,
-                            "duration",
-                            interval.duration + 5,
-                          )
-                        }
-                      >
-                        <Plus size={12} />
-                      </Button>
-                    </div>
+                    <NumberInput
+                      value={interval.duration}
+                      onChange={(value) =>
+                        updateInterval(interval.id, "duration", value)
+                      }
+                      min={1}
+                      step={5}
+                      className="w-32"
+                    />
 
                     <select
                       value={interval.type}
@@ -487,41 +453,16 @@ export function AdvancedTimer() {
 
               <div className="flex items-center gap-4">
                 <Label htmlFor="advancedSets">Total Sets:</Label>
-                <div className="flex items-center gap-2">
-                  <Button
-                    variant="outline"
-                    size="icon"
-                    onClick={() =>
-                      setConfig((prev) => ({
-                        ...prev,
-                        sets: Math.max(1, prev.sets - 1),
-                      }))
-                    }
-                  >
-                    <Minus size={16} />
-                  </Button>
-                  <Input
-                    id="advancedSets"
-                    type="number"
-                    value={config.sets}
-                    onChange={(e) =>
-                      setConfig((prev) => ({
-                        ...prev,
-                        sets: Math.max(1, parseInt(e.target.value) || 1),
-                      }))
-                    }
-                    className="w-20 text-center"
-                  />
-                  <Button
-                    variant="outline"
-                    size="icon"
-                    onClick={() =>
-                      setConfig((prev) => ({ ...prev, sets: prev.sets + 1 }))
-                    }
-                  >
-                    <Plus size={16} />
-                  </Button>
-                </div>
+                <NumberInput
+                  id="advancedSets"
+                  value={config.sets}
+                  onChange={(value) =>
+                    setConfig((prev) => ({ ...prev, sets: value }))
+                  }
+                  min={1}
+                  step={1}
+                  className="w-32"
+                />
               </div>
             </div>
 

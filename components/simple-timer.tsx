@@ -1,20 +1,17 @@
 "use client";
 
+import { MinimalisticContainer } from "@/components/minimalistic-container";
 import { MinimalisticTimerView } from "@/components/minimalistic-timer-view";
 import { TimerControls } from "@/components/timer-controls";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { NumberInput } from "@/components/ui/number-input";
+import { StatCard } from "@/components/ui/stat-card";
+import { TimeInput } from "@/components/ui/time-input";
 import { useTimerState } from "@/hooks/use-timer-state";
 import { formatTime, getProgress, timerToasts } from "@/lib/timer-utils";
-import {
-  TimerType,
-  formatTimeInput,
-  getIntervalTypeForDisplay,
-  parseTimeInput,
-} from "@/utils/timer-shared";
-import { Dumbbell, Minus, Plus } from "lucide-react";
+import { TimerType, getIntervalTypeForDisplay } from "@/utils/timer-shared";
 import { useEffect, useState } from "react";
 
 interface SimpleTimerConfig {
@@ -179,33 +176,6 @@ export function SimpleTimer() {
     }
   };
 
-  const updateConfig = (
-    field: keyof SimpleTimerConfig,
-    value: number | string,
-  ) => {
-    if (field === "workoutTime" || field === "restTime") {
-      const timeValue =
-        typeof value === "string" ? parseTimeInput(value) : Math.max(0, value);
-      setConfig((prev) => ({
-        ...prev,
-        [field]: timeValue,
-      }));
-    } else if (field === "sets") {
-      setConfig((prev) => ({
-        ...prev,
-        [field]: Math.max(
-          1,
-          typeof value === "number" ? value : parseInt(value as string) || 1,
-        ),
-      }));
-    } else if (field === "workoutName") {
-      setConfig((prev) => ({
-        ...prev,
-        [field]: value as string,
-      }));
-    }
-  };
-
   const getCurrentIntervalName = () => {
     if (currentType === "prepare") return "PREPARE";
     return currentType === "workout" ? config.workoutName : "REST";
@@ -285,58 +255,53 @@ export function SimpleTimer() {
     <div className="relative space-y-6">
       {/* Hide main workout timer tabs when timer is running */}
       {isMinimalisticView && (
-        <Card className="relative flex min-h-[80vh] flex-col">
-          <CardContent className="relative flex flex-1 flex-col justify-center overflow-hidden pt-4">
-            <MinimalisticTimerView
-              timeLeft={timeLeft}
-              state={state}
-              currentSet={currentSet}
-              totalSets={config.sets}
-              intervalType={getIntervalTypeForDisplay(currentType)}
-              currentIntervalName={getCurrentIntervalName()}
-              progress={getTimerProgress()}
-              overallProgress={getOverallProgress()}
-              totalTimeRemaining={getTotalTimeRemaining()}
-              isHolding={isHolding}
-              holdProgress={holdProgress}
-              onFastBackward={fastBackward}
-              onFastForward={fastForward}
-              onHoldStart={handleHoldStart}
-              onHoldEnd={handleHoldEnd}
-              onPlay={startTimer}
-              onPause={pauseTimer}
-            />
-          </CardContent>
-        </Card>
+        <MinimalisticContainer>
+          <MinimalisticTimerView
+            timeLeft={timeLeft}
+            state={state}
+            currentSet={currentSet}
+            totalSets={config.sets}
+            intervalType={getIntervalTypeForDisplay(currentType)}
+            currentIntervalName={getCurrentIntervalName()}
+            progress={getTimerProgress()}
+            overallProgress={getOverallProgress()}
+            totalTimeRemaining={getTotalTimeRemaining()}
+            isHolding={isHolding}
+            holdProgress={holdProgress}
+            onFastBackward={fastBackward}
+            onFastForward={fastForward}
+            onHoldStart={handleHoldStart}
+            onHoldEnd={handleHoldEnd}
+            onPlay={startTimer}
+            onPause={pauseTimer}
+          />
+        </MinimalisticContainer>
       )}
 
       {!isMinimalisticView && (
         <Card>
-          <CardHeader>
+          {/* <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Dumbbell size={20} />
               Simple Workout Timer
             </CardTitle>
-          </CardHeader>
+          </CardHeader> */}
 
-          <CardContent className="space-y-6">
+          <CardContent className="space-y-6 pt-6">
             <div className="space-y-4 text-center">
               <div className="flex items-center justify-center gap-4">
-                <div className="rounded-lg bg-secondary px-4 py-2">
-                  <div className="text-sm text-muted-foreground">
-                    Total Session Time
-                  </div>
-                  <div className="font-mono text-2xl font-bold">
-                    {formatTime(getTotalSessionTime())}
-                  </div>
-                </div>
-                <div className="rounded-lg bg-secondary px-4 py-2">
-                  <div className="text-sm text-muted-foreground">Sets</div>
-                  <div className="text-2xl font-bold">{config.sets}</div>
-                </div>
+                <StatCard
+                  label="Total Session Time"
+                  value={formatTime(getTotalSessionTime())}
+                />
+                <StatCard
+                  label="Sets"
+                  value={config.sets}
+                  valueClassName="text-2xl font-bold"
+                />
               </div>
 
-              <div className="mx-auto grid max-w-md grid-cols-2 gap-4">
+              {/* <div className="mx-auto grid max-w-md grid-cols-2 gap-4">
                 <div className="text-center">
                   <div className="text-sm text-muted-foreground">Work Time</div>
                   <div className="text-lg font-semibold text-green-500">
@@ -349,7 +314,7 @@ export function SimpleTimer() {
                     {config.restTime > 0 ? formatTime(config.restTime) : "None"}
                   </div>
                 </div>
-              </div>
+              </div> */}
             </div>
 
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
@@ -359,7 +324,12 @@ export function SimpleTimer() {
                   id="workoutName"
                   type="text"
                   value={config.workoutName}
-                  onChange={(e) => updateConfig("workoutName", e.target.value)}
+                  onChange={(e) =>
+                    setConfig((prev) => ({
+                      ...prev,
+                      workoutName: e.target.value,
+                    }))
+                  }
                   className="text-center"
                   placeholder="WORK"
                 />
@@ -367,97 +337,43 @@ export function SimpleTimer() {
 
               <div className="space-y-2">
                 <Label htmlFor="workoutTime">Work Time</Label>
-                <div className="flex items-center gap-2">
-                  <Button
-                    variant="outline"
-                    size="icon"
-                    onClick={() =>
-                      updateConfig("workoutTime", config.workoutTime - 5)
-                    }
-                  >
-                    <Minus size={16} />
-                  </Button>
-                  <Input
-                    id="workoutTime"
-                    type="text"
-                    value={formatTimeInput(config.workoutTime)}
-                    onChange={(e) =>
-                      updateConfig("workoutTime", e.target.value)
-                    }
-                    className="text-center"
-                    placeholder="0:45"
-                  />
-                  <Button
-                    variant="outline"
-                    size="icon"
-                    onClick={() =>
-                      updateConfig("workoutTime", config.workoutTime + 5)
-                    }
-                  >
-                    <Plus size={16} />
-                  </Button>
-                </div>
+                <TimeInput
+                  id="workoutTime"
+                  value={config.workoutTime}
+                  onChange={(value) =>
+                    setConfig((prev) => ({ ...prev, workoutTime: value }))
+                  }
+                  min={1}
+                  step={5}
+                  placeholder="0:45"
+                />
               </div>
 
               <div className="space-y-2">
                 <Label htmlFor="restTime">Rest Time</Label>
-                <div className="flex items-center gap-2">
-                  <Button
-                    variant="outline"
-                    size="icon"
-                    onClick={() =>
-                      updateConfig("restTime", Math.max(0, config.restTime - 5))
-                    }
-                  >
-                    <Minus size={16} />
-                  </Button>
-                  <Input
-                    id="restTime"
-                    type="text"
-                    value={formatTimeInput(config.restTime)}
-                    onChange={(e) => updateConfig("restTime", e.target.value)}
-                    className="text-center"
-                    placeholder="0:15"
-                  />
-                  <Button
-                    variant="outline"
-                    size="icon"
-                    onClick={() =>
-                      updateConfig("restTime", config.restTime + 5)
-                    }
-                  >
-                    <Plus size={16} />
-                  </Button>
-                </div>
+                <TimeInput
+                  id="restTime"
+                  value={config.restTime}
+                  onChange={(value) =>
+                    setConfig((prev) => ({ ...prev, restTime: value }))
+                  }
+                  min={0}
+                  step={5}
+                  placeholder="0:15"
+                />
               </div>
 
               <div className="space-y-2">
                 <Label htmlFor="sets">Sets</Label>
-                <div className="flex items-center gap-2">
-                  <Button
-                    variant="outline"
-                    size="icon"
-                    onClick={() => updateConfig("sets", config.sets - 1)}
-                  >
-                    <Minus size={16} />
-                  </Button>
-                  <Input
-                    id="sets"
-                    type="number"
-                    value={config.sets}
-                    onChange={(e) =>
-                      updateConfig("sets", parseInt(e.target.value) || 1)
-                    }
-                    className="text-center"
-                  />
-                  <Button
-                    variant="outline"
-                    size="icon"
-                    onClick={() => updateConfig("sets", config.sets + 1)}
-                  >
-                    <Plus size={16} />
-                  </Button>
-                </div>
+                <NumberInput
+                  id="sets"
+                  value={config.sets}
+                  onChange={(value) =>
+                    setConfig((prev) => ({ ...prev, sets: value }))
+                  }
+                  min={1}
+                  step={1}
+                />
               </div>
             </div>
 
