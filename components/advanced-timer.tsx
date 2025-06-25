@@ -1,7 +1,7 @@
 "use client";
 
+import { MinimalisticTimerView } from "@/components/minimalistic-timer-view";
 import { TimerControls } from "@/components/timer-controls";
-import { TimerDisplay } from "@/components/timer-display";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -12,17 +12,7 @@ import {
   TimerState,
   timerToasts,
 } from "@/lib/timer-utils";
-import {
-  Minus,
-  Pause,
-  Play,
-  Plus,
-  Settings,
-  SkipBack,
-  SkipForward,
-  Square,
-  Trash2,
-} from "lucide-react";
+import { Minus, Plus, Settings, Trash2 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 
 type TimerType = "workout" | "rest";
@@ -378,126 +368,44 @@ export function AdvancedTimer() {
     <div className="relative space-y-6">
       {/* Hide main workout timer tabs when timer is running */}
       {isMinimalisticView && (
-        <div className="space-y-2">
-          <div className="h-2 w-full overflow-hidden rounded-full bg-secondary">
-            <div
-              className="h-full bg-primary transition-all duration-300"
-              style={{ width: `${getOverallProgress()}%` }}
+        <Card className="relative flex min-h-[80vh] flex-col">
+          <CardContent className="relative flex flex-1 flex-col justify-center overflow-hidden pt-4">
+            <MinimalisticTimerView
+              timeLeft={timeLeft}
+              state={state}
+              currentSet={currentSet}
+              totalSets={config.sets}
+              intervalType={getIntervalTypeForDisplay()}
+              currentIntervalName={getCurrentIntervalName()}
+              progress={getTimerProgress()}
+              overallProgress={getOverallProgress()}
+              totalTimeRemaining={getTotalTimeRemaining()}
+              showStepCounter={true}
+              currentStep={currentIntervalIndex + 1}
+              totalSteps={config.intervals.length}
+              isHolding={isHolding}
+              holdProgress={holdProgress}
+              onFastBackward={fastBackward}
+              onFastForward={fastForward}
+              onHoldStart={handleHoldStart}
+              onHoldEnd={handleHoldEnd}
+              onPlay={startTimer}
+              onPause={pauseTimer}
             />
-          </div>
-          {/* Total remaining time moved under the bar */}
-          <div className="flex justify-end">
-            <div className="text-xs text-muted-foreground">
-              Total remaining: {formatTime(getTotalTimeRemaining())}
-            </div>
-          </div>
-        </div>
+          </CardContent>
+        </Card>
       )}
 
-      <Card
-        className={
-          isMinimalisticView ? "relative flex min-h-[80vh] flex-col" : ""
-        }
-      >
-        {!isMinimalisticView ? (
+      {!isMinimalisticView && (
+        <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Settings size={20} />
               Advanced Workout Timer
             </CardTitle>
           </CardHeader>
-        ) : (
-          <CardHeader className="pb-2">
-            <div className="flex items-center justify-between">
-              <Button
-                onClick={fastBackward}
-                variant="ghost"
-                size="icon"
-                className="h-8 w-8"
-              >
-                <SkipBack size={16} />
-              </Button>
 
-              <div className="relative">
-                <Button
-                  onMouseDown={handleHoldStart}
-                  onMouseUp={handleHoldEnd}
-                  onMouseLeave={handleHoldEnd}
-                  onTouchStart={handleHoldStart}
-                  onTouchEnd={handleHoldEnd}
-                  variant="ghost"
-                  size="sm"
-                  className="relative overflow-hidden px-4 py-2 text-xs font-medium"
-                >
-                  <div
-                    className="absolute inset-0 bg-muted transition-all duration-100 ease-out"
-                    style={{ width: `${holdProgress}%` }}
-                  />
-                  <span className="relative z-10 flex items-center gap-1">
-                    <Square size={12} />
-                    Hold to Exit
-                  </span>
-                </Button>
-              </div>
-
-              <Button
-                onClick={fastForward}
-                variant="ghost"
-                size="icon"
-                className="h-8 w-8"
-              >
-                <SkipForward size={16} />
-              </Button>
-            </div>
-          </CardHeader>
-        )}
-
-        <CardContent
-          className={
-            isMinimalisticView
-              ? "relative flex flex-1 flex-col justify-center overflow-hidden pt-4"
-              : "space-y-6"
-          }
-        >
-          {isMinimalisticView ? (
-            <>
-              <TimerDisplay
-                timeLeft={timeLeft}
-                state={state}
-                currentIntervalName={getCurrentIntervalName()}
-                currentRound={currentSet}
-                totalRounds={config.sets}
-                progress={getTimerProgress()}
-                intervalType={getIntervalTypeForDisplay()}
-                showStepCounter={true}
-                currentStep={currentIntervalIndex + 1}
-                totalSteps={config.intervals.length}
-              />
-
-              {/* Play/Stop buttons in bottom left corner */}
-              <div className="absolute bottom-4 right-4 flex gap-2">
-                {state === "running" ? (
-                  <Button
-                    onClick={pauseTimer}
-                    variant="ghost"
-                    size="icon"
-                    className="h-10 w-10"
-                  >
-                    <Pause size={20} />
-                  </Button>
-                ) : (
-                  <Button
-                    onClick={startTimer}
-                    variant="ghost"
-                    size="icon"
-                    className="h-10 w-10"
-                  >
-                    <Play size={20} />
-                  </Button>
-                )}
-              </div>
-            </>
-          ) : (
+          <CardContent className="space-y-6">
             <div className="space-y-4 text-center">
               <div className="flex items-center justify-center gap-4">
                 <div className="rounded-lg bg-secondary px-4 py-2">
@@ -545,164 +453,160 @@ export function AdvancedTimer() {
                 </div>
               )}
             </div>
-          )}
 
-          {!isMinimalisticView && (
-            <>
-              <div className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <h3 className="text-lg font-semibold">Interval Sequence</h3>
-                  <Button
-                    onClick={addInterval}
-                    variant="outline"
-                    size="sm"
-                    className="gap-2"
-                  >
-                    <Plus size={16} />
-                    Add Interval
-                  </Button>
-                </div>
-
-                <div className="max-h-60 space-y-3 overflow-y-auto">
-                  {config.intervals.map((interval, index) => (
-                    <div
-                      key={interval.id}
-                      className="flex items-center gap-3 rounded-lg border p-3"
-                    >
-                      <span className="w-8 text-sm font-medium">
-                        {index + 1}.
-                      </span>
-
-                      <Input
-                        value={interval.name}
-                        onChange={(e) =>
-                          updateInterval(interval.id, "name", e.target.value)
-                        }
-                        className="flex-1"
-                        placeholder="Exercise name"
-                      />
-
-                      <div className="flex items-center gap-1">
-                        <Button
-                          variant="outline"
-                          size="icon"
-                          onClick={() =>
-                            updateInterval(
-                              interval.id,
-                              "duration",
-                              interval.duration - 5,
-                            )
-                          }
-                        >
-                          <Minus size={12} />
-                        </Button>
-                        <Input
-                          type="number"
-                          value={interval.duration}
-                          onChange={(e) =>
-                            updateInterval(
-                              interval.id,
-                              "duration",
-                              parseInt(e.target.value) || 1,
-                            )
-                          }
-                          className="w-20 text-center"
-                        />
-                        <Button
-                          variant="outline"
-                          size="icon"
-                          onClick={() =>
-                            updateInterval(
-                              interval.id,
-                              "duration",
-                              interval.duration + 5,
-                            )
-                          }
-                        >
-                          <Plus size={12} />
-                        </Button>
-                      </div>
-
-                      <select
-                        value={interval.type}
-                        onChange={(e) =>
-                          updateInterval(interval.id, "type", e.target.value)
-                        }
-                        className="rounded-md border px-3 py-2 text-sm"
-                      >
-                        <option value="work">Work</option>
-                        <option value="rest">Rest</option>
-                      </select>
-
-                      {config.intervals.length > 1 && (
-                        <Button
-                          variant="outline"
-                          size="icon"
-                          onClick={() => removeInterval(interval.id)}
-                        >
-                          <Trash2 size={16} />
-                        </Button>
-                      )}
-                    </div>
-                  ))}
-                </div>
-
-                <div className="flex items-center gap-4">
-                  <Label htmlFor="advancedSets">Total Sets:</Label>
-                  <div className="flex items-center gap-2">
-                    <Button
-                      variant="outline"
-                      size="icon"
-                      onClick={() =>
-                        setConfig((prev) => ({
-                          ...prev,
-                          sets: Math.max(1, prev.sets - 1),
-                        }))
-                      }
-                    >
-                      <Minus size={16} />
-                    </Button>
-                    <Input
-                      id="advancedSets"
-                      type="number"
-                      value={config.sets}
-                      onChange={(e) =>
-                        setConfig((prev) => ({
-                          ...prev,
-                          sets: Math.max(1, parseInt(e.target.value) || 1),
-                        }))
-                      }
-                      className="w-20 text-center"
-                    />
-                    <Button
-                      variant="outline"
-                      size="icon"
-                      onClick={() =>
-                        setConfig((prev) => ({ ...prev, sets: prev.sets + 1 }))
-                      }
-                    >
-                      <Plus size={16} />
-                    </Button>
-                  </div>
-                </div>
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <h3 className="text-lg font-semibold">Interval Sequence</h3>
+                <Button
+                  onClick={addInterval}
+                  variant="outline"
+                  size="sm"
+                  className="gap-2"
+                >
+                  <Plus size={16} />
+                  Add Interval
+                </Button>
               </div>
 
-              <TimerControls
-                state={state}
-                onStart={startTimer}
-                onPause={pauseTimer}
-                onReset={resetTimer}
-                onStop={stopTimer}
-                onFastBackward={fastBackward}
-                onFastForward={fastForward}
-                startLabel="Start Advanced Timer"
-                resetLabel="Start New Advanced Workout"
-                disabled={config.intervals.length === 0}
-              />
-            </>
-          )}
-        </CardContent>
-      </Card>
+              <div className="max-h-60 space-y-3 overflow-y-auto">
+                {config.intervals.map((interval, index) => (
+                  <div
+                    key={interval.id}
+                    className="flex items-center gap-3 rounded-lg border p-3"
+                  >
+                    <span className="w-8 text-sm font-medium">
+                      {index + 1}.
+                    </span>
+
+                    <Input
+                      value={interval.name}
+                      onChange={(e) =>
+                        updateInterval(interval.id, "name", e.target.value)
+                      }
+                      className="flex-1"
+                      placeholder="Exercise name"
+                    />
+
+                    <div className="flex items-center gap-1">
+                      <Button
+                        variant="outline"
+                        size="icon"
+                        onClick={() =>
+                          updateInterval(
+                            interval.id,
+                            "duration",
+                            interval.duration - 5,
+                          )
+                        }
+                      >
+                        <Minus size={12} />
+                      </Button>
+                      <Input
+                        type="number"
+                        value={interval.duration}
+                        onChange={(e) =>
+                          updateInterval(
+                            interval.id,
+                            "duration",
+                            parseInt(e.target.value) || 1,
+                          )
+                        }
+                        className="w-20 text-center"
+                      />
+                      <Button
+                        variant="outline"
+                        size="icon"
+                        onClick={() =>
+                          updateInterval(
+                            interval.id,
+                            "duration",
+                            interval.duration + 5,
+                          )
+                        }
+                      >
+                        <Plus size={12} />
+                      </Button>
+                    </div>
+
+                    <select
+                      value={interval.type}
+                      onChange={(e) =>
+                        updateInterval(interval.id, "type", e.target.value)
+                      }
+                      className="rounded-md border px-3 py-2 text-sm"
+                    >
+                      <option value="work">Work</option>
+                      <option value="rest">Rest</option>
+                    </select>
+
+                    {config.intervals.length > 1 && (
+                      <Button
+                        variant="outline"
+                        size="icon"
+                        onClick={() => removeInterval(interval.id)}
+                      >
+                        <Trash2 size={16} />
+                      </Button>
+                    )}
+                  </div>
+                ))}
+              </div>
+
+              <div className="flex items-center gap-4">
+                <Label htmlFor="advancedSets">Total Sets:</Label>
+                <div className="flex items-center gap-2">
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    onClick={() =>
+                      setConfig((prev) => ({
+                        ...prev,
+                        sets: Math.max(1, prev.sets - 1),
+                      }))
+                    }
+                  >
+                    <Minus size={16} />
+                  </Button>
+                  <Input
+                    id="advancedSets"
+                    type="number"
+                    value={config.sets}
+                    onChange={(e) =>
+                      setConfig((prev) => ({
+                        ...prev,
+                        sets: Math.max(1, parseInt(e.target.value) || 1),
+                      }))
+                    }
+                    className="w-20 text-center"
+                  />
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    onClick={() =>
+                      setConfig((prev) => ({ ...prev, sets: prev.sets + 1 }))
+                    }
+                  >
+                    <Plus size={16} />
+                  </Button>
+                </div>
+              </div>
+            </div>
+
+            <TimerControls
+              state={state}
+              onStart={startTimer}
+              onPause={pauseTimer}
+              onReset={resetTimer}
+              onStop={stopTimer}
+              onFastBackward={fastBackward}
+              onFastForward={fastForward}
+              startLabel="Start Advanced Timer"
+              resetLabel="Start New Advanced Workout"
+              disabled={config.intervals.length === 0}
+            />
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 }

@@ -1,7 +1,7 @@
 "use client";
 
+import { MinimalisticTimerView } from "@/components/minimalistic-timer-view";
 import { TimerControls } from "@/components/timer-controls";
-import { TimerDisplay } from "@/components/timer-display";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -12,16 +12,7 @@ import {
   TimerState,
   timerToasts,
 } from "@/lib/timer-utils";
-import {
-  Dumbbell,
-  Minus,
-  Pause,
-  Play,
-  Plus,
-  SkipBack,
-  SkipForward,
-  Square,
-} from "lucide-react";
+import { Dumbbell, Minus, Plus } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 
 type TimerType = "prepare" | "workout" | "rest";
@@ -378,123 +369,41 @@ export function SimpleTimer() {
     <div className="relative space-y-6">
       {/* Hide main workout timer tabs when timer is running */}
       {isMinimalisticView && (
-        <div className="space-y-2">
-          <div className="h-2 w-full overflow-hidden rounded-full bg-secondary">
-            <div
-              className="h-full bg-primary transition-all duration-300"
-              style={{ width: `${getOverallProgress()}%` }}
+        <Card className="relative flex min-h-[80vh] flex-col">
+          <CardContent className="relative flex flex-1 flex-col justify-center overflow-hidden pt-4">
+            <MinimalisticTimerView
+              timeLeft={timeLeft}
+              state={state}
+              currentSet={currentSet}
+              totalSets={config.sets}
+              intervalType={getIntervalTypeForDisplay()}
+              currentIntervalName={getCurrentIntervalName()}
+              progress={getTimerProgress()}
+              overallProgress={getOverallProgress()}
+              totalTimeRemaining={getTotalTimeRemaining()}
+              isHolding={isHolding}
+              holdProgress={holdProgress}
+              onFastBackward={fastBackward}
+              onFastForward={fastForward}
+              onHoldStart={handleHoldStart}
+              onHoldEnd={handleHoldEnd}
+              onPlay={startTimer}
+              onPause={pauseTimer}
             />
-          </div>
-          {/* Total remaining time moved under the bar */}
-          <div className="flex justify-end">
-            <div className="text-xs text-muted-foreground">
-              Total remaining: {formatTime(getTotalTimeRemaining())}
-            </div>
-          </div>
-        </div>
+          </CardContent>
+        </Card>
       )}
 
-      <Card
-        className={
-          isMinimalisticView ? "relative flex min-h-[80vh] flex-col" : ""
-        }
-      >
-        {!isMinimalisticView ? (
+      {!isMinimalisticView && (
+        <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Dumbbell size={20} />
               Simple Workout Timer
             </CardTitle>
           </CardHeader>
-        ) : (
-          <CardHeader className="pb-2">
-            <div className="flex items-center justify-between">
-              <Button
-                onClick={fastBackward}
-                variant="ghost"
-                size="icon"
-                className="h-8 w-8"
-              >
-                <SkipBack size={16} />
-              </Button>
 
-              <div className="relative">
-                <Button
-                  onMouseDown={handleHoldStart}
-                  onMouseUp={handleHoldEnd}
-                  onMouseLeave={handleHoldEnd}
-                  onTouchStart={handleHoldStart}
-                  onTouchEnd={handleHoldEnd}
-                  variant="ghost"
-                  size="sm"
-                  className="relative overflow-hidden px-4 py-2 text-xs font-medium"
-                >
-                  <div
-                    className="absolute inset-0 bg-muted transition-all duration-100 ease-out"
-                    style={{ width: `${holdProgress}%` }}
-                  />
-                  <span className="relative z-10 flex items-center gap-1">
-                    <Square size={12} />
-                    Hold to Exit
-                  </span>
-                </Button>
-              </div>
-
-              <Button
-                onClick={fastForward}
-                variant="ghost"
-                size="icon"
-                className="h-8 w-8"
-              >
-                <SkipForward size={16} />
-              </Button>
-            </div>
-          </CardHeader>
-        )}
-
-        <CardContent
-          className={
-            isMinimalisticView
-              ? "relative flex flex-1 flex-col justify-center overflow-hidden pt-4"
-              : "space-y-6"
-          }
-        >
-          {isMinimalisticView ? (
-            <>
-              <TimerDisplay
-                timeLeft={timeLeft}
-                state={state}
-                currentIntervalName={getCurrentIntervalName()}
-                currentRound={currentSet}
-                totalRounds={config.sets}
-                progress={getTimerProgress()}
-                intervalType={getIntervalTypeForDisplay()}
-              />
-
-              {/* Play/Stop buttons in bottom left corner */}
-              <div className="absolute bottom-4 right-4 flex gap-2">
-                {state === "running" ? (
-                  <Button
-                    onClick={pauseTimer}
-                    variant="ghost"
-                    size="icon"
-                    className="h-10 w-10"
-                  >
-                    <Pause size={20} />
-                  </Button>
-                ) : (
-                  <Button
-                    onClick={startTimer}
-                    variant="ghost"
-                    size="icon"
-                    className="h-10 w-10"
-                  >
-                    <Play size={20} />
-                  </Button>
-                )}
-              </div>
-            </>
-          ) : (
+          <CardContent className="space-y-6">
             <div className="space-y-4 text-center">
               <div className="flex items-center justify-center gap-4">
                 <div className="rounded-lg bg-secondary px-4 py-2">
@@ -526,137 +435,128 @@ export function SimpleTimer() {
                 </div>
               </div>
             </div>
-          )}
 
-          {!isMinimalisticView && (
-            <>
-              <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
-                <div className="space-y-2">
-                  <Label htmlFor="workoutName">Work Period Name</Label>
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
+              <div className="space-y-2">
+                <Label htmlFor="workoutName">Work Period Name</Label>
+                <Input
+                  id="workoutName"
+                  type="text"
+                  value={config.workoutName}
+                  onChange={(e) => updateConfig("workoutName", e.target.value)}
+                  className="text-center"
+                  placeholder="WORK"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="workoutTime">Work Time</Label>
+                <div className="flex items-center gap-2">
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    onClick={() =>
+                      updateConfig("workoutTime", config.workoutTime - 5)
+                    }
+                  >
+                    <Minus size={16} />
+                  </Button>
                   <Input
-                    id="workoutName"
+                    id="workoutTime"
                     type="text"
-                    value={config.workoutName}
+                    value={formatTimeInput(config.workoutTime)}
                     onChange={(e) =>
-                      updateConfig("workoutName", e.target.value)
+                      updateConfig("workoutTime", e.target.value)
                     }
                     className="text-center"
-                    placeholder="WORK"
+                    placeholder="0:45"
                   />
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="workoutTime">Work Time</Label>
-                  <div className="flex items-center gap-2">
-                    <Button
-                      variant="outline"
-                      size="icon"
-                      onClick={() =>
-                        updateConfig("workoutTime", config.workoutTime - 5)
-                      }
-                    >
-                      <Minus size={16} />
-                    </Button>
-                    <Input
-                      id="workoutTime"
-                      type="text"
-                      value={formatTimeInput(config.workoutTime)}
-                      onChange={(e) =>
-                        updateConfig("workoutTime", e.target.value)
-                      }
-                      className="text-center"
-                      placeholder="0:45"
-                    />
-                    <Button
-                      variant="outline"
-                      size="icon"
-                      onClick={() =>
-                        updateConfig("workoutTime", config.workoutTime + 5)
-                      }
-                    >
-                      <Plus size={16} />
-                    </Button>
-                  </div>
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="restTime">Rest Time</Label>
-                  <div className="flex items-center gap-2">
-                    <Button
-                      variant="outline"
-                      size="icon"
-                      onClick={() =>
-                        updateConfig(
-                          "restTime",
-                          Math.max(0, config.restTime - 5),
-                        )
-                      }
-                    >
-                      <Minus size={16} />
-                    </Button>
-                    <Input
-                      id="restTime"
-                      type="text"
-                      value={formatTimeInput(config.restTime)}
-                      onChange={(e) => updateConfig("restTime", e.target.value)}
-                      className="text-center"
-                      placeholder="0:15"
-                    />
-                    <Button
-                      variant="outline"
-                      size="icon"
-                      onClick={() =>
-                        updateConfig("restTime", config.restTime + 5)
-                      }
-                    >
-                      <Plus size={16} />
-                    </Button>
-                  </div>
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="sets">Sets</Label>
-                  <div className="flex items-center gap-2">
-                    <Button
-                      variant="outline"
-                      size="icon"
-                      onClick={() => updateConfig("sets", config.sets - 1)}
-                    >
-                      <Minus size={16} />
-                    </Button>
-                    <Input
-                      id="sets"
-                      type="number"
-                      value={config.sets}
-                      onChange={(e) =>
-                        updateConfig("sets", parseInt(e.target.value) || 1)
-                      }
-                      className="text-center"
-                    />
-                    <Button
-                      variant="outline"
-                      size="icon"
-                      onClick={() => updateConfig("sets", config.sets + 1)}
-                    >
-                      <Plus size={16} />
-                    </Button>
-                  </div>
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    onClick={() =>
+                      updateConfig("workoutTime", config.workoutTime + 5)
+                    }
+                  >
+                    <Plus size={16} />
+                  </Button>
                 </div>
               </div>
 
-              <TimerControls
-                state={state}
-                onStart={startTimer}
-                onPause={pauseTimer}
-                onReset={resetTimer}
-                onStop={stopTimer}
-                onFastBackward={fastBackward}
-                onFastForward={fastForward}
-              />
-            </>
-          )}
-        </CardContent>
-      </Card>
+              <div className="space-y-2">
+                <Label htmlFor="restTime">Rest Time</Label>
+                <div className="flex items-center gap-2">
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    onClick={() =>
+                      updateConfig("restTime", Math.max(0, config.restTime - 5))
+                    }
+                  >
+                    <Minus size={16} />
+                  </Button>
+                  <Input
+                    id="restTime"
+                    type="text"
+                    value={formatTimeInput(config.restTime)}
+                    onChange={(e) => updateConfig("restTime", e.target.value)}
+                    className="text-center"
+                    placeholder="0:15"
+                  />
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    onClick={() =>
+                      updateConfig("restTime", config.restTime + 5)
+                    }
+                  >
+                    <Plus size={16} />
+                  </Button>
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="sets">Sets</Label>
+                <div className="flex items-center gap-2">
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    onClick={() => updateConfig("sets", config.sets - 1)}
+                  >
+                    <Minus size={16} />
+                  </Button>
+                  <Input
+                    id="sets"
+                    type="number"
+                    value={config.sets}
+                    onChange={(e) =>
+                      updateConfig("sets", parseInt(e.target.value) || 1)
+                    }
+                    className="text-center"
+                  />
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    onClick={() => updateConfig("sets", config.sets + 1)}
+                  >
+                    <Plus size={16} />
+                  </Button>
+                </div>
+              </div>
+            </div>
+
+            <TimerControls
+              state={state}
+              onStart={startTimer}
+              onPause={pauseTimer}
+              onReset={resetTimer}
+              onStop={stopTimer}
+              onFastBackward={fastBackward}
+              onFastForward={fastForward}
+            />
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 }
