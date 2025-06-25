@@ -12,12 +12,39 @@ import { StatCard } from "@/components/ui/stat-card";
 import { useTimerState } from "@/hooks/use-timer-state";
 import { formatTime, getProgress, timerToasts } from "@/lib/timer-utils";
 import {
-  TimerType,
   getIntervalTypeForDisplay,
   mapIntervalTypeToTimerType,
+  TimerType,
 } from "@/utils/timer-shared";
-import { Plus, Trash2 } from "lucide-react";
-import { useEffect, useState } from "react";
+import {
+  closestCenter,
+  DndContext,
+  DragEndEvent,
+  DragOverlay,
+  DragStartEvent,
+  KeyboardSensor,
+  PointerSensor,
+  useDroppable,
+  useSensor,
+  useSensors,
+} from "@dnd-kit/core";
+import {
+  arrayMove,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  useSortable,
+  verticalListSortingStrategy,
+} from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
+import {
+  ChevronDown,
+  ChevronRight,
+  GripVertical,
+  Plus,
+  Repeat,
+  Trash2,
+} from "lucide-react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 
 interface IntervalStep {
   id: string;
@@ -26,14 +53,278 @@ interface IntervalStep {
   type: "prepare" | "work" | "rest";
 }
 
+interface LoopGroup {
+  id: string;
+  name: string;
+  loops: number;
+  items: WorkoutItem[];
+  collapsed?: boolean;
+  skipLast?: boolean;
+}
+
+type WorkoutItem = IntervalStep | LoopGroup;
+
 interface AdvancedConfig {
-  intervals: IntervalStep[];
+  items: WorkoutItem[];
   sets: number;
+}
+
+// Helper functions
+const isLoop = (item: WorkoutItem): item is LoopGroup => {
+  return "loops" in item && "items" in item;
+};
+
+const isInterval = (item: WorkoutItem): item is IntervalStep => {
+  return "duration" in item && "type" in item;
+};
+
+// Simple Checkbox Component
+function Checkbox({
+  id,
+  checked,
+  onCheckedChange,
+}: {
+  id: string;
+  checked: boolean;
+  onCheckedChange: (checked: boolean) => void;
+}) {
+  return (
+    <input
+      id={id}
+      type="checkbox"
+      checked={checked}
+      onChange={(e) => onCheckedChange(e.target.checked)}
+      className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+    />
+  );
+}
+
+// Droppable Zone Component
+function DroppableZone({
+  id,
+  children,
+  className = "",
+  isOver = false,
+}: {
+  id: string;
+  children: React.ReactNode;
+  className?: string;
+  isOver?: boolean;
+}) {
+  const { setNodeRef } = useDroppable({ id });
+
+  return (
+    <div
+      ref={setNodeRef}
+      className={`${className} ${isOver ? "border-dashed border-blue-300 bg-blue-50" : ""}`}
+    >
+      {children}
+    </div>
+  );
+}
+
+// Sortable Item Component
+function SortableItem({
+  item,
+  onUpdate,
+  onRemove,
+  onToggleCollapse,
+  onAddToLoop,
+  activeId,
+  isNested = false,
+}: {
+  item: WorkoutItem;
+  onUpdate: (id: string, field: string, value: any) => void;
+  onRemove: (id: string) => void;
+  onToggleCollapse?: (id: string) => void;
+  onAddToLoop?: (loopId: string) => void;
+  activeId: string | null | undefined;
+  isNested?: boolean;
+}) {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id: item.id });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.5 : 1,
+  };
+
+  const isActiveDropTarget = activeId && activeId !== item.id && isLoop(item);
+
+  if (isLoop(item)) {
+    return (
+      <div ref={setNodeRef} style={style} className="space-y-2">
+        <DroppableZone
+          id={`drop-${item.id}`}
+          isOver={Boolean(isActiveDropTarget)}
+          className={`rounded-lg border-2 border-dashed p-3 ${
+            isNested
+              ? "border-orange-300 bg-orange-50"
+              : "border-purple-300 bg-purple-50"
+          } ${isActiveDropTarget ? "border-blue-400 bg-blue-100" : ""}`}
+        >
+          <div className="flex items-center gap-3">
+            <div {...attributes} {...listeners} className="cursor-grab">
+              <GripVertical size={16} className="text-gray-400" />
+            </div>
+
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => onToggleCollapse?.(item.id)}
+              className="h-6 w-6 p-0"
+            >
+              {item.collapsed ? (
+                <ChevronRight size={16} />
+              ) : (
+                <ChevronDown size={16} />
+              )}
+            </Button>
+
+            <Repeat
+              size={16}
+              className={isNested ? "text-orange-600" : "text-purple-600"}
+            />
+
+            <Input
+              value={item.name}
+              onChange={(e) => onUpdate(item.id, "name", e.target.value)}
+              className="flex-1"
+              placeholder="Loop name"
+            />
+
+            <div className="flex items-center gap-2">
+              <span className="text-sm text-gray-600">×</span>
+              <NumberInput
+                value={item.loops}
+                onChange={(value) => onUpdate(item.id, "loops", value)}
+                min={1}
+                step={1}
+                className="w-20"
+              />
+            </div>
+
+            <div className="flex items-center gap-2">
+              <Checkbox
+                id={`skip-last-${item.id}`}
+                checked={Boolean(item.skipLast)}
+                onCheckedChange={(checked) =>
+                  onUpdate(item.id, "skipLast", checked)
+                }
+              />
+              <Label htmlFor={`skip-last-${item.id}`} className="text-sm">
+                Skip last
+              </Label>
+            </div>
+
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => onAddToLoop?.(item.id)}
+              className="gap-1"
+            >
+              <Plus size={12} />
+              Add
+            </Button>
+
+            <Button
+              variant="outline"
+              size="icon"
+              onClick={() => onRemove(item.id)}
+            >
+              <Trash2 size={16} />
+            </Button>
+          </div>
+        </DroppableZone>
+
+        {!item.collapsed && item.items.length > 0 && (
+          <div className="ml-4 space-y-2">
+            <SortableContext
+              items={item.items.map((subItem) => subItem.id)}
+              strategy={verticalListSortingStrategy}
+            >
+              {item.items.map((subItem) => (
+                <SortableItem
+                  key={subItem.id}
+                  item={subItem}
+                  onUpdate={onUpdate}
+                  onRemove={onRemove}
+                  onToggleCollapse={onToggleCollapse}
+                  onAddToLoop={onAddToLoop}
+                  activeId={activeId}
+                  isNested={true}
+                />
+              ))}
+            </SortableContext>
+          </div>
+        )}
+
+        {!item.collapsed && item.items.length === 0 && (
+          <DroppableZone
+            id={`empty-${item.id}`}
+            className="ml-4 rounded-lg border-2 border-dashed border-gray-300 bg-gray-50 p-4 text-center text-gray-500"
+          >
+            Drop intervals or loops here
+          </DroppableZone>
+        )}
+      </div>
+    );
+  }
+
+  return (
+    <div
+      ref={setNodeRef}
+      style={style}
+      className={`flex items-center gap-3 rounded-lg border p-3 ${
+        isNested ? "border-gray-200 bg-gray-50" : "bg-white"
+      }`}
+    >
+      <div {...attributes} {...listeners} className="cursor-grab">
+        <GripVertical size={16} className="text-gray-400" />
+      </div>
+
+      <Input
+        value={item.name}
+        onChange={(e) => onUpdate(item.id, "name", e.target.value)}
+        className="flex-1"
+        placeholder="Exercise name"
+      />
+
+      <NumberInput
+        value={item.duration}
+        onChange={(value) => onUpdate(item.id, "duration", value)}
+        min={1}
+        step={5}
+        className="w-32"
+      />
+
+      <select
+        value={item.type}
+        onChange={(e) => onUpdate(item.id, "type", e.target.value)}
+        className="rounded-md border px-3 py-2 text-sm"
+      >
+        <option value="prepare">Prepare</option>
+        <option value="work">Work</option>
+        <option value="rest">Rest</option>
+      </select>
+
+      <Button variant="outline" size="icon" onClick={() => onRemove(item.id)}>
+        <Trash2 size={16} />
+      </Button>
+    </div>
+  );
 }
 
 export function AdvancedTimer() {
   const [config, setConfig] = useState<AdvancedConfig>({
-    intervals: [
+    items: [
       { id: "1", name: "PREPARE", duration: 10, type: "prepare" },
       { id: "2", name: "WORK", duration: 45, type: "work" },
       { id: "3", name: "REST", duration: 15, type: "rest" },
@@ -41,9 +332,10 @@ export function AdvancedTimer() {
     sets: 3,
   });
 
+  const [activeId, setActiveId] = useState<string | null>(null);
   const [currentType, setCurrentType] = useState<TimerType>("prepare");
   const [timeLeft, setTimeLeft] = useState(0);
-  const [currentIntervalIndex, setCurrentIntervalIndex] = useState(0);
+  const [currentItemIndex, setCurrentItemIndex] = useState(0);
 
   const {
     state,
@@ -60,17 +352,249 @@ export function AdvancedTimer() {
     setCompleted,
   } = useTimerState();
 
-  // Initialize timer
+  // Memoized flatten function with safeguards
+  const flattenedIntervals = useMemo(() => {
+    const MAX_INTERVALS = 1000; // Prevent memory crashes
+    const MAX_RECURSION_DEPTH = 10; // Prevent infinite recursion
+
+    const getFlattenedIntervals = (
+      items: WorkoutItem[],
+      parentLoopInfo?: any,
+      depth: number = 0,
+    ): Array<
+      IntervalStep & {
+        originalIndex: number;
+        loopInfo?: {
+          loopName: string;
+          iteration: number;
+          intervalIndex: number;
+          parentLoop?: any;
+        };
+      }
+    > => {
+      // Prevent infinite recursion
+      if (depth > MAX_RECURSION_DEPTH) {
+        console.warn("Maximum recursion depth reached in loop structure");
+        return [];
+      }
+
+      const flattened: Array<
+        IntervalStep & {
+          originalIndex: number;
+          loopInfo?: {
+            loopName: string;
+            iteration: number;
+            intervalIndex: number;
+            parentLoop?: any;
+          };
+        }
+      > = [];
+
+      items.forEach((item, index) => {
+        // Check if we're approaching memory limit
+        if (flattened.length > MAX_INTERVALS) {
+          console.warn(
+            "Maximum interval limit reached to prevent memory crash",
+          );
+          return;
+        }
+
+        if (isInterval(item)) {
+          flattened.push({ ...item, originalIndex: index });
+        } else if (isLoop(item)) {
+          // Limit loop iterations to prevent exponential growth
+          const maxLoops = Math.min(item.loops, 50); // Cap at 50 iterations
+
+          for (let loop = 1; loop <= maxLoops; loop++) {
+            const subItems = getFlattenedIntervals(
+              item.items,
+              {
+                loopName: item.name,
+                iteration: loop,
+                skipLast: item.skipLast,
+                parentLoop: parentLoopInfo,
+              },
+              depth + 1,
+            );
+
+            // Apply skip last logic - remove last rest if skipLast is true
+            let processedItems = subItems;
+            if (item.skipLast && loop === maxLoops && subItems.length > 0) {
+              // Find the last rest interval and remove it
+              for (let i = processedItems.length - 1; i >= 0; i--) {
+                if (processedItems[i].type === "rest") {
+                  processedItems = processedItems
+                    .slice(0, i)
+                    .concat(processedItems.slice(i + 1));
+                  break;
+                }
+              }
+            }
+
+            processedItems.forEach((subItem, subIndex) => {
+              if (flattened.length < MAX_INTERVALS) {
+                flattened.push({
+                  ...subItem,
+                  originalIndex: index,
+                  loopInfo: {
+                    loopName: item.name,
+                    iteration: loop,
+                    intervalIndex: subIndex,
+                    parentLoop: parentLoopInfo,
+                  },
+                });
+              }
+            });
+          }
+        }
+      });
+
+      return flattened;
+    };
+
+    try {
+      return getFlattenedIntervals(config.items);
+    } catch (error) {
+      console.error("Error flattening intervals:", error);
+      return [];
+    }
+  }, [config.items]); // Only recalculate when items change
+
+  // Drag and drop sensors
+  const sensors = useSensors(
+    useSensor(PointerSensor),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    }),
+  );
+
+  // Memoized utility functions
+  const findItemById = useCallback(
+    (items: WorkoutItem[], id: string): WorkoutItem | null => {
+      for (const item of items) {
+        if (item.id === id) return item;
+        if (isLoop(item)) {
+          const found = findItemById(item.items, id);
+          if (found) return found;
+        }
+      }
+      return null;
+    },
+    [],
+  );
+
+  const removeItemById = useCallback(
+    (items: WorkoutItem[], id: string): WorkoutItem[] => {
+      return items
+        .filter((item) => item.id !== id)
+        .map((item) => {
+          if (isLoop(item)) {
+            return { ...item, items: removeItemById(item.items, id) };
+          }
+          return item;
+        });
+    },
+    [],
+  );
+
+  const addItemToLoop = useCallback(
+    (
+      items: WorkoutItem[],
+      loopId: string,
+      newItem: WorkoutItem,
+    ): WorkoutItem[] => {
+      return items.map((item) => {
+        if (item.id === loopId && isLoop(item)) {
+          return { ...item, items: [...item.items, newItem] };
+        }
+        if (isLoop(item)) {
+          return { ...item, items: addItemToLoop(item.items, loopId, newItem) };
+        }
+        return item;
+      });
+    },
+    [],
+  );
+
+  // Drag handlers
+  const handleDragStart = useCallback((event: DragStartEvent) => {
+    setActiveId(event.active.id as string);
+  }, []);
+
+  const handleDragEnd = useCallback(
+    (event: DragEndEvent) => {
+      const { active, over } = event;
+      setActiveId(null);
+
+      if (!over) return;
+
+      const activeIdStr = active.id as string;
+      const overIdStr = over.id as string;
+
+      // Handle dropping into a loop
+      if (overIdStr.startsWith("drop-") || overIdStr.startsWith("empty-")) {
+        const targetLoopId = overIdStr
+          .replace("drop-", "")
+          .replace("empty-", "");
+        const activeItem = findItemById(config.items, activeIdStr);
+
+        if (activeItem && targetLoopId !== activeIdStr) {
+          setConfig((prev) => ({
+            ...prev,
+            items: addItemToLoop(
+              removeItemById(prev.items, activeIdStr),
+              targetLoopId,
+              activeItem,
+            ),
+          }));
+        }
+        return;
+      }
+
+      // Handle reordering
+      if (activeIdStr !== overIdStr) {
+        setConfig((prev) => {
+          const oldIndex = prev.items.findIndex(
+            (item) => item.id === activeIdStr,
+          );
+          const newIndex = prev.items.findIndex(
+            (item) => item.id === overIdStr,
+          );
+
+          if (oldIndex !== -1 && newIndex !== -1) {
+            return {
+              ...prev,
+              items: arrayMove(prev.items, oldIndex, newIndex),
+            };
+          }
+
+          return prev;
+        });
+      }
+    },
+    [config.items, findItemById, removeItemById, addItemToLoop],
+  );
+
+  // Initialize timer - only when state changes to idle
   useEffect(() => {
     if (state === "idle") {
-      if (config.intervals.length > 0) {
-        setTimeLeft(config.intervals[0].duration);
-        setCurrentType(mapIntervalTypeToTimerType(config.intervals[0].type));
-        setCurrentIntervalIndex(0);
+      if (flattenedIntervals.length > 0) {
+        setTimeLeft(flattenedIntervals[0].duration);
+        setCurrentType(mapIntervalTypeToTimerType(flattenedIntervals[0].type));
+        setCurrentItemIndex(0);
       }
       setCurrentSet(1);
     }
-  }, [config, state, setCurrentSet]);
+  }, [state]); // Remove config dependency to prevent constant recalculation
+
+  // Separate effect for config changes
+  useEffect(() => {
+    if (state === "idle" && flattenedIntervals.length > 0) {
+      setTimeLeft(flattenedIntervals[0].duration);
+      setCurrentType(mapIntervalTypeToTimerType(flattenedIntervals[0].type));
+      setCurrentItemIndex(0);
+    }
+  }, [flattenedIntervals]); // Only when flattened intervals change
 
   // Timer countdown logic
   useEffect(() => {
@@ -85,22 +609,27 @@ export function AdvancedTimer() {
     }
 
     return () => clearInterval(interval);
-  }, [state, timeLeft]);
+  }, [state, timeLeft]); // Keep this as is
 
-  const handleTimerComplete = () => {
-    const nextIntervalIndex = currentIntervalIndex + 1;
+  const handleTimerComplete = useCallback(() => {
+    const nextIndex = currentItemIndex + 1;
 
-    if (nextIntervalIndex < config.intervals.length) {
-      const nextInterval = config.intervals[nextIntervalIndex];
-      setCurrentIntervalIndex(nextIntervalIndex);
+    if (nextIndex < flattenedIntervals.length) {
+      const nextInterval = flattenedIntervals[nextIndex];
+      setCurrentItemIndex(nextIndex);
       setCurrentType(mapIntervalTypeToTimerType(nextInterval.type));
       setTimeLeft(nextInterval.duration);
-      timerToasts.nextInterval(nextInterval.name);
+
+      const intervalName = nextInterval.loopInfo
+        ? `${nextInterval.loopInfo.loopName} (${nextInterval.loopInfo.iteration}) - ${nextInterval.name}`
+        : nextInterval.name;
+
+      timerToasts.nextInterval(intervalName);
     } else {
       if (currentSet < config.sets) {
         setCurrentSet((prev) => prev + 1);
-        setCurrentIntervalIndex(0);
-        const firstInterval = config.intervals[0];
+        setCurrentItemIndex(0);
+        const firstInterval = flattenedIntervals[0];
         setCurrentType(mapIntervalTypeToTimerType(firstInterval.type));
         setTimeLeft(firstInterval.duration);
         timerToasts.nextInterval(
@@ -110,148 +639,62 @@ export function AdvancedTimer() {
         setCompleted("🎉 Advanced Workout Complete! Great job!");
       }
     }
-  };
+  }, [
+    currentItemIndex,
+    flattenedIntervals,
+    currentSet,
+    config.sets,
+    setCurrentSet,
+    setCompleted,
+  ]);
 
-  const resetState = () => {
+  const resetState = useCallback(() => {
     setCurrentSet(1);
-    setCurrentIntervalIndex(0);
-  };
+    setCurrentItemIndex(0);
+  }, [setCurrentSet]);
 
-  const startTimer = () => baseStartTimer("Advanced Timer started!");
-  const resetTimer = () => baseResetTimer(resetState);
-  const stopTimer = () => baseStopTimer(resetState);
-  const handleHoldStart = () => baseHoldStart(stopTimer);
+  const startTimer = useCallback(
+    () => baseStartTimer("Advanced Timer started!"),
+    [baseStartTimer],
+  );
+  const resetTimer = useCallback(
+    () => baseResetTimer(resetState),
+    [baseResetTimer, resetState],
+  );
+  const stopTimer = useCallback(
+    () => baseStopTimer(resetState),
+    [baseStopTimer, resetState],
+  );
+  const handleHoldStart = useCallback(
+    () => baseHoldStart(stopTimer),
+    [baseHoldStart, stopTimer],
+  );
 
-  const fastForward = () => {
-    if (
-      state === "idle" ||
-      state === "completed" ||
-      config.intervals.length === 0
-    )
-      return;
+  // Memoized calculations
+  const totalSessionTime = useMemo(() => {
+    if (flattenedIntervals.length === 0) return 0;
+    const timePerSet = flattenedIntervals.reduce(
+      (sum, interval) => sum + interval.duration,
+      0,
+    );
+    return config.sets * timePerSet;
+  }, [flattenedIntervals, config.sets]);
 
-    if (timeLeft > 0) {
-      setTimeLeft(0);
-      timerToasts.fastForward("Skipped to end of interval");
-    } else {
-      const nextIntervalIndex = currentIntervalIndex + 1;
-
-      if (nextIntervalIndex < config.intervals.length) {
-        const nextInterval = config.intervals[nextIntervalIndex];
-        setCurrentIntervalIndex(nextIntervalIndex);
-        setCurrentType(mapIntervalTypeToTimerType(nextInterval.type));
-        setTimeLeft(nextInterval.duration);
-        timerToasts.fastForward(`Skipped to ${nextInterval.name}`);
-      } else if (currentSet < config.sets) {
-        setCurrentSet((prev) => prev + 1);
-        setCurrentIntervalIndex(0);
-        const firstInterval = config.intervals[0];
-        setCurrentType(mapIntervalTypeToTimerType(firstInterval.type));
-        setTimeLeft(firstInterval.duration);
-        timerToasts.fastForward(`Skipped to set ${currentSet + 1}`);
-      }
-    }
-  };
-
-  const fastBackward = () => {
-    if (
-      state === "idle" ||
-      state === "completed" ||
-      config.intervals.length === 0
-    )
-      return;
-
-    const currentInterval = config.intervals[currentIntervalIndex];
-
-    if (timeLeft < currentInterval.duration) {
-      setTimeLeft(currentInterval.duration);
-      timerToasts.fastBackward("Jumped to start of interval");
-    } else {
-      const prevIntervalIndex = currentIntervalIndex - 1;
-
-      if (prevIntervalIndex >= 0) {
-        const prevInterval = config.intervals[prevIntervalIndex];
-        setCurrentIntervalIndex(prevIntervalIndex);
-        setCurrentType(mapIntervalTypeToTimerType(prevInterval.type));
-        setTimeLeft(prevInterval.duration);
-        timerToasts.fastBackward(`Jumped back to ${prevInterval.name}`);
-      } else if (currentSet > 1) {
-        setCurrentSet((prev) => prev - 1);
-        const lastIntervalIndex = config.intervals.length - 1;
-        setCurrentIntervalIndex(lastIntervalIndex);
-        const lastInterval = config.intervals[lastIntervalIndex];
-        setCurrentType(mapIntervalTypeToTimerType(lastInterval.type));
-        setTimeLeft(lastInterval.duration);
-        timerToasts.fastBackward(`Jumped back to set ${currentSet - 1}`);
-      }
-    }
-  };
-
-  const getCurrentIntervalName = () => {
-    if (config.intervals.length > 0) {
-      return config.intervals[currentIntervalIndex]?.name || "INTERVAL";
-    }
-    return "INTERVAL";
-  };
-
-  const getTimerProgress = () => {
-    if (config.intervals.length > 0) {
-      const currentInterval = config.intervals[currentIntervalIndex];
-      return getProgress(currentInterval.duration, timeLeft);
-    }
-    return 0;
-  };
-
-  const addInterval = () => {
-    const newInterval: IntervalStep = {
-      id: Date.now().toString(),
-      name: "NEW EXERCISE",
-      duration: 30,
-      type: "work",
-    };
-    setConfig((prev) => ({
-      ...prev,
-      intervals: [...prev.intervals, newInterval],
-    }));
-  };
-
-  const removeInterval = (id: string) => {
-    setConfig((prev) => ({
-      ...prev,
-      intervals: prev.intervals.filter((interval) => interval.id !== id),
-    }));
-  };
-
-  const updateInterval = (
-    id: string,
-    field: keyof IntervalStep,
-    value: string | number,
-  ) => {
-    setConfig((prev) => ({
-      ...prev,
-      intervals: prev.intervals.map((interval) =>
-        interval.id === id
-          ? {
-              ...interval,
-              [field]:
-                field === "duration" ? Math.max(1, Number(value)) : value,
-            }
-          : interval,
-      ),
-    }));
-  };
-
-  // Calculate overall progress
-  const getOverallProgress = () => {
+  const overallProgress = useMemo(() => {
     if (state === "idle" || state === "completed") return 0;
 
-    const totalIntervals = config.sets * config.intervals.length;
+    const totalIntervals = config.sets * flattenedIntervals.length;
+    if (totalIntervals === 0) return 0;
+
     const completedIntervals =
-      (currentSet - 1) * config.intervals.length + currentIntervalIndex;
+      (currentSet - 1) * flattenedIntervals.length + currentItemIndex;
 
     let currentIntervalProgress = 0;
-    if (config.intervals.length > 0) {
-      const currentInterval = config.intervals[currentIntervalIndex];
+    if (
+      flattenedIntervals.length > 0 &&
+      currentItemIndex < flattenedIntervals.length
+    ) {
+      const currentInterval = flattenedIntervals[currentItemIndex];
       currentIntervalProgress =
         getProgress(currentInterval.duration, timeLeft) / 100;
     }
@@ -260,23 +703,29 @@ export function AdvancedTimer() {
       100,
       ((completedIntervals + currentIntervalProgress) / totalIntervals) * 100,
     );
-  };
+  }, [
+    state,
+    config.sets,
+    flattenedIntervals,
+    currentSet,
+    currentItemIndex,
+    timeLeft,
+  ]);
 
-  // Calculate total time remaining
-  const getTotalTimeRemaining = () => {
+  const totalTimeRemaining = useMemo(() => {
     if (state === "idle" || state === "completed") return 0;
 
-    let remaining = timeLeft; // Current interval time
+    let remaining = timeLeft;
 
     // Add remaining intervals in current set
-    for (let i = currentIntervalIndex + 1; i < config.intervals.length; i++) {
-      remaining += config.intervals[i].duration;
+    for (let i = currentItemIndex + 1; i < flattenedIntervals.length; i++) {
+      remaining += flattenedIntervals[i].duration;
     }
 
     // Add remaining sets
     const remainingSets = config.sets - currentSet;
     if (remainingSets > 0) {
-      const timePerSet = config.intervals.reduce(
+      const timePerSet = flattenedIntervals.reduce(
         (sum, interval) => sum + interval.duration,
         0,
       );
@@ -284,24 +733,193 @@ export function AdvancedTimer() {
     }
 
     return remaining;
-  };
+  }, [
+    state,
+    timeLeft,
+    currentItemIndex,
+    flattenedIntervals,
+    config.sets,
+    currentSet,
+  ]);
 
-  // Calculate total session time
-  const getTotalSessionTime = () => {
-    if (config.intervals.length === 0) return 0;
-    const timePerSet = config.intervals.reduce(
-      (sum, interval) => sum + interval.duration,
-      0,
-    );
-    return config.sets * timePerSet;
-  };
+  // Item management functions with useCallback for performance
+  const addInterval = useCallback(() => {
+    const newInterval: IntervalStep = {
+      id: Date.now().toString(),
+      name: "NEW EXERCISE",
+      duration: 30,
+      type: "work",
+    };
+    setConfig((prev) => ({
+      ...prev,
+      items: [...prev.items, newInterval],
+    }));
+  }, []);
 
-  // Check if we should show minimalistic view
+  const addLoop = useCallback(() => {
+    const newLoop: LoopGroup = {
+      id: Date.now().toString(),
+      name: "NEW LOOP",
+      loops: 3,
+      items: [],
+      collapsed: false,
+      skipLast: false,
+    };
+    setConfig((prev) => ({
+      ...prev,
+      items: [...prev.items, newLoop],
+    }));
+  }, []);
+
+  const addToLoop = useCallback(
+    (loopId: string) => {
+      const newInterval: IntervalStep = {
+        id: Date.now().toString(),
+        name: "NEW EXERCISE",
+        duration: 30,
+        type: "work",
+      };
+
+      setConfig((prev) => ({
+        ...prev,
+        items: addItemToLoop(prev.items, loopId, newInterval),
+      }));
+    },
+    [addItemToLoop],
+  );
+
+  const removeItem = useCallback(
+    (id: string) => {
+      setConfig((prev) => ({
+        ...prev,
+        items: removeItemById(prev.items, id),
+      }));
+    },
+    [removeItemById],
+  );
+
+  const updateItem = useCallback((id: string, field: string, value: any) => {
+    const updateRecursive = (items: WorkoutItem[]): WorkoutItem[] => {
+      return items.map((item) => {
+        if (item.id === id) {
+          return {
+            ...item,
+            [field]: field === "duration" ? Math.max(1, Number(value)) : value,
+          };
+        }
+        if (isLoop(item)) {
+          return {
+            ...item,
+            items: updateRecursive(item.items),
+          };
+        }
+        return item;
+      });
+    };
+
+    setConfig((prev) => ({
+      ...prev,
+      items: updateRecursive(prev.items),
+    }));
+  }, []);
+
+  const toggleLoopCollapse = useCallback((id: string) => {
+    const toggleRecursive = (items: WorkoutItem[]): WorkoutItem[] => {
+      return items.map((item) => {
+        if (isLoop(item) && item.id === id) {
+          return { ...item, collapsed: !item.collapsed };
+        }
+        if (isLoop(item)) {
+          return {
+            ...item,
+            items: toggleRecursive(item.items),
+          };
+        }
+        return item;
+      });
+    };
+
+    setConfig((prev) => ({
+      ...prev,
+      items: toggleRecursive(prev.items),
+    }));
+  }, []);
+
+  const getCurrentIntervalName = useCallback(() => {
+    if (
+      flattenedIntervals.length > 0 &&
+      currentItemIndex < flattenedIntervals.length
+    ) {
+      const current = flattenedIntervals[currentItemIndex];
+      if (current.loopInfo) {
+        return `${current.loopInfo.loopName} (${current.loopInfo.iteration}) - ${current.name}`;
+      }
+      return current.name;
+    }
+    return "INTERVAL";
+  }, [flattenedIntervals, currentItemIndex]);
+
+  const getTimerProgress = useCallback(() => {
+    if (
+      flattenedIntervals.length > 0 &&
+      currentItemIndex < flattenedIntervals.length
+    ) {
+      const currentInterval = flattenedIntervals[currentItemIndex];
+      return getProgress(currentInterval.duration, timeLeft);
+    }
+    return 0;
+  }, [flattenedIntervals, currentItemIndex, timeLeft]);
+
+  const fastForward = useCallback(() => {
+    if (
+      state === "idle" ||
+      state === "completed" ||
+      flattenedIntervals.length === 0
+    )
+      return;
+    if (timeLeft > 0) {
+      setTimeLeft(0);
+      timerToasts.fastForward("Skipped to end of interval");
+    }
+  }, [state, flattenedIntervals.length, timeLeft]);
+
+  const fastBackward = useCallback(() => {
+    if (
+      state === "idle" ||
+      state === "completed" ||
+      flattenedIntervals.length === 0
+    )
+      return;
+
+    const currentInterval = flattenedIntervals[currentItemIndex];
+    if (currentInterval && timeLeft < currentInterval.duration) {
+      setTimeLeft(currentInterval.duration);
+      timerToasts.fastBackward("Jumped to start of interval");
+    }
+  }, [state, flattenedIntervals, currentItemIndex, timeLeft]);
+
   const isMinimalisticView = state === "running" || state === "paused";
+
+  // Add warning for excessive loops/nesting
+  const showPerformanceWarning = useMemo(() => {
+    return (
+      flattenedIntervals.length > 500 ||
+      config.items.some((item) => isLoop(item) && item.loops > 20)
+    );
+  }, [flattenedIntervals.length, config.items]);
 
   return (
     <div className="relative space-y-6">
-      {/* Hide main workout timer tabs when timer is running */}
+      {showPerformanceWarning && (
+        <div className="rounded-md border border-yellow-200 bg-yellow-50 p-3">
+          <div className="text-sm text-yellow-800">
+            ⚠️ Warning: Large workout detected ({flattenedIntervals.length}{" "}
+            total steps). Consider reducing loop counts or nesting depth for
+            better performance.
+          </div>
+        </div>
+      )}
+
       {isMinimalisticView && (
         <MinimalisticContainer>
           <MinimalisticTimerView
@@ -312,11 +930,11 @@ export function AdvancedTimer() {
             intervalType={getIntervalTypeForDisplay(currentType)}
             currentIntervalName={getCurrentIntervalName()}
             progress={getTimerProgress()}
-            overallProgress={getOverallProgress()}
-            totalTimeRemaining={getTotalTimeRemaining()}
+            overallProgress={overallProgress}
+            totalTimeRemaining={totalTimeRemaining}
             showStepCounter={true}
-            currentStep={currentIntervalIndex + 1}
-            totalSteps={config.intervals.length}
+            currentStep={currentItemIndex + 1}
+            totalSteps={flattenedIntervals.length}
             isHolding={isHolding}
             holdProgress={holdProgress}
             onFastBackward={fastBackward}
@@ -331,19 +949,12 @@ export function AdvancedTimer() {
 
       {!isMinimalisticView && (
         <Card>
-          {/* <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Settings size={20} />
-              Advanced Workout Timer
-            </CardTitle>
-          </CardHeader> */}
-
           <CardContent className="space-y-6 pt-6">
             <div className="space-y-4 text-center">
               <div className="flex items-center justify-center gap-4">
                 <StatCard
                   label="Total Session Time"
-                  value={formatTime(getTotalSessionTime())}
+                  value={formatTime(totalSessionTime)}
                 />
                 <StatCard
                   label="Sets"
@@ -351,105 +962,73 @@ export function AdvancedTimer() {
                   valueClassName="text-2xl font-bold"
                 />
                 <StatCard
-                  label="Intervals"
-                  value={config.intervals.length}
+                  label="Total Steps"
+                  value={flattenedIntervals.length}
                   valueClassName="text-2xl font-bold"
                 />
               </div>
-
-              {/* {config.intervals.length > 0 && (
-                <div className="mx-auto max-w-md">
-                  <div className="mb-2 text-sm text-muted-foreground">
-                    Interval Breakdown
-                  </div>
-                  <div className="grid grid-cols-1 gap-2">
-                    {config.intervals.map((interval, index) => (
-                      <div
-                        key={interval.id}
-                        className="flex items-center justify-between text-sm"
-                      >
-                        <span className="font-medium">
-                          {index + 1}. {interval.name}
-                        </span>
-                        <span
-                          className={`font-semibold ${interval.type === "work" ? "text-green-500" : "text-blue-500"}`}
-                        >
-                          {formatTime(interval.duration)}
-                        </span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )} */}
             </div>
 
             <div className="space-y-4">
               <div className="flex items-center justify-between">
-                <h3 className="text-lg font-semibold">Interval Sequence</h3>
-                <Button
-                  onClick={addInterval}
-                  variant="outline"
-                  size="sm"
-                  className="gap-2"
-                >
-                  <Plus size={16} />
-                  Add Interval
-                </Button>
-              </div>
-
-              <div className="max-h-60 space-y-3 overflow-y-auto">
-                {config.intervals.map((interval, index) => (
-                  <div
-                    key={interval.id}
-                    className="flex items-center gap-3 rounded-lg border p-3"
+                <h3 className="text-lg font-semibold">Workout Sequence</h3>
+                <div className="flex gap-2">
+                  <Button
+                    onClick={addInterval}
+                    variant="outline"
+                    size="sm"
+                    className="gap-2"
                   >
-                    <span className="w-8 text-sm font-medium">
-                      {index + 1}.
-                    </span>
-
-                    <Input
-                      value={interval.name}
-                      onChange={(e) =>
-                        updateInterval(interval.id, "name", e.target.value)
-                      }
-                      className="flex-1"
-                      placeholder="Exercise name"
-                    />
-
-                    <NumberInput
-                      value={interval.duration}
-                      onChange={(value) =>
-                        updateInterval(interval.id, "duration", value)
-                      }
-                      min={1}
-                      step={5}
-                      className="w-32"
-                    />
-
-                    <select
-                      value={interval.type}
-                      onChange={(e) =>
-                        updateInterval(interval.id, "type", e.target.value)
-                      }
-                      className="rounded-md border px-3 py-2 text-sm"
-                    >
-                      <option value="prepare">Prepare</option>
-                      <option value="work">Work</option>
-                      <option value="rest">Rest</option>
-                    </select>
-
-                    {config.intervals.length > 1 && (
-                      <Button
-                        variant="outline"
-                        size="icon"
-                        onClick={() => removeInterval(interval.id)}
-                      >
-                        <Trash2 size={16} />
-                      </Button>
-                    )}
-                  </div>
-                ))}
+                    <Plus size={16} />
+                    Add Interval
+                  </Button>
+                  <Button
+                    onClick={addLoop}
+                    variant="outline"
+                    size="sm"
+                    className="gap-2"
+                  >
+                    <Repeat size={16} />
+                    Add Loop
+                  </Button>
+                </div>
               </div>
+
+              <DndContext
+                sensors={sensors}
+                collisionDetection={closestCenter}
+                onDragStart={handleDragStart}
+                onDragEnd={handleDragEnd}
+              >
+                <SortableContext
+                  items={config.items.map((item) => item.id)}
+                  strategy={verticalListSortingStrategy}
+                >
+                  <div className="max-h-96 space-y-3 overflow-y-auto">
+                    {config.items.map((item) => (
+                      <SortableItem
+                        key={item.id}
+                        item={item}
+                        onUpdate={updateItem}
+                        onRemove={removeItem}
+                        onToggleCollapse={toggleLoopCollapse}
+                        onAddToLoop={addToLoop}
+                        activeId={activeId}
+                      />
+                    ))}
+                  </div>
+                </SortableContext>
+
+                <DragOverlay>
+                  {activeId ? (
+                    <div className="rounded-lg border bg-white p-3 shadow-lg">
+                      <div className="text-sm font-medium">
+                        {findItemById(config.items, activeId)?.name || "Item"}
+                      </div>
+                    </div>
+                  ) : null}
+                </DragOverlay>
+              </DndContext>
 
               <div className="flex items-center gap-4">
                 <Label htmlFor="advancedSets">Total Sets:</Label>
@@ -476,7 +1055,7 @@ export function AdvancedTimer() {
               onFastForward={fastForward}
               startLabel="Start Advanced Timer"
               resetLabel="Start New Advanced Workout"
-              disabled={config.intervals.length === 0}
+              disabled={flattenedIntervals.length === 0}
             />
           </CardContent>
         </Card>
