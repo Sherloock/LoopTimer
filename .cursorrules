@@ -1,0 +1,58 @@
+Always add to the beginning of your message "I understood the rules for project TIMER" before you start working on the task!
+
+Every time you choose to apply a rule(s), explicitly state the rule(s) in the output. You can abbreviate the rule description to a single word or phrase.
+
+If I use any of the following commands, you must generate the code for the command:
+Commands = { "fiximp" => "fix all the imports in the project" }
+
+## Project Context
+This project is **TIMER**, its a workout timer
+The system will allow users to create custom timers with loops etc
+
+## Code style and structure
+- Write concise, technical TypeScript code with accurate examples
+- Prefer iteration and modularization over code duplication
+- Use descriptive variable names with auxiliary verbs (e.g., isLoading, hasSolution)
+
+## Tech Stack
+- React
+- NextJs 14.2.5
+- TypeScript
+
+- TailwindCSS
+- Radix
+- Shadcn UI
+- Lucide Icons
+- React Hook Form + Zod
+
+- Prisma + Prisma Studio
+- tanstack/react-query
+
+## Syntax and Formatting
+- Use TypeScript, TailwindCSS, Shadcn UI syntax and formatting guidelines
+- Follow coding conventions
+- Use meaningful variable and function names
+- Add comments to explain "why" behind the code when necessary (not for obvious things, ONLY FOR COMPLEX LOGIC)
+- Keep functions small and focused (single responsibility)
+- Always use import @/ for all imports (e.g. import { Button } from '@/components/ui/button'), Don't use relative paths
+- Always add id to toast messages like toast.success('Timer saved!',{ id: 'save-timer'})
+- Use boolean casting like !!x instead of Boolean(x)
+- Use @/components/ui/... for all import if possible so prefer SHADCN UI COMPONENTS instead of Radix UI components
+- Use @/actions/... for all actions
+- Use @/lib/... for all libraries
+- Use @/types/... for all types
+- Use @/hooks/... for all hooks
+- Use @/utils/... for all utils
+- Use @/schema/... for all zod schemas
+- Use @/prisma for all prisma queries
+- Use "const userId = checkAuth();" for all server actions (ROOT_FOLDER/actions/*) imported from import {checkAuth} from "@/actions/auth/authCheck";
+
+## UI and Styling
+- Use Shadcn UI components and styling
+- Use TailwindCSS for styling
+- Use TailwindCSS classes for styling
+- On ICONS use Lucide Icons and SIZE them with size={20} or size={16} or size={12} DONT USE OTHER SIZES OR className='w-4 h-4'
+- When in className and writing classes only recommend 1 class at a time and don't use multiple classes at a time
+
+
+always check version in package.json, and include the exact version in your answer
