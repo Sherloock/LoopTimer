@@ -40,7 +40,7 @@ export default function RootLayout({
         >
           <QueryProvider>
             {children}
-            <Toaster />
+            <Toaster position="bottom-left" />
           </QueryProvider>
         </ThemeProvider>
       </body>
