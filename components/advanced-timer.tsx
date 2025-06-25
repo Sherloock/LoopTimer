@@ -5,6 +5,8 @@ import { MinimalisticTimerView } from "@/components/minimalistic-timer-view";
 import { TimerControls } from "@/components/timer-controls";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { ColorPicker } from "@/components/ui/color-picker";
+import { Dialog, DialogClose, DialogContent } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { NumberInput } from "@/components/ui/number-input";
@@ -42,6 +44,7 @@ import {
   GripVertical,
   Plus,
   Repeat,
+  Settings,
   Trash2,
 } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
@@ -64,9 +67,18 @@ interface LoopGroup {
 
 type WorkoutItem = IntervalStep | LoopGroup;
 
+interface ColorSettings {
+  prepare: string;
+  work: string;
+  rest: string;
+  loop: string;
+  nestedLoop: string;
+}
+
 interface AdvancedConfig {
   items: WorkoutItem[];
   sets: number;
+  colors: ColorSettings;
 }
 
 // Helper functions
@@ -105,11 +117,13 @@ function DroppableZone({
   children,
   className = "",
   isOver = false,
+  style,
 }: {
   id: string;
   children: React.ReactNode;
   className?: string;
   isOver?: boolean;
+  style?: React.CSSProperties;
 }) {
   const { setNodeRef } = useDroppable({ id });
 
@@ -117,6 +131,7 @@ function DroppableZone({
     <div
       ref={setNodeRef}
       className={`${className} ${isOver ? "border-dashed border-blue-300 bg-blue-50" : ""}`}
+      style={style}
     >
       {children}
     </div>
@@ -132,6 +147,7 @@ function SortableItem({
   onAddToLoop,
   activeId,
   isNested = false,
+  colors,
 }: {
   item: WorkoutItem;
   onUpdate: (id: string, field: string, value: any) => void;
@@ -140,6 +156,7 @@ function SortableItem({
   onAddToLoop?: (loopId: string) => void;
   activeId: string | null | undefined;
   isNested?: boolean;
+  colors: ColorSettings;
 }) {
   const {
     attributes,
@@ -158,6 +175,23 @@ function SortableItem({
 
   const isActiveDropTarget = activeId && activeId !== item.id && isLoop(item);
 
+  // Get colors based on item type
+  const getItemColors = () => {
+    if (isLoop(item)) {
+      return {
+        borderColor: isNested ? colors.nestedLoop : colors.loop,
+        bgColor: isNested ? `${colors.nestedLoop}20` : `${colors.loop}20`,
+      };
+    } else {
+      return {
+        borderColor: colors[item.type],
+        bgColor: `${colors[item.type]}20`,
+      };
+    }
+  };
+
+  const { borderColor, bgColor } = getItemColors();
+
   if (isLoop(item)) {
     return (
       <div ref={setNodeRef} style={style} className="space-y-2">
@@ -165,16 +199,14 @@ function SortableItem({
           id={`drop-${item.id}`}
           isOver={Boolean(isActiveDropTarget)}
           className={`rounded-lg border-2 border-dashed p-3 ${
-            isNested
-              ? "border-orange-300 bg-orange-50"
-              : "border-purple-300 bg-purple-50"
-          } ${isActiveDropTarget ? "border-blue-400 bg-blue-100" : ""}`}
+            isActiveDropTarget ? "border-blue-400 bg-blue-100" : ""
+          }`}
+          style={{
+            borderColor: isActiveDropTarget ? "#3b82f6" : borderColor,
+            backgroundColor: isActiveDropTarget ? "#dbeafe" : bgColor,
+          }}
         >
           <div className="flex items-center gap-3">
-            <div {...attributes} {...listeners} className="cursor-grab">
-              <GripVertical size={16} className="text-gray-400" />
-            </div>
-
             <Button
               variant="ghost"
               size="sm"
@@ -188,10 +220,7 @@ function SortableItem({
               )}
             </Button>
 
-            <Repeat
-              size={16}
-              className={isNested ? "text-orange-600" : "text-purple-600"}
-            />
+            <Repeat size={16} style={{ color: borderColor }} />
 
             <Input
               value={item.name}
@@ -241,6 +270,10 @@ function SortableItem({
             >
               <Trash2 size={16} />
             </Button>
+
+            <div {...attributes} {...listeners} className="cursor-grab">
+              <GripVertical size={16} className="text-gray-400" />
+            </div>
           </div>
         </DroppableZone>
 
@@ -260,6 +293,7 @@ function SortableItem({
                   onAddToLoop={onAddToLoop}
                   activeId={activeId}
                   isNested={true}
+                  colors={colors}
                 />
               ))}
             </SortableContext>
@@ -281,15 +315,15 @@ function SortableItem({
   return (
     <div
       ref={setNodeRef}
-      style={style}
-      className={`flex items-center gap-3 rounded-lg border p-3 ${
-        isNested ? "border-gray-200 bg-gray-50" : "bg-white"
+      style={{
+        ...style,
+        borderColor,
+        backgroundColor: bgColor,
+      }}
+      className={`flex items-center gap-3 rounded-lg border-2 p-3 ${
+        isNested ? "border-opacity-60" : ""
       }`}
     >
-      <div {...attributes} {...listeners} className="cursor-grab">
-        <GripVertical size={16} className="text-gray-400" />
-      </div>
-
       <Input
         value={item.name}
         onChange={(e) => onUpdate(item.id, "name", e.target.value)}
@@ -318,6 +352,10 @@ function SortableItem({
       <Button variant="outline" size="icon" onClick={() => onRemove(item.id)}>
         <Trash2 size={16} />
       </Button>
+
+      <div {...attributes} {...listeners} className="cursor-grab">
+        <GripVertical size={16} className="text-gray-400" />
+      </div>
     </div>
   );
 }
@@ -330,12 +368,20 @@ export function AdvancedTimer() {
       { id: "3", name: "REST", duration: 15, type: "rest" },
     ],
     sets: 3,
+    colors: {
+      prepare: "#f97316", // orange
+      work: "#22c55e", // green
+      rest: "#3b82f6", // blue
+      loop: "#8b5cf6", // purple
+      nestedLoop: "#f59e0b", // amber
+    },
   });
 
   const [activeId, setActiveId] = useState<string | null>(null);
   const [currentType, setCurrentType] = useState<TimerType>("prepare");
   const [timeLeft, setTimeLeft] = useState(0);
   const [currentItemIndex, setCurrentItemIndex] = useState(0);
+  const [showSettings, setShowSettings] = useState(false);
 
   const {
     state,
@@ -898,6 +944,33 @@ export function AdvancedTimer() {
     }
   }, [state, flattenedIntervals, currentItemIndex, timeLeft]);
 
+  // Color settings handlers
+  const updateColor = useCallback(
+    (colorType: keyof ColorSettings, color: string) => {
+      setConfig((prev) => ({
+        ...prev,
+        colors: {
+          ...prev.colors,
+          [colorType]: color,
+        },
+      }));
+    },
+    [],
+  );
+
+  const resetColors = useCallback(() => {
+    setConfig((prev) => ({
+      ...prev,
+      colors: {
+        prepare: "#f97316", // orange
+        work: "#22c55e", // green
+        rest: "#3b82f6", // blue
+        loop: "#8b5cf6", // purple
+        nestedLoop: "#f59e0b", // amber
+      },
+    }));
+  }, []);
+
   const isMinimalisticView = state === "running" || state === "paused";
 
   // Add warning for excessive loops/nesting
@@ -958,12 +1031,12 @@ export function AdvancedTimer() {
                 />
                 <StatCard
                   label="Sets"
-                  value={config.sets}
+                  value={config.sets.toString()}
                   valueClassName="text-2xl font-bold"
                 />
                 <StatCard
                   label="Total Steps"
-                  value={flattenedIntervals.length}
+                  value={flattenedIntervals.length.toString()}
                   valueClassName="text-2xl font-bold"
                 />
               </div>
@@ -991,6 +1064,15 @@ export function AdvancedTimer() {
                     <Repeat size={16} />
                     Add Loop
                   </Button>
+                  <Button
+                    onClick={() => setShowSettings(true)}
+                    variant="outline"
+                    size="sm"
+                    className="gap-2"
+                  >
+                    <Settings size={16} />
+                    Settings
+                  </Button>
                 </div>
               </div>
 
@@ -1014,6 +1096,7 @@ export function AdvancedTimer() {
                         onToggleCollapse={toggleLoopCollapse}
                         onAddToLoop={addToLoop}
                         activeId={activeId}
+                        colors={config.colors}
                       />
                     ))}
                   </div>
@@ -1060,6 +1143,66 @@ export function AdvancedTimer() {
           </CardContent>
         </Card>
       )}
+
+      {/* Settings Dialog */}
+      <Dialog open={showSettings} onOpenChange={setShowSettings}>
+        <DialogContent title="Color Settings" className="max-w-lg">
+          <DialogClose onClose={() => setShowSettings(false)} />
+
+          <div className="space-y-6">
+            <div className="space-y-4">
+              <h3 className="text-base font-medium">Interval Colors</h3>
+
+              <ColorPicker
+                label="Prepare Intervals"
+                value={config.colors.prepare}
+                onChange={(color) => updateColor("prepare", color)}
+              />
+
+              <ColorPicker
+                label="Work Intervals"
+                value={config.colors.work}
+                onChange={(color) => updateColor("work", color)}
+              />
+
+              <ColorPicker
+                label="Rest Intervals"
+                value={config.colors.rest}
+                onChange={(color) => updateColor("rest", color)}
+              />
+            </div>
+
+            <div className="space-y-4">
+              <h3 className="text-base font-medium">Loop Colors</h3>
+
+              <ColorPicker
+                label="Main Loops"
+                value={config.colors.loop}
+                onChange={(color) => updateColor("loop", color)}
+              />
+
+              <ColorPicker
+                label="Nested Loops"
+                value={config.colors.nestedLoop}
+                onChange={(color) => updateColor("nestedLoop", color)}
+              />
+            </div>
+
+            <div className="flex gap-2 pt-4">
+              <Button
+                onClick={resetColors}
+                variant="outline"
+                className="flex-1"
+              >
+                Reset to Defaults
+              </Button>
+              <Button onClick={() => setShowSettings(false)} className="flex-1">
+                Done
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
