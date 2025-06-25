@@ -22,6 +22,7 @@ interface TimerControlsProps {
   startLabel?: string;
   resetLabel?: string;
   disabled?: boolean;
+  compact?: boolean;
 }
 
 export function TimerControls({
@@ -35,29 +36,34 @@ export function TimerControls({
   startLabel = "Start",
   resetLabel = "Start New Workout",
   disabled = false,
+  compact = false,
 }: TimerControlsProps) {
+  const buttonSize = compact ? "default" : "lg";
+  const iconSize = compact ? 16 : 20;
+
   return (
-    <div className="flex justify-center gap-3">
+    <div className="flex flex-wrap justify-center gap-2 sm:gap-3">
       {(state === "running" || state === "paused") && onFastBackward && (
         <Button
           onClick={onFastBackward}
           variant="outline"
-          size="lg"
-          className="gap-2"
+          size={buttonSize}
+          className={compact ? "" : "gap-2"}
         >
-          <SkipBack size={20} />
+          <SkipBack size={iconSize} />
         </Button>
       )}
 
       {state === "idle" && (
         <Button
           onClick={onStart}
-          size="lg"
-          className="gap-2"
+          size={buttonSize}
+          className={compact ? "gap-1" : "gap-2"}
           disabled={disabled}
         >
-          <Play size={20} />
-          {startLabel}
+          <Play size={iconSize} />
+          {!compact && startLabel}
+          {compact && "Start"}
         </Button>
       )}
 
@@ -65,27 +71,32 @@ export function TimerControls({
         <Button
           onClick={onPause}
           variant="secondary"
-          size="lg"
-          className="gap-2"
+          size={buttonSize}
+          className={compact ? "gap-1" : "gap-2"}
         >
-          <Pause size={20} />
-          Pause
+          <Pause size={iconSize} />
+          {!compact && "Pause"}
+          {compact && "Pause"}
         </Button>
       )}
 
       {state === "paused" && (
         <>
-          <Button onClick={onStart} size="lg" className="gap-2">
-            <Play size={20} />
+          <Button
+            onClick={onStart}
+            size={buttonSize}
+            className={compact ? "gap-1" : "gap-2"}
+          >
+            <Play size={iconSize} />
             Resume
           </Button>
           <Button
             onClick={onReset}
             variant="outline"
-            size="lg"
-            className="gap-2"
+            size={buttonSize}
+            className={compact ? "gap-1" : "gap-2"}
           >
-            <RotateCcw size={20} />
+            <RotateCcw size={iconSize} />
             Reset
           </Button>
         </>
@@ -96,29 +107,33 @@ export function TimerControls({
           <Button
             onClick={onStop}
             variant="destructive"
-            size="lg"
-            className="gap-2"
+            size={buttonSize}
+            className={compact ? "gap-1" : "gap-2"}
           >
-            <Square size={20} />
+            <Square size={iconSize} />
             Stop
           </Button>
           {onFastForward && (
             <Button
               onClick={onFastForward}
               variant="outline"
-              size="lg"
-              className="gap-2"
+              size={buttonSize}
+              className={compact ? "" : "gap-2"}
             >
-              <SkipForward size={20} />
+              <SkipForward size={iconSize} />
             </Button>
           )}
         </>
       )}
 
       {state === "completed" && (
-        <Button onClick={onReset} size="lg" className="gap-2">
-          <RotateCcw size={20} />
-          {resetLabel}
+        <Button
+          onClick={onReset}
+          size={buttonSize}
+          className={compact ? "gap-1 text-sm" : "gap-2"}
+        >
+          <RotateCcw size={iconSize} />
+          {compact ? "New Workout" : resetLabel}
         </Button>
       )}
     </div>
