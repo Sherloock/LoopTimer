@@ -230,13 +230,13 @@ function SortableItem({
             />
 
             <div className="flex items-center gap-2">
-              <span className="text-sm text-gray-600">×</span>
+              <span className="text-sm text-muted-foreground">×</span>
               <NumberInput
                 value={item.loops}
                 onChange={(value) => onUpdate(item.id, "loops", value)}
                 min={1}
                 step={1}
-                className="w-20"
+                className="w-24"
               />
             </div>
 
@@ -303,7 +303,7 @@ function SortableItem({
         {!item.collapsed && item.items.length === 0 && (
           <DroppableZone
             id={`empty-${item.id}`}
-            className="ml-4 rounded-lg border-2 border-dashed border-gray-300 bg-gray-50 p-4 text-center text-gray-500"
+            className="ml-4 rounded-lg border-2 border-dashed border-gray-300 bg-gray-50 p-4 text-center text-muted-foreground dark:border-gray-600 dark:bg-gray-800"
           >
             Drop intervals or loops here
           </DroppableZone>

@@ -56,7 +56,7 @@ export function NumberInput({
         type="number"
         value={value}
         onChange={handleInputChange}
-        className="text-center"
+        className="text-center [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
         placeholder={placeholder}
         disabled={disabled}
         min={min}

@@ -2,7 +2,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Palette } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 interface ColorPickerProps {
   label: string;
@@ -18,6 +18,27 @@ export function ColorPicker({
   className = "",
 }: ColorPickerProps) {
   const [isOpen, setIsOpen] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  // Close on click outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(event.target as Node)
+      ) {
+        setIsOpen(false);
+      }
+    };
+
+    if (isOpen) {
+      document.addEventListener("mousedown", handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [isOpen]);
 
   const presetColors = [
     "#ef4444", // red
@@ -36,7 +57,7 @@ export function ColorPicker({
     <div className={`space-y-2 ${className}`}>
       <Label>{label}</Label>
       <div className="flex items-center gap-2">
-        <div className="relative">
+        <div className="relative" ref={dropdownRef}>
           <Button
             type="button"
             variant="outline"
@@ -62,7 +83,7 @@ export function ColorPicker({
                     <button
                       key={color}
                       type="button"
-                      className="h-8 w-8 rounded border-2 border-muted hover:border-ring"
+                      className="h-8 w-8 rounded border-2 border-muted transition-colors hover:border-ring"
                       style={{ backgroundColor: color }}
                       onClick={() => {
                         onChange(color);
@@ -83,7 +104,7 @@ export function ColorPicker({
                     type="text"
                     value={value}
                     onChange={(e) => onChange(e.target.value)}
-                    className="flex-1 text-sm"
+                    className="flex-1 font-mono text-sm"
                     placeholder="#000000"
                   />
                 </div>
@@ -96,7 +117,7 @@ export function ColorPicker({
           type="text"
           value={value}
           onChange={(e) => onChange(e.target.value)}
-          className="flex-1"
+          className="flex-1 font-mono"
           placeholder="#000000"
         />
       </div>
