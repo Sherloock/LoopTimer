@@ -6,7 +6,12 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { getProgress, TimerState, timerToasts } from "@/lib/timer-utils";
+import {
+  formatTime,
+  getProgress,
+  TimerState,
+  timerToasts,
+} from "@/lib/timer-utils";
 import { Dumbbell, Minus, Plus } from "lucide-react";
 import { useEffect, useState } from "react";
 
@@ -15,7 +20,7 @@ type TimerType = "workout" | "rest";
 interface SimpleTimerConfig {
   workoutTime: number;
   restTime: number;
-  rounds: number;
+  sets: number;
   workoutName: string;
 }
 
@@ -23,21 +28,21 @@ export function SimpleTimer() {
   const [config, setConfig] = useState<SimpleTimerConfig>({
     workoutTime: 45,
     restTime: 15,
-    rounds: 8,
+    sets: 8,
     workoutName: "WORK",
   });
 
   const [state, setState] = useState<TimerState>("idle");
   const [currentType, setCurrentType] = useState<TimerType>("workout");
   const [timeLeft, setTimeLeft] = useState(0);
-  const [currentRound, setCurrentRound] = useState(1);
+  const [currentSet, setCurrentSet] = useState(1);
 
   // Initialize timer
   useEffect(() => {
     if (state === "idle") {
       setTimeLeft(config.workoutTime);
       setCurrentType("workout");
-      setCurrentRound(1);
+      setCurrentSet(1);
     }
   }, [config, state]);
 
@@ -58,15 +63,27 @@ export function SimpleTimer() {
 
   const handleTimerComplete = () => {
     if (currentType === "workout") {
-      setCurrentType("rest");
-      setTimeLeft(config.restTime);
-      timerToasts.restTime();
+      if (config.restTime > 0) {
+        setCurrentType("rest");
+        setTimeLeft(config.restTime);
+        timerToasts.restTime();
+      } else {
+        // Skip rest if rest time is 0
+        if (currentSet < config.sets) {
+          setTimeLeft(config.workoutTime);
+          setCurrentSet((prev) => prev + 1);
+          timerToasts.nextRound(currentSet + 1);
+        } else {
+          setState("completed");
+          timerToasts.complete("🎉 Workout Complete! Great job!");
+        }
+      }
     } else if (currentType === "rest") {
-      if (currentRound < config.rounds) {
+      if (currentSet < config.sets) {
         setCurrentType("workout");
         setTimeLeft(config.workoutTime);
-        setCurrentRound((prev) => prev + 1);
-        timerToasts.nextRound(currentRound + 1);
+        setCurrentSet((prev) => prev + 1);
+        timerToasts.nextRound(currentSet + 1);
       } else {
         setState("completed");
         timerToasts.complete("🎉 Workout Complete! Great job!");
@@ -75,7 +92,7 @@ export function SimpleTimer() {
   };
 
   const resetState = () => {
-    setCurrentRound(1);
+    setCurrentSet(1);
   };
 
   const startTimer = () => {
@@ -110,11 +127,14 @@ export function SimpleTimer() {
       setCurrentType("rest");
       setTimeLeft(config.restTime);
       timerToasts.fastForward("Skipped to rest period");
-    } else if (currentType === "rest" && currentRound < config.rounds) {
+    } else if (
+      (currentType === "rest" || config.restTime === 0) &&
+      currentSet < config.sets
+    ) {
       setCurrentType("workout");
       setTimeLeft(config.workoutTime);
-      setCurrentRound((prev) => prev + 1);
-      timerToasts.fastForward(`Skipped to round ${currentRound + 1}`);
+      setCurrentSet((prev) => prev + 1);
+      timerToasts.fastForward(`Skipped to set ${currentSet + 1}`);
     }
   };
 
@@ -127,26 +147,66 @@ export function SimpleTimer() {
     if (timeLeft < totalTime) {
       setTimeLeft(totalTime);
       timerToasts.fastBackward("Jumped to start of interval");
-    } else if (currentType === "rest" && currentRound >= 1) {
+    } else if (currentType === "rest" && currentSet >= 1) {
       setCurrentType("workout");
       setTimeLeft(config.workoutTime);
       timerToasts.fastBackward("Jumped back to workout period");
-    } else if (currentType === "workout" && currentRound > 1) {
-      setCurrentType("rest");
-      setTimeLeft(config.restTime);
-      setCurrentRound((prev) => prev - 1);
-      timerToasts.fastBackward(`Jumped back to round ${currentRound - 1}`);
+    } else if (currentType === "workout" && currentSet > 1) {
+      if (config.restTime > 0) {
+        setCurrentType("rest");
+        setTimeLeft(config.restTime);
+        setCurrentSet((prev) => prev - 1);
+        timerToasts.fastBackward(`Jumped back to set ${currentSet - 1}`);
+      } else {
+        setTimeLeft(config.workoutTime);
+        setCurrentSet((prev) => prev - 1);
+        timerToasts.fastBackward(`Jumped back to set ${currentSet - 1}`);
+      }
     }
+  };
+
+  const parseTimeInput = (value: string): number => {
+    // Handle mm:ss format
+    if (value.includes(":")) {
+      const [minutes, seconds] = value.split(":").map(Number);
+      if (!isNaN(minutes) && !isNaN(seconds)) {
+        return Math.max(0, minutes * 60 + seconds);
+      }
+    }
+    // Handle plain seconds
+    const parsed = parseInt(value) || 0;
+    return Math.max(0, parsed);
+  };
+
+  const formatTimeInput = (seconds: number): string => {
+    return formatTime(seconds);
   };
 
   const updateConfig = (
     field: keyof SimpleTimerConfig,
     value: number | string,
   ) => {
-    setConfig((prev) => ({
-      ...prev,
-      [field]: typeof value === "number" ? Math.max(1, value) : value,
-    }));
+    if (field === "workoutTime" || field === "restTime") {
+      const timeValue =
+        typeof value === "string" ? parseTimeInput(value) : Math.max(0, value);
+      setConfig((prev) => ({
+        ...prev,
+        [field]: timeValue,
+      }));
+    } else if (field === "sets") {
+      setConfig((prev) => ({
+        ...prev,
+        [field]: Math.max(
+          1,
+          typeof value === "number" ? value : parseInt(value as string) || 1,
+        ),
+      }));
+    } else if (field === "workoutName") {
+      setConfig((prev) => ({
+        ...prev,
+        [field]: value as string,
+      }));
+    }
   };
 
   const getCurrentIntervalName = () => {
@@ -172,8 +232,8 @@ export function SimpleTimer() {
           timeLeft={timeLeft}
           state={state}
           currentIntervalName={getCurrentIntervalName()}
-          currentRound={currentRound}
-          totalRounds={config.rounds}
+          currentRound={currentSet}
+          totalRounds={config.sets}
           progress={getTimerProgress()}
           intervalType={currentType}
         />
@@ -193,7 +253,7 @@ export function SimpleTimer() {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="workoutTime">Work Time (seconds)</Label>
+              <Label htmlFor="workoutTime">Work Time</Label>
               <div className="flex items-center gap-2">
                 <Button
                   variant="outline"
@@ -206,12 +266,11 @@ export function SimpleTimer() {
                 </Button>
                 <Input
                   id="workoutTime"
-                  type="number"
-                  value={config.workoutTime}
-                  onChange={(e) =>
-                    updateConfig("workoutTime", parseInt(e.target.value) || 1)
-                  }
+                  type="text"
+                  value={formatTimeInput(config.workoutTime)}
+                  onChange={(e) => updateConfig("workoutTime", e.target.value)}
                   className="text-center"
+                  placeholder="0:45"
                 />
                 <Button
                   variant="outline"
@@ -226,23 +285,24 @@ export function SimpleTimer() {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="restTime">Rest Time (seconds)</Label>
+              <Label htmlFor="restTime">Rest Time</Label>
               <div className="flex items-center gap-2">
                 <Button
                   variant="outline"
                   size="icon"
-                  onClick={() => updateConfig("restTime", config.restTime - 5)}
+                  onClick={() =>
+                    updateConfig("restTime", Math.max(0, config.restTime - 5))
+                  }
                 >
                   <Minus size={16} />
                 </Button>
                 <Input
                   id="restTime"
-                  type="number"
-                  value={config.restTime}
-                  onChange={(e) =>
-                    updateConfig("restTime", parseInt(e.target.value) || 1)
-                  }
+                  type="text"
+                  value={formatTimeInput(config.restTime)}
+                  onChange={(e) => updateConfig("restTime", e.target.value)}
                   className="text-center"
+                  placeholder="0:15"
                 />
                 <Button
                   variant="outline"
@@ -255,28 +315,28 @@ export function SimpleTimer() {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="rounds">Rounds</Label>
+              <Label htmlFor="sets">Sets</Label>
               <div className="flex items-center gap-2">
                 <Button
                   variant="outline"
                   size="icon"
-                  onClick={() => updateConfig("rounds", config.rounds - 1)}
+                  onClick={() => updateConfig("sets", config.sets - 1)}
                 >
                   <Minus size={16} />
                 </Button>
                 <Input
-                  id="rounds"
+                  id="sets"
                   type="number"
-                  value={config.rounds}
+                  value={config.sets}
                   onChange={(e) =>
-                    updateConfig("rounds", parseInt(e.target.value) || 1)
+                    updateConfig("sets", parseInt(e.target.value) || 1)
                   }
                   className="text-center"
                 />
                 <Button
                   variant="outline"
                   size="icon"
-                  onClick={() => updateConfig("rounds", config.rounds + 1)}
+                  onClick={() => updateConfig("sets", config.sets + 1)}
                 >
                   <Plus size={16} />
                 </Button>

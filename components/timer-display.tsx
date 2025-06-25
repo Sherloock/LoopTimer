@@ -40,7 +40,7 @@ export function TimerDisplay({
           {currentIntervalName}
         </Badge>
         <Badge variant="outline" className="px-4 py-2 text-lg">
-          Round {currentRound}/{totalRounds}
+          Set {currentRound}/{totalRounds}
         </Badge>
         {showStepCounter && currentStep && totalSteps && (
           <Badge variant="outline" className="px-3 py-1 text-sm">

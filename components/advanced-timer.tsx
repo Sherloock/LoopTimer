@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { getProgress, TimerState, timerToasts } from "@/lib/timer-utils";
 import { Minus, Plus, Settings, Trash2 } from "lucide-react";
+import dynamic from "next/dynamic";
 import { useEffect, useState } from "react";
 
 type TimerType = "workout" | "rest";
@@ -21,8 +22,12 @@ interface IntervalStep {
 
 interface AdvancedConfig {
   intervals: IntervalStep[];
-  rounds: number;
+  sets: number;
 }
+
+const WorkoutTimer = dynamic(() => import("@/components/workout-timer"), {
+  ssr: false,
+});
 
 export function AdvancedTimer() {
   const [config, setConfig] = useState<AdvancedConfig>({
@@ -30,14 +35,15 @@ export function AdvancedTimer() {
       { id: "1", name: "WORK", duration: 45, type: "work" },
       { id: "2", name: "REST", duration: 15, type: "rest" },
     ],
-    rounds: 3,
+    sets: 3,
   });
 
   const [state, setState] = useState<TimerState>("idle");
   const [currentType, setCurrentType] = useState<TimerType>("workout");
   const [timeLeft, setTimeLeft] = useState(0);
   const [currentIntervalIndex, setCurrentIntervalIndex] = useState(0);
-  const [currentRound, setCurrentRound] = useState(1);
+  const [currentSet, setCurrentSet] = useState(1);
+  const [isClient, setIsClient] = useState(false);
 
   // Initialize timer
   useEffect(() => {
@@ -49,7 +55,7 @@ export function AdvancedTimer() {
         );
         setCurrentIntervalIndex(0);
       }
-      setCurrentRound(1);
+      setCurrentSet(1);
     }
   }, [config, state]);
 
@@ -68,6 +74,12 @@ export function AdvancedTimer() {
     return () => clearInterval(interval);
   }, [state, timeLeft]);
 
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
+
+  if (!isClient) return null;
+
   const handleTimerComplete = () => {
     const nextIntervalIndex = currentIntervalIndex + 1;
 
@@ -78,14 +90,14 @@ export function AdvancedTimer() {
       setTimeLeft(nextInterval.duration);
       timerToasts.nextInterval(nextInterval.name);
     } else {
-      if (currentRound < config.rounds) {
-        setCurrentRound((prev) => prev + 1);
+      if (currentSet < config.sets) {
+        setCurrentSet((prev) => prev + 1);
         setCurrentIntervalIndex(0);
         const firstInterval = config.intervals[0];
         setCurrentType(firstInterval.type === "work" ? "workout" : "rest");
         setTimeLeft(firstInterval.duration);
         timerToasts.nextInterval(
-          `Round ${currentRound + 1} - ${firstInterval.name}`,
+          `Set ${currentSet + 1} - ${firstInterval.name}`,
         );
       } else {
         setState("completed");
@@ -95,7 +107,7 @@ export function AdvancedTimer() {
   };
 
   const resetState = () => {
-    setCurrentRound(1);
+    setCurrentSet(1);
     setCurrentIntervalIndex(0);
   };
 
@@ -141,13 +153,13 @@ export function AdvancedTimer() {
         setCurrentType(nextInterval.type === "work" ? "workout" : "rest");
         setTimeLeft(nextInterval.duration);
         timerToasts.fastForward(`Skipped to ${nextInterval.name}`);
-      } else if (currentRound < config.rounds) {
-        setCurrentRound((prev) => prev + 1);
+      } else if (currentSet < config.sets) {
+        setCurrentSet((prev) => prev + 1);
         setCurrentIntervalIndex(0);
         const firstInterval = config.intervals[0];
         setCurrentType(firstInterval.type === "work" ? "workout" : "rest");
         setTimeLeft(firstInterval.duration);
-        timerToasts.fastForward(`Skipped to round ${currentRound + 1}`);
+        timerToasts.fastForward(`Skipped to set ${currentSet + 1}`);
       }
     }
   };
@@ -174,14 +186,14 @@ export function AdvancedTimer() {
         setCurrentType(prevInterval.type === "work" ? "workout" : "rest");
         setTimeLeft(prevInterval.duration);
         timerToasts.fastBackward(`Jumped back to ${prevInterval.name}`);
-      } else if (currentRound > 1) {
-        setCurrentRound((prev) => prev - 1);
+      } else if (currentSet > 1) {
+        setCurrentSet((prev) => prev - 1);
         const lastIntervalIndex = config.intervals.length - 1;
         setCurrentIntervalIndex(lastIntervalIndex);
         const lastInterval = config.intervals[lastIntervalIndex];
         setCurrentType(lastInterval.type === "work" ? "workout" : "rest");
         setTimeLeft(lastInterval.duration);
-        timerToasts.fastBackward(`Jumped back to round ${currentRound - 1}`);
+        timerToasts.fastBackward(`Jumped back to set ${currentSet - 1}`);
       }
     }
   };
@@ -253,8 +265,8 @@ export function AdvancedTimer() {
           timeLeft={timeLeft}
           state={state}
           currentIntervalName={getCurrentIntervalName()}
-          currentRound={currentRound}
-          totalRounds={config.rounds}
+          currentRound={currentSet}
+          totalRounds={config.sets}
           progress={getTimerProgress()}
           intervalType={currentType}
           showStepCounter={true}
@@ -360,7 +372,7 @@ export function AdvancedTimer() {
             </div>
 
             <div className="flex items-center gap-4">
-              <Label htmlFor="advancedRounds">Total Rounds:</Label>
+              <Label htmlFor="advancedSets">Total Sets:</Label>
               <div className="flex items-center gap-2">
                 <Button
                   variant="outline"
@@ -368,20 +380,20 @@ export function AdvancedTimer() {
                   onClick={() =>
                     setConfig((prev) => ({
                       ...prev,
-                      rounds: Math.max(1, prev.rounds - 1),
+                      sets: Math.max(1, prev.sets - 1),
                     }))
                   }
                 >
                   <Minus size={16} />
                 </Button>
                 <Input
-                  id="advancedRounds"
+                  id="advancedSets"
                   type="number"
-                  value={config.rounds}
+                  value={config.sets}
                   onChange={(e) =>
                     setConfig((prev) => ({
                       ...prev,
-                      rounds: Math.max(1, parseInt(e.target.value) || 1),
+                      sets: Math.max(1, parseInt(e.target.value) || 1),
                     }))
                   }
                   className="w-20 text-center"
@@ -390,7 +402,7 @@ export function AdvancedTimer() {
                   variant="outline"
                   size="icon"
                   onClick={() =>
-                    setConfig((prev) => ({ ...prev, rounds: prev.rounds + 1 }))
+                    setConfig((prev) => ({ ...prev, sets: prev.sets + 1 }))
                   }
                 >
                   <Plus size={16} />
