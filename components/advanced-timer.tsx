@@ -7,18 +7,21 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
-	formatTime,
-	getProgress,
-	TimerState,
-	timerToasts,
+  formatTime,
+  getProgress,
+  TimerState,
+  timerToasts,
 } from "@/lib/timer-utils";
 import {
-	Minus,
-	Plus,
-	Settings,
-	SkipBack,
-	SkipForward,
-	Trash2,
+  Minus,
+  Pause,
+  Play,
+  Plus,
+  Settings,
+  SkipBack,
+  SkipForward,
+  Square,
+  Trash2,
 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 
@@ -375,15 +378,27 @@ export function AdvancedTimer() {
     <div className="relative space-y-6">
       {/* Hide main workout timer tabs when timer is running */}
       {isMinimalisticView && (
-        <div className="h-2 w-full overflow-hidden rounded-full bg-secondary">
-          <div
-            className="h-full bg-primary transition-all duration-300"
-            style={{ width: `${getOverallProgress()}%` }}
-          />
+        <div className="space-y-2">
+          <div className="h-2 w-full overflow-hidden rounded-full bg-secondary">
+            <div
+              className="h-full bg-primary transition-all duration-300"
+              style={{ width: `${getOverallProgress()}%` }}
+            />
+          </div>
+          {/* Total remaining time moved under the bar */}
+          <div className="flex justify-end">
+            <div className="text-xs text-muted-foreground">
+              Total remaining: {formatTime(getTotalTimeRemaining())}
+            </div>
+          </div>
         </div>
       )}
 
-      <Card className={isMinimalisticView ? "flex min-h-[80vh] flex-col" : ""}>
+      <Card
+        className={
+          isMinimalisticView ? "relative flex min-h-[80vh] flex-col" : ""
+        }
+      >
         {!isMinimalisticView ? (
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
@@ -410,28 +425,16 @@ export function AdvancedTimer() {
                   onMouseLeave={handleHoldEnd}
                   onTouchStart={handleHoldStart}
                   onTouchEnd={handleHoldEnd}
-                  variant="default"
+                  variant="ghost"
                   size="sm"
-                  className="relative overflow-hidden bg-green-600 px-4 py-2 text-xs font-medium text-white hover:bg-green-700"
+                  className="relative overflow-hidden px-4 py-2 text-xs font-medium"
                 >
                   <div
-                    className="absolute inset-0 bg-green-800 transition-all duration-100 ease-out"
+                    className="absolute inset-0 bg-muted transition-all duration-100 ease-out"
                     style={{ width: `${holdProgress}%` }}
                   />
                   <span className="relative z-10 flex items-center gap-1">
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      width="12"
-                      height="12"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    >
-                      <rect x="6" y="6" width="12" height="12" />
-                    </svg>
+                    <Square size={12} />
                     Hold to Exit
                   </span>
                 </Button>
@@ -446,36 +449,54 @@ export function AdvancedTimer() {
                 <SkipForward size={16} />
               </Button>
             </div>
-
-            {/* Total remaining time */}
-            <div className="mt-2 flex justify-center">
-              <div className="text-xs text-muted-foreground">
-                Total remaining: {formatTime(getTotalTimeRemaining())}
-              </div>
-            </div>
           </CardHeader>
         )}
 
         <CardContent
           className={
             isMinimalisticView
-              ? "flex flex-1 flex-col justify-center overflow-hidden pt-4"
+              ? "relative flex flex-1 flex-col justify-center overflow-hidden pt-4"
               : "space-y-6"
           }
         >
           {isMinimalisticView ? (
-            <TimerDisplay
-              timeLeft={timeLeft}
-              state={state}
-              currentIntervalName={getCurrentIntervalName()}
-              currentRound={currentSet}
-              totalRounds={config.sets}
-              progress={getTimerProgress()}
-              intervalType={getIntervalTypeForDisplay()}
-              showStepCounter={true}
-              currentStep={currentIntervalIndex + 1}
-              totalSteps={config.intervals.length}
-            />
+            <>
+              <TimerDisplay
+                timeLeft={timeLeft}
+                state={state}
+                currentIntervalName={getCurrentIntervalName()}
+                currentRound={currentSet}
+                totalRounds={config.sets}
+                progress={getTimerProgress()}
+                intervalType={getIntervalTypeForDisplay()}
+                showStepCounter={true}
+                currentStep={currentIntervalIndex + 1}
+                totalSteps={config.intervals.length}
+              />
+
+              {/* Play/Stop buttons in bottom left corner */}
+              <div className="absolute bottom-4 right-4 flex gap-2">
+                {state === "running" ? (
+                  <Button
+                    onClick={pauseTimer}
+                    variant="ghost"
+                    size="icon"
+                    className="h-10 w-10"
+                  >
+                    <Pause size={20} />
+                  </Button>
+                ) : (
+                  <Button
+                    onClick={startTimer}
+                    variant="ghost"
+                    size="icon"
+                    className="h-10 w-10"
+                  >
+                    <Play size={20} />
+                  </Button>
+                )}
+              </div>
+            </>
           ) : (
             <div className="space-y-4 text-center">
               <div className="flex items-center justify-center gap-4">
@@ -682,57 +703,6 @@ export function AdvancedTimer() {
           )}
         </CardContent>
       </Card>
-
-      {/* Floating Pause/Resume Button */}
-      {(state === "running" || state === "paused") && (
-        <div className="fixed bottom-6 right-6 z-50">
-          {state === "running" ? (
-            <Button
-              onClick={pauseTimer}
-              size="lg"
-              variant="secondary"
-              className="h-16 w-16 rounded-full shadow-lg transition-all duration-200 hover:shadow-xl"
-            >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="28"
-                height="28"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                className="text-foreground"
-              >
-                <rect x="6" y="4" width="4" height="16" />
-                <rect x="14" y="4" width="4" height="16" />
-              </svg>
-            </Button>
-          ) : (
-            <Button
-              onClick={startTimer}
-              size="lg"
-              className="h-16 w-16 rounded-full bg-green-600 shadow-lg transition-all duration-200 hover:bg-green-700 hover:shadow-xl"
-            >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="28"
-                height="28"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                className="ml-1 text-white"
-              >
-                <polygon points="5,3 19,12 5,21" />
-              </svg>
-            </Button>
-          )}
-        </div>
-      )}
     </div>
   );
 }
