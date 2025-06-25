@@ -6,22 +6,21 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { useTimerState } from "@/hooks/use-timer-state";
+import { formatTime, getProgress, timerToasts } from "@/lib/timer-utils";
 import {
-  formatTime,
-  getProgress,
-  TimerState,
-  timerToasts,
-} from "@/lib/timer-utils";
+  TimerType,
+  getIntervalTypeForDisplay,
+  mapIntervalTypeToTimerType,
+} from "@/utils/timer-shared";
 import { Minus, Plus, Settings, Trash2 } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
-
-type TimerType = "workout" | "rest";
+import { useEffect, useState } from "react";
 
 interface IntervalStep {
   id: string;
   name: string;
   duration: number;
-  type: "work" | "rest";
+  type: "prepare" | "work" | "rest";
 }
 
 interface AdvancedConfig {
@@ -32,35 +31,43 @@ interface AdvancedConfig {
 export function AdvancedTimer() {
   const [config, setConfig] = useState<AdvancedConfig>({
     intervals: [
-      { id: "1", name: "WORK", duration: 45, type: "work" },
-      { id: "2", name: "REST", duration: 15, type: "rest" },
+      { id: "1", name: "PREPARE", duration: 10, type: "prepare" },
+      { id: "2", name: "WORK", duration: 45, type: "work" },
+      { id: "3", name: "REST", duration: 15, type: "rest" },
     ],
     sets: 3,
   });
 
-  const [state, setState] = useState<TimerState>("idle");
-  const [currentType, setCurrentType] = useState<TimerType>("workout");
+  const [currentType, setCurrentType] = useState<TimerType>("prepare");
   const [timeLeft, setTimeLeft] = useState(0);
   const [currentIntervalIndex, setCurrentIntervalIndex] = useState(0);
-  const [currentSet, setCurrentSet] = useState(1);
-  const [isHolding, setIsHolding] = useState(false);
-  const [holdProgress, setHoldProgress] = useState(0);
-  const holdTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-  const holdIntervalRef = useRef<NodeJS.Timeout | null>(null);
+
+  const {
+    state,
+    currentSet,
+    setCurrentSet,
+    isHolding,
+    holdProgress,
+    startTimer: baseStartTimer,
+    pauseTimer,
+    resetTimer: baseResetTimer,
+    stopTimer: baseStopTimer,
+    handleHoldStart: baseHoldStart,
+    handleHoldEnd,
+    setCompleted,
+  } = useTimerState();
 
   // Initialize timer
   useEffect(() => {
     if (state === "idle") {
       if (config.intervals.length > 0) {
         setTimeLeft(config.intervals[0].duration);
-        setCurrentType(
-          config.intervals[0].type === "work" ? "workout" : "rest",
-        );
+        setCurrentType(mapIntervalTypeToTimerType(config.intervals[0].type));
         setCurrentIntervalIndex(0);
       }
       setCurrentSet(1);
     }
-  }, [config, state]);
+  }, [config, state, setCurrentSet]);
 
   // Timer countdown logic
   useEffect(() => {
@@ -83,7 +90,7 @@ export function AdvancedTimer() {
     if (nextIntervalIndex < config.intervals.length) {
       const nextInterval = config.intervals[nextIntervalIndex];
       setCurrentIntervalIndex(nextIntervalIndex);
-      setCurrentType(nextInterval.type === "work" ? "workout" : "rest");
+      setCurrentType(mapIntervalTypeToTimerType(nextInterval.type));
       setTimeLeft(nextInterval.duration);
       timerToasts.nextInterval(nextInterval.name);
     } else {
@@ -91,14 +98,13 @@ export function AdvancedTimer() {
         setCurrentSet((prev) => prev + 1);
         setCurrentIntervalIndex(0);
         const firstInterval = config.intervals[0];
-        setCurrentType(firstInterval.type === "work" ? "workout" : "rest");
+        setCurrentType(mapIntervalTypeToTimerType(firstInterval.type));
         setTimeLeft(firstInterval.duration);
         timerToasts.nextInterval(
           `Set ${currentSet + 1} - ${firstInterval.name}`,
         );
       } else {
-        setState("completed");
-        timerToasts.complete("🎉 Advanced Workout Complete! Great job!");
+        setCompleted("🎉 Advanced Workout Complete! Great job!");
       }
     }
   };
@@ -108,43 +114,10 @@ export function AdvancedTimer() {
     setCurrentIntervalIndex(0);
   };
 
-  const startTimer = () => {
-    setState("running");
-    timerToasts.start("Advanced Timer started!");
-    // Dispatch event to parent
-    window.dispatchEvent(
-      new CustomEvent("timerStateChange", { detail: { isRunning: true } }),
-    );
-  };
-
-  const pauseTimer = () => {
-    setState("paused");
-    timerToasts.pause();
-    // Keep running state for UI purposes
-    window.dispatchEvent(
-      new CustomEvent("timerStateChange", { detail: { isRunning: true } }),
-    );
-  };
-
-  const resetTimer = () => {
-    setState("idle");
-    resetState();
-    timerToasts.reset();
-    // Dispatch event to parent
-    window.dispatchEvent(
-      new CustomEvent("timerStateChange", { detail: { isRunning: false } }),
-    );
-  };
-
-  const stopTimer = () => {
-    setState("idle");
-    resetState();
-    timerToasts.stop();
-    // Dispatch event to parent
-    window.dispatchEvent(
-      new CustomEvent("timerStateChange", { detail: { isRunning: false } }),
-    );
-  };
+  const startTimer = () => baseStartTimer("Advanced Timer started!");
+  const resetTimer = () => baseResetTimer(resetState);
+  const stopTimer = () => baseStopTimer(resetState);
+  const handleHoldStart = () => baseHoldStart(stopTimer);
 
   const fastForward = () => {
     if (
@@ -163,14 +136,14 @@ export function AdvancedTimer() {
       if (nextIntervalIndex < config.intervals.length) {
         const nextInterval = config.intervals[nextIntervalIndex];
         setCurrentIntervalIndex(nextIntervalIndex);
-        setCurrentType(nextInterval.type === "work" ? "workout" : "rest");
+        setCurrentType(mapIntervalTypeToTimerType(nextInterval.type));
         setTimeLeft(nextInterval.duration);
         timerToasts.fastForward(`Skipped to ${nextInterval.name}`);
       } else if (currentSet < config.sets) {
         setCurrentSet((prev) => prev + 1);
         setCurrentIntervalIndex(0);
         const firstInterval = config.intervals[0];
-        setCurrentType(firstInterval.type === "work" ? "workout" : "rest");
+        setCurrentType(mapIntervalTypeToTimerType(firstInterval.type));
         setTimeLeft(firstInterval.duration);
         timerToasts.fastForward(`Skipped to set ${currentSet + 1}`);
       }
@@ -196,7 +169,7 @@ export function AdvancedTimer() {
       if (prevIntervalIndex >= 0) {
         const prevInterval = config.intervals[prevIntervalIndex];
         setCurrentIntervalIndex(prevIntervalIndex);
-        setCurrentType(prevInterval.type === "work" ? "workout" : "rest");
+        setCurrentType(mapIntervalTypeToTimerType(prevInterval.type));
         setTimeLeft(prevInterval.duration);
         timerToasts.fastBackward(`Jumped back to ${prevInterval.name}`);
       } else if (currentSet > 1) {
@@ -204,46 +177,10 @@ export function AdvancedTimer() {
         const lastIntervalIndex = config.intervals.length - 1;
         setCurrentIntervalIndex(lastIntervalIndex);
         const lastInterval = config.intervals[lastIntervalIndex];
-        setCurrentType(lastInterval.type === "work" ? "workout" : "rest");
+        setCurrentType(mapIntervalTypeToTimerType(lastInterval.type));
         setTimeLeft(lastInterval.duration);
         timerToasts.fastBackward(`Jumped back to set ${currentSet - 1}`);
       }
-    }
-  };
-
-  const handleHoldStart = () => {
-    setIsHolding(true);
-    setHoldProgress(0);
-
-    // Progress animation
-    holdIntervalRef.current = setInterval(() => {
-      setHoldProgress((prev) => {
-        if (prev >= 100) {
-          clearInterval(holdIntervalRef.current!);
-          return 100;
-        }
-        return prev + 10; // 10% every 100ms = 1 second total
-      });
-    }, 100);
-
-    // Actual exit after 1 second
-    holdTimeoutRef.current = setTimeout(() => {
-      stopTimer();
-      setIsHolding(false);
-      setHoldProgress(0);
-    }, 1000);
-  };
-
-  const handleHoldEnd = () => {
-    setIsHolding(false);
-    setHoldProgress(0);
-    if (holdTimeoutRef.current) {
-      clearTimeout(holdTimeoutRef.current);
-      holdTimeoutRef.current = null;
-    }
-    if (holdIntervalRef.current) {
-      clearInterval(holdIntervalRef.current);
-      holdIntervalRef.current = null;
     }
   };
 
@@ -299,11 +236,6 @@ export function AdvancedTimer() {
           : interval,
       ),
     }));
-  };
-
-  // Map timer type to display interval type for color coding
-  const getIntervalTypeForDisplay = (): "workout" | "rest" => {
-    return currentType;
   };
 
   // Calculate overall progress
@@ -375,7 +307,7 @@ export function AdvancedTimer() {
               state={state}
               currentSet={currentSet}
               totalSets={config.sets}
-              intervalType={getIntervalTypeForDisplay()}
+              intervalType={getIntervalTypeForDisplay(currentType)}
               currentIntervalName={getCurrentIntervalName()}
               progress={getTimerProgress()}
               overallProgress={getOverallProgress()}
@@ -535,6 +467,7 @@ export function AdvancedTimer() {
                       }
                       className="rounded-md border px-3 py-2 text-sm"
                     >
+                      <option value="prepare">Prepare</option>
                       <option value="work">Work</option>
                       <option value="rest">Rest</option>
                     </select>

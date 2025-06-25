@@ -6,16 +6,16 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { useTimerState } from "@/hooks/use-timer-state";
+import { formatTime, getProgress, timerToasts } from "@/lib/timer-utils";
 import {
-  formatTime,
-  getProgress,
-  TimerState,
-  timerToasts,
-} from "@/lib/timer-utils";
+  TimerType,
+  formatTimeInput,
+  getIntervalTypeForDisplay,
+  parseTimeInput,
+} from "@/utils/timer-shared";
 import { Dumbbell, Minus, Plus } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
-
-type TimerType = "prepare" | "workout" | "rest";
+import { useEffect, useState } from "react";
 
 interface SimpleTimerConfig {
   workoutTime: number;
@@ -32,14 +32,23 @@ export function SimpleTimer() {
     workoutName: "WORK",
   });
 
-  const [state, setState] = useState<TimerState>("idle");
   const [currentType, setCurrentType] = useState<TimerType>("prepare");
   const [timeLeft, setTimeLeft] = useState(0);
-  const [currentSet, setCurrentSet] = useState(1);
-  const [isHolding, setIsHolding] = useState(false);
-  const [holdProgress, setHoldProgress] = useState(0);
-  const holdTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-  const holdIntervalRef = useRef<NodeJS.Timeout | null>(null);
+
+  const {
+    state,
+    currentSet,
+    setCurrentSet,
+    isHolding,
+    holdProgress,
+    startTimer: baseStartTimer,
+    pauseTimer,
+    resetTimer: baseResetTimer,
+    stopTimer: baseStopTimer,
+    handleHoldStart: baseHoldStart,
+    handleHoldEnd,
+    setCompleted,
+  } = useTimerState();
 
   // Initialize timer
   useEffect(() => {
@@ -48,7 +57,7 @@ export function SimpleTimer() {
       setCurrentType("prepare");
       setCurrentSet(1);
     }
-  }, [config, state]);
+  }, [config, state, setCurrentSet]);
 
   // Timer countdown logic
   useEffect(() => {
@@ -83,8 +92,7 @@ export function SimpleTimer() {
           setCurrentSet((prev) => prev + 1);
           timerToasts.nextRound(currentSet + 1);
         } else {
-          setState("completed");
-          timerToasts.complete("🎉 Workout Complete! Great job!");
+          setCompleted("🎉 Workout Complete! Great job!");
         }
       }
     } else if (currentType === "rest") {
@@ -94,8 +102,7 @@ export function SimpleTimer() {
         setCurrentSet((prev) => prev + 1);
         timerToasts.nextRound(currentSet + 1);
       } else {
-        setState("completed");
-        timerToasts.complete("🎉 Workout Complete! Great job!");
+        setCompleted("🎉 Workout Complete! Great job!");
       }
     }
   };
@@ -106,43 +113,10 @@ export function SimpleTimer() {
     setTimeLeft(5);
   };
 
-  const startTimer = () => {
-    setState("running");
-    timerToasts.start();
-    // Dispatch event to parent
-    window.dispatchEvent(
-      new CustomEvent("timerStateChange", { detail: { isRunning: true } }),
-    );
-  };
-
-  const pauseTimer = () => {
-    setState("paused");
-    timerToasts.pause();
-    // Keep running state for UI purposes
-    window.dispatchEvent(
-      new CustomEvent("timerStateChange", { detail: { isRunning: true } }),
-    );
-  };
-
-  const resetTimer = () => {
-    setState("idle");
-    resetState();
-    timerToasts.reset();
-    // Dispatch event to parent
-    window.dispatchEvent(
-      new CustomEvent("timerStateChange", { detail: { isRunning: false } }),
-    );
-  };
-
-  const stopTimer = () => {
-    setState("idle");
-    resetState();
-    timerToasts.stop();
-    // Dispatch event to parent
-    window.dispatchEvent(
-      new CustomEvent("timerStateChange", { detail: { isRunning: false } }),
-    );
-  };
+  const startTimer = () => baseStartTimer();
+  const resetTimer = () => baseResetTimer(resetState);
+  const stopTimer = () => baseStopTimer(resetState);
+  const handleHoldStart = () => baseHoldStart(stopTimer);
 
   const fastForward = () => {
     if (state === "idle" || state === "completed") return;
@@ -205,59 +179,6 @@ export function SimpleTimer() {
     }
   };
 
-  const handleHoldStart = () => {
-    setIsHolding(true);
-    setHoldProgress(0);
-
-    // Progress animation
-    holdIntervalRef.current = setInterval(() => {
-      setHoldProgress((prev) => {
-        if (prev >= 100) {
-          clearInterval(holdIntervalRef.current!);
-          return 100;
-        }
-        return prev + 10; // 10% every 100ms = 1 second total
-      });
-    }, 100);
-
-    // Actual exit after 1 second
-    holdTimeoutRef.current = setTimeout(() => {
-      stopTimer();
-      setIsHolding(false);
-      setHoldProgress(0);
-    }, 1000);
-  };
-
-  const handleHoldEnd = () => {
-    setIsHolding(false);
-    setHoldProgress(0);
-    if (holdTimeoutRef.current) {
-      clearTimeout(holdTimeoutRef.current);
-      holdTimeoutRef.current = null;
-    }
-    if (holdIntervalRef.current) {
-      clearInterval(holdIntervalRef.current);
-      holdIntervalRef.current = null;
-    }
-  };
-
-  const parseTimeInput = (value: string): number => {
-    // Handle mm:ss format
-    if (value.includes(":")) {
-      const [minutes, seconds] = value.split(":").map(Number);
-      if (!isNaN(minutes) && !isNaN(seconds)) {
-        return Math.max(0, minutes * 60 + seconds);
-      }
-    }
-    // Handle plain seconds
-    const parsed = parseInt(value) || 0;
-    return Math.max(0, parsed);
-  };
-
-  const formatTimeInput = (seconds: number): string => {
-    return formatTime(seconds);
-  };
-
   const updateConfig = (
     field: keyof SimpleTimerConfig,
     value: number | string,
@@ -298,11 +219,6 @@ export function SimpleTimer() {
           ? config.workoutTime
           : config.restTime;
     return getProgress(totalTime, timeLeft);
-  };
-
-  // Map timer type to display interval type for color coding
-  const getIntervalTypeForDisplay = (): "workout" | "rest" | "prepare" => {
-    return currentType;
   };
 
   // Check if we should show minimalistic view
@@ -376,7 +292,7 @@ export function SimpleTimer() {
               state={state}
               currentSet={currentSet}
               totalSets={config.sets}
-              intervalType={getIntervalTypeForDisplay()}
+              intervalType={getIntervalTypeForDisplay(currentType)}
               currentIntervalName={getCurrentIntervalName()}
               progress={getTimerProgress()}
               overallProgress={getOverallProgress()}
