@@ -596,21 +596,44 @@ function SortableItem({
                       items={item.items.map((subItem) => subItem.id)}
                       strategy={verticalListSortingStrategy}
                     >
-                      {item.items.map((subItem) => (
-                        <SortableItem
-                          key={subItem.id}
-                          item={subItem}
-                          onUpdate={onUpdate}
-                          onRemove={onRemove}
-                          onToggleCollapse={onToggleCollapse}
-                          onAddToLoop={onAddToLoop}
-                          onDuplicate={onDuplicate}
-                          onMoveToTop={onMoveToTop}
-                          onMoveToBottom={onMoveToBottom}
-                          activeId={activeId}
-                          isNested={true}
-                          colors={colors}
-                        />
+                      {item.items.map((subItem, idx) => (
+                        <div key={subItem.id} className="relative">
+                          {/* Drop indicator before the first item */}
+                          {activeId && idx === 0 && (
+                            <DroppableZone
+                              id={`drop-before-${subItem.id}`}
+                              className="-my-2 h-4 bg-transparent"
+                              style={{ minHeight: 16 }}
+                            >
+                              {isOver && activeId !== subItem.id && (
+                                <div className="absolute left-0 right-0 top-0 h-2 rounded-full bg-blue-400 opacity-60" />
+                              )}
+                            </DroppableZone>
+                          )}
+                          <SortableItem
+                            item={subItem}
+                            onUpdate={onUpdate}
+                            onRemove={onRemove}
+                            onToggleCollapse={onToggleCollapse}
+                            onAddToLoop={onAddToLoop}
+                            onDuplicate={onDuplicate}
+                            onMoveToTop={onMoveToTop}
+                            onMoveToBottom={onMoveToBottom}
+                            activeId={activeId}
+                            isNested={true}
+                            colors={colors}
+                          />
+                          {/* Drop indicator after each item */}
+                          <DroppableZone
+                            id={`drop-after-${subItem.id}`}
+                            className="-my-2 h-4 bg-transparent"
+                            style={{ minHeight: 16 }}
+                          >
+                            {isOver && activeId !== subItem.id && (
+                              <div className="absolute bottom-0 left-0 right-0 h-2 rounded-full bg-blue-400 opacity-60" />
+                            )}
+                          </DroppableZone>
+                        </div>
                       ))}
                     </SortableContext>
                   </DroppableZone>
@@ -1045,7 +1068,50 @@ export function AdvancedTimer() {
         return { items: newItems, removedItem };
       };
 
-      // Handle dropping into a loop (drop zones) - append to end
+      // Handle dropping from outside into a loop at specific position (PRIORITY)
+      if (overLocation && overLocation.loopId && !activeLocation?.loopId) {
+        setConfig((prev) => {
+          const result = findAndRemoveItem(prev.items);
+          if (result.removedItem && overLocation.loopId) {
+            const insertIntoLoop = (items: WorkoutItem[]): WorkoutItem[] => {
+              return items.map((item) => {
+                if (isLoop(item) && item.id === overLocation.loopId) {
+                  const newItems = [...item.items];
+                  const targetItemIndex = item.items.findIndex(
+                    (subItem) => subItem.id === overIdStr,
+                  );
+
+                  if (targetItemIndex !== -1) {
+                    // Insert after the target item (more intuitive)
+                    newItems.splice(
+                      targetItemIndex + 1,
+                      0,
+                      result.removedItem!,
+                    );
+                  } else {
+                    // Fallback: append to end if target not found
+                    newItems.push(result.removedItem!);
+                  }
+
+                  return { ...item, items: newItems };
+                } else if (isLoop(item)) {
+                  return { ...item, items: insertIntoLoop(item.items) };
+                }
+                return item;
+              });
+            };
+
+            return {
+              ...prev,
+              items: insertIntoLoop(result.items),
+            };
+          }
+          return prev;
+        });
+        return;
+      }
+
+      // Handle dropping into a loop (drop zones) - ONLY for empty areas
       if (overIdStr.startsWith("drop-") || overIdStr.startsWith("empty-")) {
         const targetLoopId = overIdStr
           .replace("drop-", "")
@@ -1119,46 +1185,6 @@ export function AdvancedTimer() {
           };
 
           return { ...prev, items: reorderInLoop(prev.items) };
-        });
-        return;
-      }
-
-      // Handle dropping from outside into a loop at specific position
-      if (overLocation && overLocation.loopId && !activeLocation?.loopId) {
-        setConfig((prev) => {
-          const result = findAndRemoveItem(prev.items);
-          if (result.removedItem && overLocation.loopId) {
-            const insertIntoLoop = (items: WorkoutItem[]): WorkoutItem[] => {
-              return items.map((item) => {
-                if (isLoop(item) && item.id === overLocation.loopId) {
-                  // Find the actual index of the target item within this loop
-                  const targetItemIndex = item.items.findIndex(
-                    (subItem) => subItem.id === overIdStr,
-                  );
-                  const newItems = [...item.items];
-
-                  if (targetItemIndex !== -1) {
-                    // Insert before the target item
-                    newItems.splice(targetItemIndex, 0, result.removedItem!);
-                  } else {
-                    // Fallback: append to end if target not found
-                    newItems.push(result.removedItem!);
-                  }
-
-                  return { ...item, items: newItems };
-                } else if (isLoop(item)) {
-                  return { ...item, items: insertIntoLoop(item.items) };
-                }
-                return item;
-              });
-            };
-
-            return {
-              ...prev,
-              items: insertIntoLoop(result.items),
-            };
-          }
-          return prev;
         });
         return;
       }
