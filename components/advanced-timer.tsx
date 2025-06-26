@@ -315,9 +315,8 @@ function SortableItem({
   if (isLoop(item)) {
     return (
       <div ref={setNodeRef} style={style} className="space-y-2">
-        <DroppableZone
-          id={`drop-${item.id}`}
-          isOver={Boolean(isActiveDropTarget)}
+        {/* Loop Header */}
+        <div
           className={`rounded-lg border-2 border-dashed p-3 ${
             isActiveDropTarget ? "border-blue-400 bg-blue-100" : ""
           }`}
@@ -331,7 +330,7 @@ function SortableItem({
               variant="ghost"
               size="sm"
               onClick={() => onToggleCollapse?.(item.id)}
-              className="h-6 w-6 shrink-0 p-0"
+              className="h-8 w-8 shrink-0 p-0"
             >
               {item.collapsed ? (
                 <ChevronRight size={16} />
@@ -349,7 +348,7 @@ function SortableItem({
             <Input
               value={item.name}
               onChange={(e) => onUpdate(item.id, "name", e.target.value)}
-              className="min-w-0 flex-1"
+              className="min-w-0 min-w-[120px] flex-1"
               placeholder="Loop name"
             />
 
@@ -360,7 +359,7 @@ function SortableItem({
                 onChange={(value) => onUpdate(item.id, "loops", value)}
                 min={1}
                 step={1}
-                className="w-16 sm:w-20"
+                className="w-20 min-w-[80px] sm:w-24"
               />
             </div>
 
@@ -369,7 +368,7 @@ function SortableItem({
                 variant="outline"
                 size="sm"
                 onClick={() => onAddToLoop?.(item.id)}
-                className="gap-1 px-2 sm:px-3"
+                className="min-w-[60px] gap-1 px-2 sm:min-w-[80px] sm:px-3"
               >
                 <Plus size={12} />
                 <span className="hidden sm:inline">Add</span>
@@ -389,39 +388,63 @@ function SortableItem({
               </div>
             </div>
           </div>
-        </DroppableZone>
+        </div>
 
-        {!item.collapsed && item.items.length > 0 && (
-          <div className="ml-2 space-y-2 sm:ml-4">
-            <SortableContext
-              items={item.items.map((subItem) => subItem.id)}
-              strategy={verticalListSortingStrategy}
-            >
-              {item.items.map((subItem) => (
-                <SortableItem
-                  key={subItem.id}
-                  item={subItem}
-                  onUpdate={onUpdate}
-                  onRemove={onRemove}
-                  onToggleCollapse={onToggleCollapse}
-                  onAddToLoop={onAddToLoop}
-                  onDuplicate={onDuplicate}
-                  activeId={activeId}
-                  isNested={true}
-                  colors={colors}
-                />
-              ))}
-            </SortableContext>
+        {/* C-shaped container for loop items */}
+        {!item.collapsed && (
+          <div className="relative">
+            {/* Enhanced C-shape visual wrapper using border style */}
+            <div
+              className="absolute bottom-2 left-6 top-2 w-0 border-l-2 border-dashed"
+              style={{ borderColor: borderColor }}
+            />
+            <div
+              className="absolute left-4 top-2 h-0 w-4 border-t-2 border-dashed"
+              style={{ borderColor: borderColor }}
+            />
+            <div
+              className="absolute bottom-2 left-4 h-0 w-4 border-b-2 border-dashed"
+              style={{ borderColor: borderColor }}
+            />
+
+            {/* Loop content with proper spacing */}
+            <div className="ml-12 mr-4 space-y-2">
+              {item.items.length > 0 ? (
+                <DroppableZone
+                  id={`drop-${item.id}`}
+                  isOver={Boolean(isActiveDropTarget)}
+                  className="space-y-2"
+                >
+                  <SortableContext
+                    items={item.items.map((subItem) => subItem.id)}
+                    strategy={verticalListSortingStrategy}
+                  >
+                    {item.items.map((subItem) => (
+                      <SortableItem
+                        key={subItem.id}
+                        item={subItem}
+                        onUpdate={onUpdate}
+                        onRemove={onRemove}
+                        onToggleCollapse={onToggleCollapse}
+                        onAddToLoop={onAddToLoop}
+                        onDuplicate={onDuplicate}
+                        activeId={activeId}
+                        isNested={true}
+                        colors={colors}
+                      />
+                    ))}
+                  </SortableContext>
+                </DroppableZone>
+              ) : (
+                <DroppableZone
+                  id={`empty-${item.id}`}
+                  className="rounded-lg border-2 border-dashed border-gray-300 bg-gray-50 p-4 text-center text-muted-foreground dark:border-gray-600 dark:bg-gray-800"
+                >
+                  Drop intervals or loops here
+                </DroppableZone>
+              )}
+            </div>
           </div>
-        )}
-
-        {!item.collapsed && item.items.length === 0 && (
-          <DroppableZone
-            id={`empty-${item.id}`}
-            className="ml-2 rounded-lg border-2 border-dashed border-gray-300 bg-gray-50 p-4 text-center text-muted-foreground dark:border-gray-600 dark:bg-gray-800 sm:ml-4"
-          >
-            Drop intervals or loops here
-          </DroppableZone>
         )}
       </div>
     );
@@ -443,7 +466,7 @@ function SortableItem({
         <Input
           value={item.name}
           onChange={(e) => onUpdate(item.id, "name", e.target.value)}
-          className="min-w-0 flex-1"
+          className="min-w-0 min-w-[100px] flex-1"
           placeholder="Exercise name"
         />
 
@@ -452,7 +475,7 @@ function SortableItem({
           onChange={(value) => onUpdate(item.id, "duration", value)}
           min={1}
           step={5}
-          className="w-20 sm:w-28"
+          className="w-24 min-w-[90px] sm:w-32"
         />
 
         <select
@@ -460,7 +483,7 @@ function SortableItem({
           onChange={(e) =>
             handleTypeChange(e.target.value as "prepare" | "work" | "rest")
           }
-          className="w-20 rounded-md border px-2 py-1 text-sm sm:w-24"
+          className="w-20 min-w-[70px] rounded-md border px-2 py-1 text-sm sm:w-24 sm:min-w-[90px]"
         >
           <option value="prepare">Prep</option>
           <option value="work">Work</option>
@@ -481,9 +504,9 @@ function SortableItem({
             variant="ghost"
             size="icon"
             onClick={() => setShowSettings(true)}
-            className="h-6 w-6 sm:h-8 sm:w-8"
+            className="h-8 w-8 sm:h-9 sm:w-9"
           >
-            <Settings size={12} />
+            <Settings size={14} />
           </Button>
         </div>
 
@@ -511,7 +534,7 @@ export function AdvancedTimer() {
       { id: "1", name: "PREPARE", duration: 5, type: "prepare" },
       {
         id: "2",
-        name: "MAIN WORKOUT",
+        name: "LOOP",
         loops: 3,
         items: [
           { id: "3", name: "WORK", duration: 30, type: "work" },
@@ -520,7 +543,7 @@ export function AdvancedTimer() {
         collapsed: false,
       },
     ],
-    sets: 3,
+    sets: 1,
     colors: {
       prepare: "#f97316", // orange
       work: "#22c55e", // green
