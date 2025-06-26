@@ -1,8 +1,11 @@
+"use client";
+
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Palette } from "lucide-react";
+import { Palette, X } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
+import { HexColorPicker } from "react-colorful";
 
 interface ColorPickerProps {
   label: string;
@@ -51,6 +54,8 @@ export function ColorPicker({
     "#6b7280", // gray
     "#000000", // black
     "#ffffff", // white
+    "#f43f5e", // rose
+    "#06b6d4", // cyan
   ];
 
   return (
@@ -76,35 +81,66 @@ export function ColorPicker({
           </Button>
 
           {isOpen && (
-            <div className="absolute left-0 top-full z-50 mt-1 rounded-lg border bg-background p-3 shadow-lg">
-              <div className="space-y-3">
-                <div className="grid grid-cols-5 gap-2">
-                  {presetColors.map((color) => (
-                    <button
-                      key={color}
-                      type="button"
-                      className="h-8 w-8 rounded border-2 border-muted transition-colors hover:border-ring"
-                      style={{ backgroundColor: color }}
-                      onClick={() => {
-                        onChange(color);
-                        setIsOpen(false);
-                      }}
-                    />
-                  ))}
+            <div className="absolute left-0 top-full z-50 mt-1 w-72 max-w-[calc(100vw-2rem)] rounded-lg border bg-background p-3 shadow-lg sm:w-80 sm:p-4">
+              <div className="space-y-3 sm:space-y-4">
+                {/* Header with close button */}
+                <div className="flex items-center justify-between">
+                  <h4 className="text-sm font-medium">Pick a color</h4>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    className="h-6 w-6 shrink-0"
+                    onClick={() => setIsOpen(false)}
+                  >
+                    <X size={12} />
+                  </Button>
                 </div>
 
-                <div className="flex items-center gap-2">
-                  <Input
-                    type="color"
-                    value={value}
-                    onChange={(e) => onChange(e.target.value)}
-                    className="h-8 w-16 cursor-pointer border-0 p-0"
-                  />
+                {/* React Colorful Picker */}
+                <div className="space-y-2">
+                  <div className="w-full [&_.react-colorful]:h-48 [&_.react-colorful]:w-full sm:[&_.react-colorful]:h-56">
+                    <HexColorPicker color={value} onChange={onChange} />
+                  </div>
+                </div>
+
+                {/* Preset colors */}
+                <div className="space-y-2">
+                  <Label className="text-xs text-muted-foreground">
+                    Presets
+                  </Label>
+                  <div className="grid grid-cols-6 gap-1.5 sm:gap-2">
+                    {presetColors.map((color) => (
+                      <button
+                        key={color}
+                        type="button"
+                        className="h-7 w-7 rounded border-2 border-muted transition-all hover:scale-110 hover:border-ring active:scale-95 sm:h-8 sm:w-8"
+                        style={{ backgroundColor: color }}
+                        onClick={() => {
+                          onChange(color);
+                          setIsOpen(false);
+                        }}
+                        title={color}
+                      />
+                    ))}
+                  </div>
+                </div>
+
+                {/* Hex input */}
+                <div className="space-y-2">
+                  <Label className="text-xs text-muted-foreground">
+                    Hex Color
+                  </Label>
                   <Input
                     type="text"
                     value={value}
-                    onChange={(e) => onChange(e.target.value)}
-                    className="flex-1 font-mono text-sm"
+                    onChange={(e) => {
+                      const newValue = e.target.value;
+                      if (newValue.startsWith("#") || newValue === "") {
+                        onChange(newValue);
+                      }
+                    }}
+                    className="font-mono text-sm"
                     placeholder="#000000"
                   />
                 </div>
@@ -116,8 +152,13 @@ export function ColorPicker({
         <Input
           type="text"
           value={value}
-          onChange={(e) => onChange(e.target.value)}
-          className="flex-1 font-mono"
+          onChange={(e) => {
+            const newValue = e.target.value;
+            if (newValue.startsWith("#") || newValue === "") {
+              onChange(newValue);
+            }
+          }}
+          className="flex-1 font-mono text-sm"
           placeholder="#000000"
         />
       </div>

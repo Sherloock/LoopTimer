@@ -41,10 +41,12 @@ import { CSS } from "@dnd-kit/utilities";
 import {
   ChevronDown,
   ChevronRight,
+  Copy,
   GripVertical,
   Plus,
   Repeat,
   Settings,
+  SkipForward,
   Trash2,
 } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
@@ -54,6 +56,8 @@ interface IntervalStep {
   name: string;
   duration: number;
   type: "prepare" | "work" | "rest";
+  color?: string;
+  skipOnLastSet?: boolean;
 }
 
 interface LoopGroup {
@@ -62,7 +66,6 @@ interface LoopGroup {
   loops: number;
   items: WorkoutItem[];
   collapsed?: boolean;
-  skipLast?: boolean;
 }
 
 type WorkoutItem = IntervalStep | LoopGroup;
@@ -88,6 +91,19 @@ const isLoop = (item: WorkoutItem): item is LoopGroup => {
 
 const isInterval = (item: WorkoutItem): item is IntervalStep => {
   return "duration" in item && "type" in item;
+};
+
+const getDefaultNameForType = (type: "prepare" | "work" | "rest"): string => {
+  switch (type) {
+    case "prepare":
+      return "PREPARE";
+    case "work":
+      return "WORK";
+    case "rest":
+      return "REST";
+    default:
+      return "INTERVAL";
+  }
 };
 
 // Simple Checkbox Component
@@ -138,6 +154,100 @@ function DroppableZone({
   );
 }
 
+// Interval Settings Dialog Component
+function IntervalSettingsDialog({
+  isOpen,
+  onClose,
+  item,
+  onUpdate,
+  onDuplicate,
+  onDelete,
+  colors,
+}: {
+  isOpen: boolean;
+  onClose: () => void;
+  item: IntervalStep;
+  onUpdate: (id: string, field: string, value: any) => void;
+  onDuplicate: (id: string) => void;
+  onDelete: (id: string) => void;
+  colors: ColorSettings;
+}) {
+  const itemColor = item.color || colors[item.type];
+
+  return (
+    <Dialog open={isOpen} onOpenChange={onClose}>
+      <DialogContent title={`${item.name} Settings`} className="max-w-md">
+        <DialogClose onClose={onClose} />
+
+        <div className="space-y-4">
+          <div className="space-y-2">
+            <Label>Interval Name</Label>
+            <Input
+              value={item.name}
+              onChange={(e) => onUpdate(item.id, "name", e.target.value)}
+              placeholder="Interval name"
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label>Duration (seconds)</Label>
+            <NumberInput
+              value={item.duration}
+              onChange={(value) => onUpdate(item.id, "duration", value)}
+              min={1}
+              step={5}
+            />
+          </div>
+
+          <ColorPicker
+            label="Custom Color"
+            value={itemColor}
+            onChange={(color) => onUpdate(item.id, "color", color)}
+          />
+
+          <div className="flex items-center gap-2">
+            <Checkbox
+              id={`skip-last-${item.id}`}
+              checked={Boolean(item.skipOnLastSet)}
+              onCheckedChange={(checked) =>
+                onUpdate(item.id, "skipOnLastSet", checked)
+              }
+            />
+            <Label htmlFor={`skip-last-${item.id}`} className="text-sm">
+              Skip on last set
+            </Label>
+          </div>
+
+          <div className="flex gap-2 pt-4">
+            <Button
+              onClick={() => {
+                onDuplicate(item.id);
+                onClose();
+              }}
+              variant="outline"
+              className="flex-1 gap-2"
+            >
+              <Copy size={16} />
+              Duplicate
+            </Button>
+            <Button
+              onClick={() => {
+                onDelete(item.id);
+                onClose();
+              }}
+              variant="destructive"
+              className="flex-1 gap-2"
+            >
+              <Trash2 size={16} />
+              Delete
+            </Button>
+          </div>
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
 // Sortable Item Component
 function SortableItem({
   item,
@@ -145,6 +255,7 @@ function SortableItem({
   onRemove,
   onToggleCollapse,
   onAddToLoop,
+  onDuplicate,
   activeId,
   isNested = false,
   colors,
@@ -154,10 +265,13 @@ function SortableItem({
   onRemove: (id: string) => void;
   onToggleCollapse?: (id: string) => void;
   onAddToLoop?: (loopId: string) => void;
+  onDuplicate?: (id: string) => void;
   activeId: string | null | undefined;
   isNested?: boolean;
   colors: ColorSettings;
 }) {
+  const [showSettings, setShowSettings] = useState(false);
+
   const {
     attributes,
     listeners,
@@ -183,14 +297,20 @@ function SortableItem({
         bgColor: isNested ? `${colors.nestedLoop}20` : `${colors.loop}20`,
       };
     } else {
+      const color = item.color || colors[item.type];
       return {
-        borderColor: colors[item.type],
-        bgColor: `${colors[item.type]}20`,
+        borderColor: color,
+        bgColor: `${color}20`,
       };
     }
   };
 
   const { borderColor, bgColor } = getItemColors();
+
+  const handleTypeChange = (newType: "prepare" | "work" | "rest") => {
+    onUpdate(item.id, "type", newType);
+    onUpdate(item.id, "name", getDefaultNameForType(newType));
+  };
 
   if (isLoop(item)) {
     return (
@@ -206,12 +326,12 @@ function SortableItem({
             backgroundColor: isActiveDropTarget ? "#dbeafe" : bgColor,
           }}
         >
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 sm:gap-3">
             <Button
               variant="ghost"
               size="sm"
               onClick={() => onToggleCollapse?.(item.id)}
-              className="h-6 w-6 p-0"
+              className="h-6 w-6 shrink-0 p-0"
             >
               {item.collapsed ? (
                 <ChevronRight size={16} />
@@ -220,65 +340,59 @@ function SortableItem({
               )}
             </Button>
 
-            <Repeat size={16} style={{ color: borderColor }} />
+            <Repeat
+              size={16}
+              style={{ color: borderColor }}
+              className="shrink-0"
+            />
 
             <Input
               value={item.name}
               onChange={(e) => onUpdate(item.id, "name", e.target.value)}
-              className="flex-1"
+              className="min-w-0 flex-1"
               placeholder="Loop name"
             />
 
-            <div className="flex items-center gap-2">
+            <div className="flex shrink-0 items-center gap-1 sm:gap-2">
               <span className="text-sm text-muted-foreground">×</span>
               <NumberInput
                 value={item.loops}
                 onChange={(value) => onUpdate(item.id, "loops", value)}
                 min={1}
                 step={1}
-                className="w-24"
+                className="w-16 sm:w-20"
               />
             </div>
 
-            <div className="flex items-center gap-2">
-              <Checkbox
-                id={`skip-last-${item.id}`}
-                checked={Boolean(item.skipLast)}
-                onCheckedChange={(checked) =>
-                  onUpdate(item.id, "skipLast", checked)
-                }
-              />
-              <Label htmlFor={`skip-last-${item.id}`} className="text-sm">
-                Skip last
-              </Label>
-            </div>
+            <div className="flex shrink-0 gap-1 sm:gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => onAddToLoop?.(item.id)}
+                className="gap-1 px-2 sm:px-3"
+              >
+                <Plus size={12} />
+                <span className="hidden sm:inline">Add</span>
+              </Button>
 
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => onAddToLoop?.(item.id)}
-              className="gap-1"
-            >
-              <Plus size={12} />
-              Add
-            </Button>
+              <Button
+                variant="outline"
+                size="icon"
+                onClick={() => onRemove(item.id)}
+                className="h-8 w-8 sm:h-9 sm:w-9"
+              >
+                <Trash2 size={16} />
+              </Button>
 
-            <Button
-              variant="outline"
-              size="icon"
-              onClick={() => onRemove(item.id)}
-            >
-              <Trash2 size={16} />
-            </Button>
-
-            <div {...attributes} {...listeners} className="cursor-grab">
-              <GripVertical size={16} className="text-gray-400" />
+              <div {...attributes} {...listeners} className="cursor-grab">
+                <GripVertical size={16} className="text-gray-400" />
+              </div>
             </div>
           </div>
         </DroppableZone>
 
         {!item.collapsed && item.items.length > 0 && (
-          <div className="ml-4 space-y-2">
+          <div className="ml-2 space-y-2 sm:ml-4">
             <SortableContext
               items={item.items.map((subItem) => subItem.id)}
               strategy={verticalListSortingStrategy}
@@ -291,6 +405,7 @@ function SortableItem({
                   onRemove={onRemove}
                   onToggleCollapse={onToggleCollapse}
                   onAddToLoop={onAddToLoop}
+                  onDuplicate={onDuplicate}
                   activeId={activeId}
                   isNested={true}
                   colors={colors}
@@ -303,7 +418,7 @@ function SortableItem({
         {!item.collapsed && item.items.length === 0 && (
           <DroppableZone
             id={`empty-${item.id}`}
-            className="ml-4 rounded-lg border-2 border-dashed border-gray-300 bg-gray-50 p-4 text-center text-muted-foreground dark:border-gray-600 dark:bg-gray-800"
+            className="ml-2 rounded-lg border-2 border-dashed border-gray-300 bg-gray-50 p-4 text-center text-muted-foreground dark:border-gray-600 dark:bg-gray-800 sm:ml-4"
           >
             Drop intervals or loops here
           </DroppableZone>
@@ -313,59 +428,97 @@ function SortableItem({
   }
 
   return (
-    <div
-      ref={setNodeRef}
-      style={{
-        ...style,
-        borderColor,
-        backgroundColor: bgColor,
-      }}
-      className={`flex items-center gap-3 rounded-lg border-2 p-3 ${
-        isNested ? "border-opacity-60" : ""
-      }`}
-    >
-      <Input
-        value={item.name}
-        onChange={(e) => onUpdate(item.id, "name", e.target.value)}
-        className="flex-1"
-        placeholder="Exercise name"
-      />
-
-      <NumberInput
-        value={item.duration}
-        onChange={(value) => onUpdate(item.id, "duration", value)}
-        min={1}
-        step={5}
-        className="w-32"
-      />
-
-      <select
-        value={item.type}
-        onChange={(e) => onUpdate(item.id, "type", e.target.value)}
-        className="rounded-md border px-3 py-2 text-sm"
+    <>
+      <div
+        ref={setNodeRef}
+        style={{
+          ...style,
+          borderColor,
+          backgroundColor: bgColor,
+        }}
+        className={`flex items-center gap-2 rounded-lg border-2 p-2 sm:gap-3 sm:p-3 ${
+          isNested ? "border-opacity-60" : ""
+        }`}
       >
-        <option value="prepare">Prepare</option>
-        <option value="work">Work</option>
-        <option value="rest">Rest</option>
-      </select>
+        <Input
+          value={item.name}
+          onChange={(e) => onUpdate(item.id, "name", e.target.value)}
+          className="min-w-0 flex-1"
+          placeholder="Exercise name"
+        />
 
-      <Button variant="outline" size="icon" onClick={() => onRemove(item.id)}>
-        <Trash2 size={16} />
-      </Button>
+        <NumberInput
+          value={item.duration}
+          onChange={(value) => onUpdate(item.id, "duration", value)}
+          min={1}
+          step={5}
+          className="w-20 sm:w-28"
+        />
 
-      <div {...attributes} {...listeners} className="cursor-grab">
-        <GripVertical size={16} className="text-gray-400" />
+        <select
+          value={item.type}
+          onChange={(e) =>
+            handleTypeChange(e.target.value as "prepare" | "work" | "rest")
+          }
+          className="w-20 rounded-md border px-2 py-1 text-sm sm:w-24"
+        >
+          <option value="prepare">Prep</option>
+          <option value="work">Work</option>
+          <option value="rest">Rest</option>
+        </select>
+
+        <div className="flex shrink-0 gap-1">
+          {item.skipOnLastSet && (
+            <div
+              className="flex h-6 w-6 items-center justify-center rounded bg-orange-100 text-orange-600"
+              title="Skip on last set"
+            >
+              <SkipForward size={12} />
+            </div>
+          )}
+
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => setShowSettings(true)}
+            className="h-6 w-6 sm:h-8 sm:w-8"
+          >
+            <Settings size={12} />
+          </Button>
+        </div>
+
+        <div {...attributes} {...listeners} className="cursor-grab">
+          <GripVertical size={16} className="text-gray-400" />
+        </div>
       </div>
-    </div>
+
+      <IntervalSettingsDialog
+        isOpen={showSettings}
+        onClose={() => setShowSettings(false)}
+        item={item}
+        onUpdate={onUpdate}
+        onDuplicate={() => onDuplicate?.(item.id)}
+        onDelete={() => onRemove(item.id)}
+        colors={colors}
+      />
+    </>
   );
 }
 
 export function AdvancedTimer() {
   const [config, setConfig] = useState<AdvancedConfig>({
     items: [
-      { id: "1", name: "PREPARE", duration: 10, type: "prepare" },
-      { id: "2", name: "WORK", duration: 45, type: "work" },
-      { id: "3", name: "REST", duration: 15, type: "rest" },
+      { id: "1", name: "PREPARE", duration: 5, type: "prepare" },
+      {
+        id: "2",
+        name: "MAIN WORKOUT",
+        loops: 3,
+        items: [
+          { id: "3", name: "WORK", duration: 30, type: "work" },
+          { id: "4", name: "REST", duration: 10, type: "rest" },
+        ],
+        collapsed: false,
+      },
     ],
     sets: 3,
     colors: {
@@ -457,38 +610,29 @@ export function AdvancedTimer() {
               {
                 loopName: item.name,
                 iteration: loop,
-                skipLast: item.skipLast,
                 parentLoop: parentLoopInfo,
               },
               depth + 1,
             );
 
-            // Apply skip last logic - remove last rest if skipLast is true
-            let processedItems = subItems;
-            if (item.skipLast && loop === maxLoops && subItems.length > 0) {
-              // Find the last rest interval and remove it
-              for (let i = processedItems.length - 1; i >= 0; i--) {
-                if (processedItems[i].type === "rest") {
-                  processedItems = processedItems
-                    .slice(0, i)
-                    .concat(processedItems.slice(i + 1));
-                  break;
-                }
-              }
-            }
-
-            processedItems.forEach((subItem, subIndex) => {
+            subItems.forEach((subItem, subIndex) => {
               if (flattened.length < MAX_INTERVALS) {
-                flattened.push({
-                  ...subItem,
-                  originalIndex: index,
-                  loopInfo: {
-                    loopName: item.name,
-                    iteration: loop,
-                    intervalIndex: subIndex,
-                    parentLoop: parentLoopInfo,
-                  },
-                });
+                // Check if this item should be skipped on the last set
+                const isLastSet = currentSet === config.sets;
+                const shouldSkip = isLastSet && subItem.skipOnLastSet;
+
+                if (!shouldSkip) {
+                  flattened.push({
+                    ...subItem,
+                    originalIndex: index,
+                    loopInfo: {
+                      loopName: item.name,
+                      iteration: loop,
+                      intervalIndex: subIndex,
+                      parentLoop: parentLoopInfo,
+                    },
+                  });
+                }
               }
             });
           }
@@ -498,13 +642,8 @@ export function AdvancedTimer() {
       return flattened;
     };
 
-    try {
-      return getFlattenedIntervals(config.items);
-    } catch (error) {
-      console.error("Error flattening intervals:", error);
-      return [];
-    }
-  }, [config.items]); // Only recalculate when items change
+    return getFlattenedIntervals(config.items);
+  }, [config.items, config.sets, currentSet]);
 
   // Drag and drop sensors
   const sensors = useSensors(
@@ -809,7 +948,6 @@ export function AdvancedTimer() {
       loops: 3,
       items: [],
       collapsed: false,
-      skipLast: false,
     };
     setConfig((prev) => ({
       ...prev,
@@ -872,14 +1010,11 @@ export function AdvancedTimer() {
   const toggleLoopCollapse = useCallback((id: string) => {
     const toggleRecursive = (items: WorkoutItem[]): WorkoutItem[] => {
       return items.map((item) => {
-        if (isLoop(item) && item.id === id) {
+        if (item.id === id && isLoop(item)) {
           return { ...item, collapsed: !item.collapsed };
         }
         if (isLoop(item)) {
-          return {
-            ...item,
-            items: toggleRecursive(item.items),
-          };
+          return { ...item, items: toggleRecursive(item.items) };
         }
         return item;
       });
@@ -891,68 +1026,145 @@ export function AdvancedTimer() {
     }));
   }, []);
 
-  const getCurrentIntervalName = useCallback(() => {
-    if (
-      flattenedIntervals.length > 0 &&
-      currentItemIndex < flattenedIntervals.length
-    ) {
-      const current = flattenedIntervals[currentItemIndex];
-      if (current.loopInfo) {
-        return `${current.loopInfo.loopName} (${current.loopInfo.iteration}) - ${current.name}`;
+  const duplicateItem = useCallback((id: string) => {
+    const duplicateRecursive = (items: WorkoutItem[]): WorkoutItem[] => {
+      const newItems: WorkoutItem[] = [];
+
+      for (const item of items) {
+        newItems.push(item);
+
+        if (item.id === id) {
+          // Create a duplicate with a new ID
+          if (isInterval(item)) {
+            const duplicate: IntervalStep = {
+              ...item,
+              id: Date.now().toString() + "-duplicate",
+              name: `${item.name} (Copy)`,
+            };
+            newItems.push(duplicate);
+          } else if (isLoop(item)) {
+            const duplicate: LoopGroup = {
+              ...item,
+              id: Date.now().toString() + "-duplicate",
+              name: `${item.name} (Copy)`,
+              items: [...item.items], // Shallow copy of items
+            };
+            newItems.push(duplicate);
+          }
+        } else if (isLoop(item)) {
+          // Update the last added item if it's a loop
+          const lastItem = newItems[newItems.length - 1];
+          if (isLoop(lastItem)) {
+            newItems[newItems.length - 1] = {
+              ...lastItem,
+              items: duplicateRecursive(lastItem.items),
+            };
+          }
+        }
       }
-      return current.name;
+
+      return newItems;
+    };
+
+    setConfig((prev) => ({
+      ...prev,
+      items: duplicateRecursive(prev.items),
+    }));
+  }, []);
+
+  // Current interval info
+  const currentInterval = useMemo(() => {
+    if (
+      flattenedIntervals.length === 0 ||
+      currentItemIndex >= flattenedIntervals.length
+    ) {
+      return null;
     }
-    return "INTERVAL";
+    return flattenedIntervals[currentItemIndex];
   }, [flattenedIntervals, currentItemIndex]);
 
-  const getTimerProgress = useCallback(() => {
-    if (
-      flattenedIntervals.length > 0 &&
-      currentItemIndex < flattenedIntervals.length
-    ) {
-      const currentInterval = flattenedIntervals[currentItemIndex];
-      return getProgress(currentInterval.duration, timeLeft);
-    }
-    return 0;
-  }, [flattenedIntervals, currentItemIndex, timeLeft]);
+  const getCurrentIntervalName = useCallback(() => {
+    if (!currentInterval) return "PREPARE";
 
+    return currentInterval.loopInfo
+      ? `${currentInterval.loopInfo.loopName} (${currentInterval.loopInfo.iteration}) - ${currentInterval.name}`
+      : currentInterval.name;
+  }, [currentInterval]);
+
+  const getTimerProgress = useCallback(() => {
+    if (!currentInterval) return 0;
+    return getProgress(currentInterval.duration, timeLeft);
+  }, [currentInterval, timeLeft]);
+
+  // Navigation functions
   const fastForward = useCallback(() => {
-    if (
-      state === "idle" ||
-      state === "completed" ||
-      flattenedIntervals.length === 0
-    )
-      return;
+    if (state === "idle" || state === "completed") return;
+
     if (timeLeft > 0) {
       setTimeLeft(0);
       timerToasts.fastForward("Skipped to end of interval");
+    } else if (currentItemIndex < flattenedIntervals.length - 1) {
+      const nextIndex = currentItemIndex + 1;
+      setCurrentItemIndex(nextIndex);
+      const nextInterval = flattenedIntervals[nextIndex];
+      setCurrentType(mapIntervalTypeToTimerType(nextInterval.type));
+      setTimeLeft(nextInterval.duration);
+      timerToasts.fastForward(`Skipped to ${nextInterval.name}`);
+    } else if (currentSet < config.sets) {
+      setCurrentSet((prev) => prev + 1);
+      setCurrentItemIndex(0);
+      const firstInterval = flattenedIntervals[0];
+      setCurrentType(mapIntervalTypeToTimerType(firstInterval.type));
+      setTimeLeft(firstInterval.duration);
+      timerToasts.fastForward(`Skipped to Set ${currentSet + 1}`);
     }
-  }, [state, flattenedIntervals.length, timeLeft]);
+  }, [
+    state,
+    timeLeft,
+    currentItemIndex,
+    flattenedIntervals,
+    currentSet,
+    config.sets,
+    setCurrentSet,
+  ]);
 
   const fastBackward = useCallback(() => {
-    if (
-      state === "idle" ||
-      state === "completed" ||
-      flattenedIntervals.length === 0
-    )
-      return;
+    if (state === "idle" || state === "completed") return;
 
-    const currentInterval = flattenedIntervals[currentItemIndex];
     if (currentInterval && timeLeft < currentInterval.duration) {
       setTimeLeft(currentInterval.duration);
       timerToasts.fastBackward("Jumped to start of interval");
+    } else if (currentItemIndex > 0) {
+      const prevIndex = currentItemIndex - 1;
+      setCurrentItemIndex(prevIndex);
+      const prevInterval = flattenedIntervals[prevIndex];
+      setCurrentType(mapIntervalTypeToTimerType(prevInterval.type));
+      setTimeLeft(prevInterval.duration);
+      timerToasts.fastBackward(`Jumped back to ${prevInterval.name}`);
+    } else if (currentSet > 1) {
+      setCurrentSet((prev) => prev - 1);
+      setCurrentItemIndex(flattenedIntervals.length - 1);
+      const lastInterval = flattenedIntervals[flattenedIntervals.length - 1];
+      setCurrentType(mapIntervalTypeToTimerType(lastInterval.type));
+      setTimeLeft(lastInterval.duration);
+      timerToasts.fastBackward(`Jumped back to Set ${currentSet - 1}`);
     }
-  }, [state, flattenedIntervals, currentItemIndex, timeLeft]);
+  }, [
+    state,
+    currentInterval,
+    timeLeft,
+    currentItemIndex,
+    flattenedIntervals,
+    currentSet,
+    setCurrentSet,
+  ]);
 
-  // Color settings handlers
+  // Color management
   const updateColor = useCallback(
-    (colorType: keyof ColorSettings, color: string) => {
+    (type: keyof ColorSettings, color: string) => {
       setConfig((prev) => ({
         ...prev,
-        colors: {
-          ...prev.colors,
-          [colorType]: color,
-        },
+        colors: { ...prev.colors, [type]: color },
       }));
     },
     [],
@@ -971,28 +1183,23 @@ export function AdvancedTimer() {
     }));
   }, []);
 
+  // Check if we should show minimalistic view
   const isMinimalisticView = state === "running" || state === "paused";
 
-  // Add warning for excessive loops/nesting
-  const showPerformanceWarning = useMemo(() => {
-    return (
-      flattenedIntervals.length > 500 ||
-      config.items.some((item) => isLoop(item) && item.loops > 20)
-    );
-  }, [flattenedIntervals.length, config.items]);
+  // Initialize timer when idle
+  useEffect(() => {
+    if (state === "idle" && flattenedIntervals.length > 0) {
+      const firstInterval = flattenedIntervals[0];
+      setTimeLeft(firstInterval.duration);
+      setCurrentType(mapIntervalTypeToTimerType(firstInterval.type));
+      setCurrentItemIndex(0);
+      setCurrentSet(1);
+    }
+  }, [state, flattenedIntervals, setCurrentSet]);
 
   return (
     <div className="relative space-y-6">
-      {showPerformanceWarning && (
-        <div className="rounded-md border border-yellow-200 bg-yellow-50 p-3">
-          <div className="text-sm text-yellow-800">
-            ⚠️ Warning: Large workout detected ({flattenedIntervals.length}{" "}
-            total steps). Consider reducing loop counts or nesting depth for
-            better performance.
-          </div>
-        </div>
-      )}
-
+      {/* Minimalistic view when timer is running */}
       {isMinimalisticView && (
         <MinimalisticContainer>
           <MinimalisticTimerView
@@ -1005,7 +1212,6 @@ export function AdvancedTimer() {
             progress={getTimerProgress()}
             overallProgress={overallProgress}
             totalTimeRemaining={totalTimeRemaining}
-            showStepCounter={true}
             currentStep={currentItemIndex + 1}
             totalSteps={flattenedIntervals.length}
             isHolding={isHolding}
@@ -1024,7 +1230,7 @@ export function AdvancedTimer() {
         <Card>
           <CardContent className="space-y-6 pt-6">
             <div className="space-y-4 text-center">
-              <div className="flex items-center justify-center gap-4">
+              <div className="flex flex-wrap items-center justify-center gap-4">
                 <StatCard
                   label="Total Session Time"
                   value={formatTime(totalSessionTime)}
@@ -1043,9 +1249,9 @@ export function AdvancedTimer() {
             </div>
 
             <div className="space-y-4">
-              <div className="flex items-center justify-between">
+              <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
                 <h3 className="text-lg font-semibold">Workout Sequence</h3>
-                <div className="flex gap-2">
+                <div className="flex flex-wrap gap-2">
                   <Button
                     onClick={addInterval}
                     variant="outline"
@@ -1095,6 +1301,7 @@ export function AdvancedTimer() {
                         onRemove={removeItem}
                         onToggleCollapse={toggleLoopCollapse}
                         onAddToLoop={addToLoop}
+                        onDuplicate={duplicateItem}
                         activeId={activeId}
                         colors={config.colors}
                       />
@@ -1113,7 +1320,7 @@ export function AdvancedTimer() {
                 </DragOverlay>
               </DndContext>
 
-              <div className="flex items-center gap-4">
+              <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
                 <Label htmlFor="advancedSets">Total Sets:</Label>
                 <NumberInput
                   id="advancedSets"
