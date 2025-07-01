@@ -12,6 +12,8 @@
 		"lint:fix": "next lint --fix",
 		"lint2": "eslint . --ext .js,.jsx,.ts,.tsx",
 		"remove-unused": "npx eslint . --fix --quiet --rule \"unused-imports/no-unused-imports:error\"",
+		"format": "prettier --write .",
+		"format:check": "prettier --check .",
 		"prisma:migrate": "npx prisma migrate dev",
 		"prisma:studio": "npx prisma studio",
 		"prisma:seed": "npx prisma db seed"
@@ -81,6 +83,7 @@
 		"@types/react-dom": "^18",
 		"eslint": "^9",
 		"eslint-config-next": "15.2.1",
+		"eslint-config-prettier": "^10.1.5",
 		"postcss": "^8",
 		"prettier": "^3.4.2",
 		"prettier-plugin-prisma": "^5.0.0",
@@ -91,6 +94,8 @@
 		"typescript": "^5.8.2"
 	},
 	"prettier": {
+		"useTabs": true,
+		"tabWidth": 2,
 		"plugins": [
 			"prettier-plugin-tailwindcss"
 		],

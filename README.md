@@ -33,11 +33,13 @@ A modern, responsive workout timer application built with Next.js 15, TypeScript
 1. **Clone or download the project**
 
 2. **Install dependencies**:
+
    ```bash
    npm install
    ```
 
 3. **Start the development server**:
+
    ```bash
    npm run dev
    ```
@@ -85,9 +87,9 @@ Modify CSS variables in `app/globals.css` to customize the color scheme:
 
 ```css
 :root {
-  --primary: 221.2 83.2% 53.3%;
-  --secondary: 210 40% 96%;
-  /* ... other variables */
+	--primary: 221.2 83.2% 53.3%;
+	--secondary: 210 40% 96%;
+	/* ... other variables */
 }
 ```
 
@@ -97,10 +99,10 @@ Default configurations can be modified in `components/workout-timer.tsx`:
 
 ```typescript
 const [config, setConfig] = useState<TimerConfig>({
-  workoutTime: 45,  // seconds
-  restTime: 15,     // seconds
-  rounds: 8,        // number of rounds
-  customTime: 300,  // seconds
+	workoutTime: 45, // seconds
+	restTime: 15, // seconds
+	rounds: 8, // number of rounds
+	customTime: 300, // seconds
 });
 ```
 
@@ -146,6 +148,7 @@ This project is open source and available under the [MIT License](LICENSE).
 ## 🐛 Bug Reports
 
 If you find a bug, please create an issue with:
+
 - Description of the bug
 - Steps to reproduce
 - Expected vs actual behavior
