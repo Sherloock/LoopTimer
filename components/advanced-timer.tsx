@@ -488,7 +488,11 @@ function SortableItem({
 	if (isLoop(item)) {
 		return (
 			<>
-				<div ref={setNodeRef} style={style} className="space-y-2">
+				<div ref={setNodeRef} style={style} className="relative space-y-2">
+					{/* Item ID badge */}
+					<span className="absolute right-0 top-0 z-10 m-1 select-all rounded bg-muted px-1 text-xs text-muted-foreground">
+						{item.id}
+					</span>
 					{/* Loop Header */}
 					<div
 						className={`rounded-lg border-2 border-dashed p-3 ${
@@ -675,10 +679,14 @@ function SortableItem({
 					borderColor: isOver && activeId ? "#3b82f6" : borderColor,
 					backgroundColor: isOver && activeId ? "#dbeafe" : bgColor,
 				}}
-				className={`flex items-center gap-2 rounded-lg border-2 p-2 transition-all duration-200 sm:gap-3 sm:p-3 ${
+				className={`relative flex items-center gap-2 rounded-lg border-2 p-2 transition-all duration-200 sm:gap-3 sm:p-3 ${
 					isNested ? "border-opacity-60" : ""
 				} ${isOver && activeId ? "border-blue-400 bg-blue-100 shadow-lg" : ""}`}
 			>
+				{/* Item ID badge */}
+				<span className="absolute right-0 top-0 z-10 m-1 select-all rounded bg-muted px-1 text-xs text-muted-foreground">
+					{item.id}
+				</span>
 				<Input
 					value={item.name}
 					onChange={(e) => onUpdate(item.id, "name", e.target.value)}
@@ -1599,18 +1607,18 @@ export function AdvancedTimer() {
 			onDragStart(event) {
 				console.log("onDragStart", event);
 			},
-			onDragMove(event) {
-				console.log("onDragMove", event);
-			},
+			// onDragMove(event) {
+			// 	console.log("onDragMove", event);
+			// },
 			onDragOver(event) {
 				console.log("onDragOver", event);
 			},
 			onDragEnd(event) {
 				console.log("onDragEnd", event);
 			},
-			onDragCancel(event) {
-				console.log("onDragCancel", event);
-			},
+			// onDragCancel(event) {
+			// 	console.log("onDragCancel", event);
+			// },
 		});
 		return null;
 	};
