@@ -607,8 +607,8 @@ function SortableItem({
 													{activeId && idx === 0 && (
 														<DroppableZone
 															id={`drop-before-${subItem.id}`}
-															className="-my-2 h-4 bg-transparent"
-															style={{ minHeight: 16 }}
+															className="-my-3 h-6 bg-transparent"
+															style={{ minHeight: 24 }}
 														>
 															{isOver && activeId !== subItem.id && (
 																<div className="absolute left-0 right-0 top-0 h-2 rounded-full bg-blue-400 opacity-60" />
@@ -631,8 +631,8 @@ function SortableItem({
 													{/* Drop indicator after each item */}
 													<DroppableZone
 														id={`drop-after-${subItem.id}`}
-														className="-my-2 h-4 bg-transparent"
-														style={{ minHeight: 16 }}
+														className="-my-3 h-6 bg-transparent"
+														style={{ minHeight: 24 }}
 													>
 														{isOver && activeId !== subItem.id && (
 															<div className="absolute bottom-0 left-0 right-0 h-2 rounded-full bg-blue-400 opacity-60" />
@@ -1099,6 +1099,11 @@ export function AdvancedTimer() {
 					.replace("drop-", "")
 					.replace("empty-", "");
 
+				// 🛑 Guard: Prevent an item from being dropped into itself
+				if (targetLoopId === activeIdStr) {
+					return; // Exit early – no changes needed
+				}
+
 				setConfig((prev) => {
 					const result = findAndRemoveItem(prev.items);
 					if (result.removedItem && targetLoopId !== activeIdStr) {
@@ -1116,19 +1121,35 @@ export function AdvancedTimer() {
 				return;
 			}
 
-			// NEW: Handle dropping directly onto a loop header (when user drops on the loop itself)
+			// Handle dropping directly onto a loop HEADER – insert as FIRST item of that loop
 			const overItemObj = findItemById(config.items, overIdStr);
 			if (overItemObj && isLoop(overItemObj)) {
+				// 🛑 Guard: Don't allow a loop to be inserted into itself
+				if (overItemObj.id === activeIdStr) {
+					return; // Exit early – no changes needed
+				}
+
 				setConfig((prev) => {
 					const result = findAndRemoveItem(prev.items);
 					if (result.removedItem && overIdStr !== activeIdStr) {
+						const insertAtStart = (items: WorkoutItem[]): WorkoutItem[] => {
+							return items.map((itm) => {
+								if (isLoop(itm) && itm.id === overItemObj.id) {
+									return {
+										...itm,
+										items: [result.removedItem!, ...itm.items],
+									};
+								}
+								if (isLoop(itm)) {
+									return { ...itm, items: insertAtStart(itm.items) };
+								}
+								return itm;
+							});
+						};
+
 						return {
 							...prev,
-							items: addItemToLoop(
-								result.items,
-								overItemObj.id,
-								result.removedItem,
-							),
+							items: insertAtStart(result.items),
 						};
 					}
 					return prev;
@@ -1868,8 +1889,8 @@ export function AdvancedTimer() {
 												{activeId && idx === 0 && (
 													<DroppableZone
 														id={`drop-before-${item.id}`}
-														className="-my-2 h-4 bg-transparent"
-														style={{ minHeight: 16 }}
+														className="-my-3 h-6 bg-transparent"
+														style={{ minHeight: 24 }}
 													>
 														<span className="sr-only">before-drop</span>
 													</DroppableZone>
@@ -1891,8 +1912,8 @@ export function AdvancedTimer() {
 												{/* Drop indicator after each root item */}
 												<DroppableZone
 													id={`drop-after-${item.id}`}
-													className="-my-2 h-4 bg-transparent"
-													style={{ minHeight: 16 }}
+													className="-my-3 h-6 bg-transparent"
+													style={{ minHeight: 24 }}
 												>
 													<span className="sr-only">after-drop</span>
 												</DroppableZone>
