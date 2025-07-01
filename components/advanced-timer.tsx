@@ -12,6 +12,7 @@ import { Label } from "@/components/ui/label";
 import { NumberInput } from "@/components/ui/number-input";
 import { StatCard } from "@/components/ui/stat-card";
 import { useTimerState } from "@/hooks/use-timer-state";
+import { playSound, SOUND_OPTIONS, speakText } from "@/lib/sound-utils";
 import { formatTime, getProgress, timerToasts } from "@/lib/timer-utils";
 import {
 	getIntervalTypeForDisplay,
@@ -49,7 +50,7 @@ import {
 	Settings,
 	Trash2,
 } from "lucide-react";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 interface IntervalStep {
 	id: string;
@@ -58,6 +59,7 @@ interface IntervalStep {
 	type: "prepare" | "work" | "rest";
 	color?: string;
 	skipOnLastLoop?: boolean;
+	sound?: string;
 }
 
 interface LoopGroup {
@@ -82,6 +84,8 @@ interface ColorSettings {
 interface AdvancedConfig {
 	items: WorkoutItem[];
 	colors: ColorSettings;
+	defaultAlarm: string;
+	speakNames: boolean;
 }
 
 // Helper functions
@@ -346,6 +350,37 @@ function IntervalSettingsDialog({
 							<option value="work">Work</option>
 							<option value="rest">Rest</option>
 						</select>
+					</div>
+
+					{/* Sound selector */}
+					<div className="space-y-2">
+						<Label>Sound</Label>
+						<div className="flex gap-2">
+							<select
+								value={item.sound ?? ""}
+								onChange={(e) => {
+									const val = e.target.value || undefined;
+									onUpdate(item.id, "sound", val);
+									playSound(val);
+								}}
+								className="flex-1 rounded-md border px-3 py-2"
+							>
+								<option value="">Default</option>
+								{SOUND_OPTIONS.map((opt) => (
+									<option key={opt.value} value={opt.value}>
+										{opt.label}
+									</option>
+								))}
+							</select>
+
+							<Button
+								variant="outline"
+								size="icon"
+								onClick={() => playSound(item.sound || undefined)}
+							>
+								▶
+							</Button>
+						</div>
 					</div>
 
 					<ColorPicker
@@ -761,6 +796,8 @@ export function AdvancedTimer() {
 			loop: "#8b5cf6", // purple
 			nestedLoop: "#f59e0b", // amber
 		},
+		defaultAlarm: "beep-1x",
+		speakNames: true,
 	});
 
 	// Helper function to generate next ID
@@ -1442,6 +1479,11 @@ export function AdvancedTimer() {
 		const nextIndex = currentItemIndex + 1;
 
 		if (nextIndex < flattenedIntervals.length) {
+			// Play sound for next interval only if it has a custom sound
+			const nextIntervalPreview = flattenedIntervals[nextIndex];
+			if (nextIntervalPreview.sound) {
+				playSound(nextIntervalPreview.sound);
+			}
 			const nextInterval = flattenedIntervals[nextIndex];
 			setCurrentItemIndex(nextIndex);
 			setCurrentType(mapIntervalTypeToTimerType(nextInterval.type));
@@ -1453,9 +1495,10 @@ export function AdvancedTimer() {
 
 			timerToasts.nextInterval(intervalName);
 		} else {
+			playSound(config.defaultAlarm);
 			setCompleted("🎉 Advanced Workout Complete! Great job!");
 		}
-	}, [currentItemIndex, flattenedIntervals, setCompleted]);
+	}, [currentItemIndex, flattenedIntervals, setCompleted, config.defaultAlarm]);
 
 	const resetState = useCallback(() => {
 		setCurrentSet(1);
@@ -1530,6 +1573,7 @@ export function AdvancedTimer() {
 			name: "NEW EXERCISE",
 			duration: 30,
 			type: "work",
+			sound: undefined,
 		};
 		setConfig((prev) => ({
 			...prev,
@@ -1558,6 +1602,7 @@ export function AdvancedTimer() {
 				name: "NEW EXERCISE",
 				duration: 30,
 				type: "work",
+				sound: undefined,
 			};
 
 			setConfig((prev) => ({
@@ -1788,6 +1833,53 @@ export function AdvancedTimer() {
 		return null;
 	};
 
+	// ======= Countdown beep logic (3-2-1) =======
+	const playedSecondsRef = useRef<Set<number>>(new Set());
+
+	// Clear played seconds when interval changes
+	useEffect(() => {
+		playedSecondsRef.current.clear();
+	}, [currentInterval]);
+
+	useEffect(() => {
+		if (!currentInterval) return;
+
+		const soundKey = (currentInterval.sound || config.defaultAlarm) as string;
+		// Handle any category countdown based on variant pattern
+		const [category, variant] = soundKey.split("-") as [
+			string,
+			string | undefined,
+		];
+
+		let beepCount = 1;
+		if (variant === "2x") beepCount = 2;
+		else if (variant === "3x") beepCount = 3;
+		else beepCount = 1; // short & 1x
+
+		if (timeLeft >= 1 && timeLeft <= 3 && timeLeft <= beepCount) {
+			if (!playedSecondsRef.current.has(timeLeft)) {
+				playedSecondsRef.current.add(timeLeft);
+				const shortKey = `${category}-short`;
+				playSound(shortKey);
+			}
+		}
+	}, [timeLeft, currentInterval, config.defaultAlarm]);
+
+	// ======= Speak interval names while running =======
+	useEffect(() => {
+		if (!config.speakNames) return;
+		if (state !== "running") return;
+		if (
+			flattenedIntervals.length === 0 ||
+			currentItemIndex >= flattenedIntervals.length
+		)
+			return;
+
+		const interval = flattenedIntervals[currentItemIndex];
+		const name = interval.name;
+		speakText(name);
+	}, [state, currentItemIndex, flattenedIntervals, config.speakNames]);
+
 	return (
 		<div className="relative space-y-6">
 			{/* Minimalistic view when timer is running */}
@@ -1992,6 +2084,53 @@ export function AdvancedTimer() {
 								value={config.colors.nestedLoop}
 								onChange={(color) => updateColor("nestedLoop", color)}
 							/>
+						</div>
+
+						{/* Alarm settings */}
+						<div className="space-y-4">
+							<h3 className="text-base font-medium">Alarm Sound</h3>
+
+							<div className="flex gap-2">
+								<select
+									value={config.defaultAlarm}
+									onChange={(e) => {
+										setConfig((prev) => ({
+											...prev,
+											defaultAlarm: e.target.value,
+										}));
+										playSound(e.target.value);
+									}}
+									className="flex-1 rounded-md border px-3 py-2"
+								>
+									{SOUND_OPTIONS.map((opt) => (
+										<option key={opt.value} value={opt.value}>
+											{opt.label}
+										</option>
+									))}
+								</select>
+
+								<Button
+									variant="outline"
+									size="icon"
+									onClick={() => playSound(config.defaultAlarm)}
+								>
+									▶
+								</Button>
+							</div>
+						</div>
+
+						{/* Speak names toggle */}
+						<div className="flex items-center gap-2">
+							<Checkbox
+								id="speak-names"
+								checked={config.speakNames}
+								onCheckedChange={(checked) =>
+									setConfig((prev) => ({ ...prev, speakNames: !!checked }))
+								}
+							/>
+							<Label htmlFor="speak-names" className="text-sm">
+								Speak interval names
+							</Label>
 						</div>
 
 						<div className="flex gap-2 pt-4">
