@@ -281,11 +281,11 @@ export function SimpleTimer() {
 			{!isMinimalisticView && (
 				<Card>
 					{/* <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Dumbbell size={20} />
-              Simple Workout Timer
-            </CardTitle>
-          </CardHeader> */}
+						<CardTitle className="flex items-center gap-2">
+							<Dumbbell size={20} />
+							Simple Workout Timer
+						</CardTitle>
+					</CardHeader> */}
 
 					<CardContent className="space-y-6 pt-6">
 						<div className="space-y-4 text-center">
@@ -302,19 +302,19 @@ export function SimpleTimer() {
 							</div>
 
 							{/* <div className="mx-auto grid max-w-md grid-cols-2 gap-4">
-                <div className="text-center">
-                  <div className="text-sm text-muted-foreground">Work Time</div>
-                  <div className="text-lg font-semibold text-green-500">
-                    {formatTime(config.workoutTime)}
-                  </div>
-                </div>
-                <div className="text-center">
-                  <div className="text-sm text-muted-foreground">Rest Time</div>
-                  <div className="text-lg font-semibold text-blue-500">
-                    {config.restTime > 0 ? formatTime(config.restTime) : "None"}
-                  </div>
-                </div>
-              </div> */}
+								<div className="text-center">
+									<div className="text-sm text-muted-foreground">Work Time</div>
+									<div className="text-lg font-semibold text-green-500">
+										{formatTime(config.workoutTime)}
+									</div>
+								</div>
+								<div className="text-center">
+									<div className="text-sm text-muted-foreground">Rest Time</div>
+									<div className="text-lg font-semibold text-blue-500">
+										{config.restTime > 0 ? formatTime(config.restTime) : "None"}
+									</div>
+								</div>
+							</div> */}
 						</div>
 
 						<div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">

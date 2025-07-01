@@ -8,13 +8,13 @@ export default function HomePage() {
 			<main className="container mx-auto px-4 py-8">
 				<div className="mx-auto max-w-4xl">
 					{/* <div className="text-center mb-8">
-            <h1 className="text-4xl font-bold text-foreground mb-4">
-              Workout Timer
-            </h1>
-            <p className="text-muted-foreground text-lg">
-              Maximize your training with precision timing
-            </p>
-          </div> */}
+						<h1 className="text-4xl font-bold text-foreground mb-4">
+							Workout Timer
+						</h1>
+						<p className="text-muted-foreground text-lg">
+							Maximize your training with precision timing
+						</p>
+					</div> */}
 					<WorkoutTimer />
 				</div>
 			</main>
