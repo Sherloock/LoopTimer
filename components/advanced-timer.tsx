@@ -1088,8 +1088,13 @@ export function AdvancedTimer() {
 				return { items: newItems, removedItem };
 			};
 
-			// Handle dropping into a loop (drop zones) - ONLY for empty areas
-			if (overIdStr.startsWith("drop-") || overIdStr.startsWith("empty-")) {
+			// Handle dropping into a loop (drop zones) - ONLY for empty loop areas (not before/after indicators)
+			if (
+				(overIdStr.startsWith("drop-") &&
+					!overIdStr.startsWith("drop-before-") &&
+					!overIdStr.startsWith("drop-after-")) ||
+				overIdStr.startsWith("empty-")
+			) {
 				const targetLoopId = overIdStr
 					.replace("drop-", "")
 					.replace("empty-", "");
@@ -1102,6 +1107,26 @@ export function AdvancedTimer() {
 							items: addItemToLoop(
 								result.items,
 								targetLoopId,
+								result.removedItem,
+							),
+						};
+					}
+					return prev;
+				});
+				return;
+			}
+
+			// NEW: Handle dropping directly onto a loop header (when user drops on the loop itself)
+			const overItemObj = findItemById(config.items, overIdStr);
+			if (overItemObj && isLoop(overItemObj)) {
+				setConfig((prev) => {
+					const result = findAndRemoveItem(prev.items);
+					if (result.removedItem && overIdStr !== activeIdStr) {
+						return {
+							...prev,
+							items: addItemToLoop(
+								result.items,
+								overItemObj.id,
 								result.removedItem,
 							),
 						};
@@ -1218,6 +1243,58 @@ export function AdvancedTimer() {
 							...prev,
 							items: [...result.items, result.removedItem],
 						};
+					}
+					return prev;
+				});
+				return;
+			}
+
+			// Handle dropping an item directly onto another item (insert after the target)
+			if (overLocation && activeIdStr !== overIdStr) {
+				setConfig((prev) => {
+					const result = findAndRemoveItem(prev.items);
+					if (result.removedItem) {
+						// If the target is inside a loop, insert it into that loop after the target
+						if (overLocation.loopId) {
+							const insertIntoLoopAfterTarget = (
+								items: WorkoutItem[],
+							): WorkoutItem[] => {
+								return items.map((item) => {
+									if (isLoop(item) && item.id === overLocation.loopId) {
+										const newItems = [...item.items];
+										const targetIndex = newItems.findIndex(
+											(subItem) => subItem.id === overIdStr,
+										);
+
+										if (targetIndex !== -1) {
+											// Insert after the target item
+											newItems.splice(targetIndex + 1, 0, result.removedItem!);
+										} else {
+											// Fallback: append to end
+											newItems.push(result.removedItem!);
+										}
+
+										return { ...item, items: newItems };
+									} else if (isLoop(item)) {
+										return {
+											...item,
+											items: insertIntoLoopAfterTarget(item.items),
+										};
+									}
+									return item;
+								});
+							};
+
+							return {
+								...prev,
+								items: insertIntoLoopAfterTarget(result.items),
+							};
+						} else {
+							// If the target is at root level, insert after it
+							const newItems = [...result.items];
+							newItems.splice(overLocation.index + 1, 0, result.removedItem!);
+							return { ...prev, items: newItems };
+						}
 					}
 					return prev;
 				});
@@ -1785,20 +1862,41 @@ export function AdvancedTimer() {
 										id="main-container"
 										className="max-h-96 space-y-3 overflow-y-auto"
 									>
-										{config.items.map((item) => (
-											<SortableItem
-												key={item.id}
-												item={item}
-												onUpdate={updateItem}
-												onRemove={removeItem}
-												onToggleCollapse={toggleLoopCollapse}
-												onAddToLoop={addToLoop}
-												onDuplicate={duplicateItem}
-												onMoveToTop={moveToTop}
-												onMoveToBottom={moveToBottom}
-												activeId={activeId}
-												colors={config.colors}
-											/>
+										{config.items.map((item, idx) => (
+											<div key={item.id} className="relative">
+												{/* Drop indicator before the first root item */}
+												{activeId && idx === 0 && (
+													<DroppableZone
+														id={`drop-before-${item.id}`}
+														className="-my-2 h-4 bg-transparent"
+														style={{ minHeight: 16 }}
+													>
+														<span className="sr-only">before-drop</span>
+													</DroppableZone>
+												)}
+
+												<SortableItem
+													item={item}
+													onUpdate={updateItem}
+													onRemove={removeItem}
+													onToggleCollapse={toggleLoopCollapse}
+													onAddToLoop={addToLoop}
+													onDuplicate={duplicateItem}
+													onMoveToTop={moveToTop}
+													onMoveToBottom={moveToBottom}
+													activeId={activeId}
+													colors={config.colors}
+												/>
+
+												{/* Drop indicator after each root item */}
+												<DroppableZone
+													id={`drop-after-${item.id}`}
+													className="-my-2 h-4 bg-transparent"
+													style={{ minHeight: 16 }}
+												>
+													<span className="sr-only">after-drop</span>
+												</DroppableZone>
+											</div>
 										))}
 									</DroppableZone>
 								</SortableContext>
