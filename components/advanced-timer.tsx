@@ -738,6 +738,8 @@ function SortableItem({
 }
 
 export function AdvancedTimer() {
+	const [nextId, setNextId] = useState(5); // Start from 5 since we have items with IDs 1-4
+
 	const [config, setConfig] = useState<AdvancedConfig>({
 		items: [
 			{ id: "1", name: "PREPARE", duration: 5, type: "prepare" },
@@ -760,6 +762,13 @@ export function AdvancedTimer() {
 			nestedLoop: "#f59e0b", // amber
 		},
 	});
+
+	// Helper function to generate next ID
+	const generateId = useCallback(() => {
+		const id = nextId.toString();
+		setNextId((prev) => prev + 1);
+		return id;
+	}, [nextId]);
 
 	const [activeId, setActiveId] = useState<string | null>(null);
 	const [currentType, setCurrentType] = useState<TimerType>("prepare");
@@ -1079,49 +1088,6 @@ export function AdvancedTimer() {
 				return { items: newItems, removedItem };
 			};
 
-			// Handle dropping from outside into a loop at specific position (PRIORITY)
-			if (overLocation && overLocation.loopId && !activeLocation?.loopId) {
-				setConfig((prev) => {
-					const result = findAndRemoveItem(prev.items);
-					if (result.removedItem && overLocation.loopId) {
-						const insertIntoLoop = (items: WorkoutItem[]): WorkoutItem[] => {
-							return items.map((item) => {
-								if (isLoop(item) && item.id === overLocation.loopId) {
-									const newItems = [...item.items];
-									const targetItemIndex = item.items.findIndex(
-										(subItem) => subItem.id === overIdStr,
-									);
-
-									if (targetItemIndex !== -1) {
-										// Insert after the target item (more intuitive)
-										newItems.splice(
-											targetItemIndex + 1,
-											0,
-											result.removedItem!,
-										);
-									} else {
-										// Fallback: append to end if target not found
-										newItems.push(result.removedItem!);
-									}
-
-									return { ...item, items: newItems };
-								} else if (isLoop(item)) {
-									return { ...item, items: insertIntoLoop(item.items) };
-								}
-								return item;
-							});
-						};
-
-						return {
-							...prev,
-							items: insertIntoLoop(result.items),
-						};
-					}
-					return prev;
-				});
-				return;
-			}
-
 			// Handle dropping into a loop (drop zones) - ONLY for empty areas
 			if (overIdStr.startsWith("drop-") || overIdStr.startsWith("empty-")) {
 				const targetLoopId = overIdStr
@@ -1139,6 +1105,104 @@ export function AdvancedTimer() {
 								result.removedItem,
 							),
 						};
+					}
+					return prev;
+				});
+				return;
+			}
+
+			// Handle drop-before and drop-after zones specifically
+			if (
+				overIdStr.startsWith("drop-before-") ||
+				overIdStr.startsWith("drop-after-")
+			) {
+				const targetItemId = overIdStr
+					.replace("drop-before-", "")
+					.replace("drop-after-", "");
+
+				// Don't allow dropping an item into its own drop zone
+				if (targetItemId === activeIdStr) {
+					return;
+				}
+
+				setConfig((prev) => {
+					const result = findAndRemoveItem(prev.items);
+					if (result.removedItem) {
+						// Find the target item and its parent loop
+						const findTargetAndParent = (
+							items: WorkoutItem[],
+							targetId: string,
+							parentLoopId?: string,
+						): {
+							targetItem: WorkoutItem | null;
+							parentLoopId?: string;
+							index: number;
+						} | null => {
+							for (let i = 0; i < items.length; i++) {
+								const item = items[i];
+								if (item.id === targetId) {
+									return { targetItem: item, parentLoopId, index: i };
+								}
+								if (isLoop(item)) {
+									const found = findTargetAndParent(
+										item.items,
+										targetId,
+										item.id,
+									);
+									if (found) return found;
+								}
+							}
+							return null;
+						};
+
+						const targetInfo = findTargetAndParent(result.items, targetItemId);
+
+						if (targetInfo && targetInfo.parentLoopId) {
+							// Insert into the parent loop at the correct position
+							const insertIntoLoopAtPosition = (
+								items: WorkoutItem[],
+							): WorkoutItem[] => {
+								return items.map((item) => {
+									if (isLoop(item) && item.id === targetInfo.parentLoopId) {
+										const newItems = [...item.items];
+										const targetIndex = newItems.findIndex(
+											(subItem) => subItem.id === targetItemId,
+										);
+
+										if (targetIndex !== -1) {
+											const insertIndex = overIdStr.startsWith("drop-before-")
+												? targetIndex
+												: targetIndex + 1;
+											newItems.splice(insertIndex, 0, result.removedItem!);
+										} else {
+											// Fallback: append to end
+											newItems.push(result.removedItem!);
+										}
+
+										return { ...item, items: newItems };
+									} else if (isLoop(item)) {
+										return {
+											...item,
+											items: insertIntoLoopAtPosition(item.items),
+										};
+									}
+									return item;
+								});
+							};
+
+							return {
+								...prev,
+								items: insertIntoLoopAtPosition(result.items),
+							};
+						} else if (targetInfo) {
+							// Insert at root level
+							const newItems = [...result.items];
+							const insertIndex = overIdStr.startsWith("drop-before-")
+								? targetInfo.index
+								: targetInfo.index + 1;
+							newItems.splice(insertIndex, 0, result.removedItem!);
+							return { ...prev, items: newItems };
+						}
 					}
 					return prev;
 				});
@@ -1364,7 +1428,7 @@ export function AdvancedTimer() {
 	// Item management functions with useCallback for performance
 	const addInterval = useCallback(() => {
 		const newInterval: IntervalStep = {
-			id: Date.now().toString(),
+			id: generateId(),
 			name: "NEW EXERCISE",
 			duration: 30,
 			type: "work",
@@ -1373,11 +1437,11 @@ export function AdvancedTimer() {
 			...prev,
 			items: [...prev.items, newInterval],
 		}));
-	}, []);
+	}, [generateId]);
 
 	const addLoop = useCallback(() => {
 		const newLoop: LoopGroup = {
-			id: Date.now().toString(),
+			id: generateId(),
 			name: "NEW LOOP",
 			loops: 3,
 			items: [],
@@ -1387,12 +1451,12 @@ export function AdvancedTimer() {
 			...prev,
 			items: [...prev.items, newLoop],
 		}));
-	}, []);
+	}, [generateId]);
 
 	const addToLoop = useCallback(
 		(loopId: string) => {
 			const newInterval: IntervalStep = {
-				id: Date.now().toString(),
+				id: generateId(),
 				name: "NEW EXERCISE",
 				duration: 30,
 				type: "work",
@@ -1403,7 +1467,7 @@ export function AdvancedTimer() {
 				items: addItemToLoop(prev.items, loopId, newInterval),
 			}));
 		},
-		[addItemToLoop],
+		[addItemToLoop, generateId],
 	);
 
 	const removeItem = useCallback(
@@ -1460,51 +1524,54 @@ export function AdvancedTimer() {
 		}));
 	}, []);
 
-	const duplicateItem = useCallback((id: string) => {
-		const duplicateRecursive = (items: WorkoutItem[]): WorkoutItem[] => {
-			const newItems: WorkoutItem[] = [];
+	const duplicateItem = useCallback(
+		(id: string) => {
+			const duplicateRecursive = (items: WorkoutItem[]): WorkoutItem[] => {
+				const newItems: WorkoutItem[] = [];
 
-			for (const item of items) {
-				newItems.push(item);
+				for (const item of items) {
+					newItems.push(item);
 
-				if (item.id === id) {
-					// Create a duplicate with a new ID
-					if (isInterval(item)) {
-						const duplicate: IntervalStep = {
-							...item,
-							id: Date.now().toString() + "-duplicate",
-							name: `${item.name} (Copy)`,
-						};
-						newItems.push(duplicate);
+					if (item.id === id) {
+						// Create a duplicate with a new ID
+						if (isInterval(item)) {
+							const duplicate: IntervalStep = {
+								...item,
+								id: generateId(),
+								name: `${item.name} (Copy)`,
+							};
+							newItems.push(duplicate);
+						} else if (isLoop(item)) {
+							const duplicate: LoopGroup = {
+								...item,
+								id: generateId(),
+								name: `${item.name} (Copy)`,
+								items: [...item.items], // Shallow copy of items
+							};
+							newItems.push(duplicate);
+						}
 					} else if (isLoop(item)) {
-						const duplicate: LoopGroup = {
-							...item,
-							id: Date.now().toString() + "-duplicate",
-							name: `${item.name} (Copy)`,
-							items: [...item.items], // Shallow copy of items
-						};
-						newItems.push(duplicate);
-					}
-				} else if (isLoop(item)) {
-					// Update the last added item if it's a loop
-					const lastItem = newItems[newItems.length - 1];
-					if (isLoop(lastItem)) {
-						newItems[newItems.length - 1] = {
-							...lastItem,
-							items: duplicateRecursive(lastItem.items),
-						};
+						// Update the last added item if it's a loop
+						const lastItem = newItems[newItems.length - 1];
+						if (isLoop(lastItem)) {
+							newItems[newItems.length - 1] = {
+								...lastItem,
+								items: duplicateRecursive(lastItem.items),
+							};
+						}
 					}
 				}
-			}
 
-			return newItems;
-		};
+				return newItems;
+			};
 
-		setConfig((prev) => ({
-			...prev,
-			items: duplicateRecursive(prev.items),
-		}));
-	}, []);
+			setConfig((prev) => ({
+				...prev,
+				items: duplicateRecursive(prev.items),
+			}));
+		},
+		[generateId],
+	);
 
 	// Current interval info
 	const currentInterval = useMemo(() => {
