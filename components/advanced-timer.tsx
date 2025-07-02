@@ -12,7 +12,7 @@ import { Label } from "@/components/ui/label";
 import { NumberInput } from "@/components/ui/number-input";
 import { StatCard } from "@/components/ui/stat-card";
 import { useTimerState } from "@/hooks/use-timer-state";
-import { useSaveTimer } from "@/hooks/use-timers";
+import { useSaveTimer, useTimers, useUpdateTimer } from "@/hooks/use-timers";
 import { playSound, SOUND_OPTIONS, speakText } from "@/lib/sound-utils";
 import { formatTime, getProgress, timerToasts } from "@/lib/timer-utils";
 import {
@@ -48,10 +48,12 @@ import {
 	GripVertical,
 	Plus,
 	Repeat,
+	Save as SaveIcon,
 	Settings,
 	Trash2,
 } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { toast } from "sonner";
 
 interface IntervalStep {
 	id: string;
@@ -87,6 +89,12 @@ interface AdvancedConfig {
 	colors: ColorSettings;
 	defaultAlarm: string;
 	speakNames: boolean;
+}
+
+interface LoadedTimer {
+	id: string;
+	name: string;
+	data: any;
 }
 
 // Helper functions
@@ -773,8 +781,19 @@ function SortableItem({
 	);
 }
 
-export function AdvancedTimer() {
+export function AdvancedTimer({
+	loadedTimer,
+	onSaved,
+}: { loadedTimer?: LoadedTimer; onSaved?: (t: any) => void } = {}) {
 	const [nextId, setNextId] = useState(5); // Start from 5 since we have items with IDs 1-4
+
+	// Keep a ref in sync with nextId state to guarantee synchronous, unique ID generation
+	const nextIdRef = useRef(nextId);
+
+	// Ensure ref stays updated when state changes externally (e.g., when loading a saved timer)
+	useEffect(() => {
+		nextIdRef.current = nextId;
+	}, [nextId]);
 
 	const [config, setConfig] = useState<AdvancedConfig>({
 		items: [
@@ -801,12 +820,37 @@ export function AdvancedTimer() {
 		speakNames: true,
 	});
 
-	// Helper function to generate next ID
+	// Update config when a saved timer is loaded
+	useEffect(() => {
+		if (loadedTimer?.data) {
+			setConfig(loadedTimer.data as AdvancedConfig);
+
+			// update next id to avoid collisions
+			const extractIds = (items: WorkoutItem[]): number[] => {
+				return items.reduce<number[]>((acc, item) => {
+					acc.push(parseInt(item.id, 10));
+					if (isLoop(item)) {
+						acc.push(...extractIds(item.items));
+					}
+					return acc;
+				}, []);
+			};
+
+			const ids = extractIds(loadedTimer.data.items ?? []);
+			const maxId = ids.length ? Math.max(...ids) : 0;
+			setNextId(maxId + 1);
+		}
+	}, [loadedTimer]);
+
+	// Generate a unique string ID. Using the functional
+	// updater form guarantees each invocation within the same
+	// render gets an up-to-date value, avoiding duplicates.
 	const generateId = useCallback(() => {
-		const id = nextId.toString();
-		setNextId((prev) => prev + 1);
+		const id = nextIdRef.current.toString();
+		nextIdRef.current += 1;
+		setNextId(nextIdRef.current); // keep state in sync for debugging & future loads
 		return id;
-	}, [nextId]);
+	}, []);
 
 	const [activeId, setActiveId] = useState<string | null>(null);
 	const [currentType, setCurrentType] = useState<TimerType>("prepare");
@@ -830,6 +874,15 @@ export function AdvancedTimer() {
 	} = useTimerState();
 
 	const { mutate: saveTimer, isPending: isSaving } = useSaveTimer();
+	const { mutate: overwriteTimer, isPending: isUpdating } = useUpdateTimer();
+	const { data: existingTimers } = useTimers();
+	const isSavingOrUpdating = isSaving || isUpdating;
+
+	// Timer name handling
+	const [timerName, setTimerName] = useState<string>(loadedTimer?.name || "");
+
+	// Dialog state
+	const [saveOpen, setSaveOpen] = useState(false);
 
 	// Memoized flatten function with safeguards
 	const flattenedIntervals = useMemo(() => {
@@ -1688,13 +1741,22 @@ export function AdvancedTimer() {
 							};
 							newItems.push(duplicate);
 						} else if (isLoop(item)) {
-							const duplicate: LoopGroup = {
-								...item,
-								id: generateId(),
-								name: `${item.name} (Copy)`,
-								items: [...item.items], // Shallow copy of items
+							// Deep clone loop with fresh IDs for all children
+							const deepCloneLoop = (loop: LoopGroup): LoopGroup => {
+								const newLoopId = generateId();
+								return {
+									...loop,
+									id: newLoopId,
+									name: `${loop.name} (Copy)`,
+									items: loop.items.map((child) => {
+										if (isLoop(child)) {
+											return deepCloneLoop(child);
+										}
+										return { ...child, id: generateId() };
+									}),
+								};
 							};
-							newItems.push(duplicate);
+							newItems.push(deepCloneLoop(item));
 						}
 					} else if (isLoop(item)) {
 						// Update the last added item if it's a loop
@@ -1883,11 +1945,54 @@ export function AdvancedTimer() {
 		speakText(name);
 	}, [state, currentItemIndex, flattenedIntervals, config.speakNames]);
 
-	const handleSave = () => {
-		const name = window.prompt("Enter timer name");
-		if (!name) return;
-		saveTimer({ name, data: config });
+	const handleSaveConfirm = () => {
+		if (!timerName.trim()) {
+			toast.error("Please provide a name");
+			return;
+		}
+
+		const duplicate = existingTimers?.find(
+			(t: any) => t.name === timerName.trim(),
+		);
+
+		// Overwrite if we have id and name unchanged
+		if (loadedTimer && timerName.trim() === loadedTimer.name) {
+			overwriteTimer(
+				{
+					id: loadedTimer.id,
+					data: { name: timerName.trim(), data: config },
+				},
+				{
+					onSuccess: (updated) => {
+						if (onSaved) onSaved(updated);
+						setSaveOpen(false);
+					},
+				},
+			);
+			return;
+		}
+
+		// Prevent duplicate names for new save
+		if (duplicate) {
+			toast.error("Timer name already exists");
+			return;
+		}
+
+		// Save new
+		saveTimer(
+			{ name: timerName.trim(), data: config },
+			{
+				onSuccess: () => {
+					if (onSaved) {
+						onSaved(config);
+					}
+					setSaveOpen(false);
+				},
+			},
+		);
 	};
+
+	const handleSave = () => setSaveOpen(true);
 
 	return (
 		<div className="relative space-y-6">
@@ -1971,9 +2076,15 @@ export function AdvancedTimer() {
 										variant="default"
 										size="sm"
 										className="gap-2"
-										disabled={isSaving}
+										disabled={isSavingOrUpdating}
 									>
-										{isSaving ? "Saving..." : "Save"}
+										{isSavingOrUpdating ? (
+											"Saving..."
+										) : (
+											<>
+												<SaveIcon size={16} /> Save
+											</>
+										)}
 									</Button>
 								</div>
 							</div>
@@ -2161,6 +2272,37 @@ export function AdvancedTimer() {
 							</Button>
 							<Button onClick={() => setShowSettings(false)} className="flex-1">
 								Done
+							</Button>
+						</div>
+					</div>
+				</DialogContent>
+			</Dialog>
+
+			{/* Save Dialog */}
+			<Dialog open={saveOpen} onOpenChange={setSaveOpen}>
+				<DialogContent title="Save Timer" className="max-w-lg">
+					<DialogClose onClose={() => setSaveOpen(false)} />
+
+					<div className="space-y-6">
+						<div className="space-y-4">
+							<h3 className="text-base font-medium">Timer Name</h3>
+							<Input
+								value={timerName}
+								onChange={(e) => setTimerName(e.target.value)}
+								placeholder="Enter timer name"
+							/>
+						</div>
+
+						<div className="flex gap-2 pt-4">
+							<Button
+								onClick={handleSaveConfirm}
+								variant="outline"
+								className="flex-1"
+							>
+								Save
+							</Button>
+							<Button onClick={() => setSaveOpen(false)} className="flex-1">
+								Cancel
 							</Button>
 						</div>
 					</div>

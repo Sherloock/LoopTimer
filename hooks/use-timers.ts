@@ -26,12 +26,50 @@ export function useSaveTimer() {
 	const queryClient = useQueryClient();
 	return useMutation({
 		mutationFn: postTimer,
-		onSuccess: () => {
+		onSuccess: (data) => {
 			toast.success("Timer saved!", { id: "save-timer" });
+			queryClient.invalidateQueries({ queryKey: ["timers"] });
+			return data;
+		},
+		onError: (error: Error) => {
+			toast.error(error.message, { id: "save-timer" });
+		},
+	});
+}
+
+export function useUpdateTimer() {
+	const queryClient = useQueryClient();
+	return useMutation({
+		mutationFn: async ({ id, data }: { id: string; data: TimerInput }) => {
+			const res = await fetch(`/api/timers/${id}`, {
+				method: "PUT",
+				headers: { "Content-Type": "application/json" },
+				body: JSON.stringify(data),
+			});
+			if (!res.ok) throw new Error("Failed to update timer");
+			return res.json();
+		},
+		onSuccess: () => {
+			toast.success("Timer updated!", { id: "save-timer" });
 			queryClient.invalidateQueries({ queryKey: ["timers"] });
 		},
 		onError: (error: Error) => {
 			toast.error(error.message, { id: "save-timer" });
 		},
+	});
+}
+
+export function useDeleteTimer() {
+	const queryClient = useQueryClient();
+	return useMutation({
+		mutationFn: async (id: string) => {
+			const res = await fetch(`/api/timers/${id}`, { method: "DELETE" });
+			if (!res.ok) throw new Error("Failed to delete timer");
+		},
+		onSuccess: () => {
+			toast.success("Timer deleted", { id: "save-timer" });
+			queryClient.invalidateQueries({ queryKey: ["timers"] });
+		},
+		onError: (error: Error) => toast.error(error.message),
 	});
 }
