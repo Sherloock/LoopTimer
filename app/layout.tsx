@@ -1,6 +1,7 @@
 import { QueryProvider } from "@/components/query-provider";
 import { ThemeProvider } from "@/components/theme-provider";
 import { Toaster } from "@/components/ui/sonner";
+import { ClerkProvider } from "@clerk/nextjs";
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import NextTopLoader from "nextjs-toploader";
@@ -22,27 +23,29 @@ export default function RootLayout({
 	return (
 		<html lang="en" suppressHydrationWarning>
 			<body className={inter.className} suppressHydrationWarning>
-				<NextTopLoader
-					color="#2563eb"
-					initialPosition={0.08}
-					crawlSpeed={200}
-					height={3}
-					crawl={true}
-					showSpinner={false}
-					easing="ease"
-					speed={200}
-				/>
-				<ThemeProvider
-					attribute="class"
-					defaultTheme="system"
-					enableSystem
-					disableTransitionOnChange
-				>
-					<QueryProvider>
-						{children}
-						<Toaster position="bottom-left" />
-					</QueryProvider>
-				</ThemeProvider>
+				<ClerkProvider>
+					<NextTopLoader
+						color="#2563eb"
+						initialPosition={0.08}
+						crawlSpeed={200}
+						height={3}
+						crawl={true}
+						showSpinner={false}
+						easing="ease"
+						speed={200}
+					/>
+					<ThemeProvider
+						attribute="class"
+						defaultTheme="system"
+						enableSystem
+						disableTransitionOnChange
+					>
+						<QueryProvider>
+							{children}
+							<Toaster position="bottom-left" />
+						</QueryProvider>
+					</ThemeProvider>
+				</ClerkProvider>
 			</body>
 		</html>
 	);

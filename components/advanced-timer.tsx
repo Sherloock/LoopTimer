@@ -12,6 +12,7 @@ import { Label } from "@/components/ui/label";
 import { NumberInput } from "@/components/ui/number-input";
 import { StatCard } from "@/components/ui/stat-card";
 import { useTimerState } from "@/hooks/use-timer-state";
+import { useSaveTimer } from "@/hooks/use-timers";
 import { playSound, SOUND_OPTIONS, speakText } from "@/lib/sound-utils";
 import { formatTime, getProgress, timerToasts } from "@/lib/timer-utils";
 import {
@@ -827,6 +828,8 @@ export function AdvancedTimer() {
 		handleHoldEnd,
 		setCompleted,
 	} = useTimerState();
+
+	const { mutate: saveTimer, isPending: isSaving } = useSaveTimer();
 
 	// Memoized flatten function with safeguards
 	const flattenedIntervals = useMemo(() => {
@@ -1880,6 +1883,12 @@ export function AdvancedTimer() {
 		speakText(name);
 	}, [state, currentItemIndex, flattenedIntervals, config.speakNames]);
 
+	const handleSave = () => {
+		const name = window.prompt("Enter timer name");
+		if (!name) return;
+		saveTimer({ name, data: config });
+	};
+
 	return (
 		<div className="relative space-y-6">
 			{/* Minimalistic view when timer is running */}
@@ -1956,6 +1965,15 @@ export function AdvancedTimer() {
 									>
 										<Settings size={16} />
 										Settings
+									</Button>
+									<Button
+										onClick={handleSave}
+										variant="default"
+										size="sm"
+										className="gap-2"
+										disabled={isSaving}
+									>
+										{isSaving ? "Saving..." : "Save"}
 									</Button>
 								</div>
 							</div>

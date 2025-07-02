@@ -1,0 +1,20 @@
+datasource db {
+  provider     = "mysql"
+  url          = env("DATABASE_URL")
+  relationMode = "foreignKeys"
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model Timer {
+  id        String   @id @default(cuid())
+  userId    String
+  name      String
+  data      Json
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+}
