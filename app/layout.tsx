@@ -1,3 +1,5 @@
+import { ClientOnly } from "@/components/client-only";
+import { HydrationErrorBoundary } from "@/components/hydration-error-boundary";
 import { QueryProvider } from "@/components/query-provider";
 import { ThemeProvider } from "@/components/theme-provider";
 import { Toaster } from "@/components/ui/sonner";
@@ -21,31 +23,37 @@ export default function RootLayout({
 	children: React.ReactNode;
 }) {
 	return (
-		<html lang="en">
-			<body className={inter.className}>
-				<ClerkProvider>
-					<NextTopLoader
-						color="#2563eb"
-						initialPosition={0.08}
-						crawlSpeed={200}
-						height={3}
-						crawl={true}
-						showSpinner={false}
-						easing="ease"
-						speed={200}
-					/>
-					<ThemeProvider
-						attribute="class"
-						defaultTheme="system"
-						enableSystem
-						disableTransitionOnChange
-					>
-						<QueryProvider>
-							{children}
-							<Toaster position="bottom-left" />
-						</QueryProvider>
-					</ThemeProvider>
-				</ClerkProvider>
+		<html lang="en" suppressHydrationWarning>
+			<body className={inter.className} suppressHydrationWarning>
+				<HydrationErrorBoundary>
+					<ClerkProvider>
+						<ClientOnly>
+							<NextTopLoader
+								color="#2563eb"
+								initialPosition={0.08}
+								crawlSpeed={200}
+								height={3}
+								crawl={true}
+								showSpinner={false}
+								easing="ease"
+								speed={200}
+							/>
+						</ClientOnly>
+						<ThemeProvider
+							attribute="class"
+							defaultTheme="system"
+							enableSystem
+							disableTransitionOnChange
+						>
+							<QueryProvider>
+								{children}
+								<ClientOnly>
+									<Toaster position="bottom-left" />
+								</ClientOnly>
+							</QueryProvider>
+						</ThemeProvider>
+					</ClerkProvider>
+				</HydrationErrorBoundary>
 			</body>
 		</html>
 	);
