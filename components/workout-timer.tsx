@@ -2,10 +2,8 @@
 
 import { AdvancedTimer } from "@/components/advanced-timer";
 import { SavedTimers } from "@/components/saved-timers";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Bookmark, PlusCircle, Settings } from "lucide-react";
+import { Bookmark, Settings } from "lucide-react";
 import { useEffect, useState } from "react";
 
 export function WorkoutTimer() {
@@ -50,35 +48,17 @@ export function WorkoutTimer() {
 				)}
 
 				<TabsContent value="advanced" className="space-y-6">
-					{selectedTimer && (
-						<div className="space-y-1 text-center">
-							<p className="text-sm text-muted-foreground">Timer Name</p>
-							<Input
-								className="mx-auto w-40"
-								value={timerName}
-								onChange={(e) => {
-									setTimerName(e.target.value);
-									setSelectedTimer({ ...selectedTimer, name: e.target.value });
-								}}
-							/>
-							<Button
-								size="sm"
-								variant="outline"
-								className="mt-2 gap-1"
-								onClick={() => {
-									setSelectedTimer(null);
-									setTimerName("");
-								}}
-							>
-								<PlusCircle size={16} /> New Timer
-							</Button>
-						</div>
-					)}
 					<AdvancedTimer
 						loadedTimer={
 							selectedTimer ? { ...selectedTimer, name: timerName } : undefined
 						}
 						key={selectedTimer?.id ?? "new"}
+						onTimerNameChange={(name: string) => {
+							setTimerName(name);
+							if (!name) {
+								setSelectedTimer(null);
+							}
+						}}
 					/>
 				</TabsContent>
 

@@ -21,8 +21,8 @@ export default function RootLayout({
 	children: React.ReactNode;
 }) {
 	return (
-		<html lang="en" suppressHydrationWarning>
-			<body className={inter.className} suppressHydrationWarning>
+		<html lang="en">
+			<body className={inter.className}>
 				<ClerkProvider>
 					<NextTopLoader
 						color="#2563eb"

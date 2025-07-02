@@ -784,7 +784,12 @@ function SortableItem({
 export function AdvancedTimer({
 	loadedTimer,
 	onSaved,
-}: { loadedTimer?: LoadedTimer; onSaved?: (t: any) => void } = {}) {
+	onTimerNameChange,
+}: {
+	loadedTimer?: LoadedTimer;
+	onSaved?: (t: any) => void;
+	onTimerNameChange?: (name: string) => void;
+} = {}) {
 	const [nextId, setNextId] = useState(5); // Start from 5 since we have items with IDs 1-4
 
 	// Keep a ref in sync with nextId state to guarantee synchronous, unique ID generation
@@ -880,6 +885,19 @@ export function AdvancedTimer({
 
 	// Timer name handling
 	const [timerName, setTimerName] = useState<string>(loadedTimer?.name || "");
+
+	// Update timer name when loadedTimer changes
+	useEffect(() => {
+		if (loadedTimer?.name) {
+			setTimerName(loadedTimer.name);
+		}
+	}, [loadedTimer?.name]);
+
+	// Notify parent component when timer name changes
+	const handleTimerNameChange = (name: string) => {
+		setTimerName(name);
+		onTimerNameChange?.(name);
+	};
 
 	// Dialog state
 	const [saveOpen, setSaveOpen] = useState(false);
@@ -2026,17 +2044,44 @@ export function AdvancedTimer({
 			{!isMinimalisticView && (
 				<Card>
 					<CardContent className="space-y-6 pt-6">
-						<div className="space-y-4 text-center">
-							<div className="flex flex-wrap items-center justify-center gap-4">
-								<StatCard
-									label="Total Session Time"
-									value={formatTime(totalSessionTime)}
-								/>
-								<StatCard
-									label="Total Steps"
-									value={flattenedIntervals.length.toString()}
-									valueClassName="text-2xl font-bold"
-								/>
+						<div className="space-y-4">
+							<div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-start">
+								{/* Timer Name Input - Top Left */}
+								<div className="space-y-2">
+									<Label htmlFor="timer-name" className="text-sm font-medium">
+										Timer Name
+									</Label>
+									<div className="flex gap-2">
+										<Input
+											id="timer-name"
+											className="w-48"
+											value={timerName}
+											onChange={(e) => handleTimerNameChange(e.target.value)}
+											placeholder="Enter timer name..."
+										/>
+										<Button
+											size="sm"
+											variant="outline"
+											className="gap-1"
+											onClick={() => handleTimerNameChange("")}
+										>
+											<Plus size={16} /> New
+										</Button>
+									</div>
+								</div>
+
+								{/* Stats - Top Right */}
+								<div className="flex flex-wrap items-center justify-end gap-4">
+									<StatCard
+										label="Total Session Time"
+										value={formatTime(totalSessionTime)}
+									/>
+									<StatCard
+										label="Total Steps"
+										value={flattenedIntervals.length.toString()}
+										valueClassName="text-2xl font-bold"
+									/>
+								</div>
 							</div>
 						</div>
 
