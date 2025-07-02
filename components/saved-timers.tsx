@@ -2,7 +2,7 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { useDeleteTimer, useTimers } from "@/hooks/use-timers";
 import { formatDistanceToNow } from "date-fns";
-import { Download, Trash2 } from "lucide-react";
+import { Edit, Play, Trash2 } from "lucide-react";
 import { useState } from "react";
 
 interface SavedTimersProps {
@@ -41,11 +41,29 @@ function TimerRow({ timer, onLoad }: { timer: any; onLoad: (t: any) => void }) {
 	const [open, setOpen] = useState(false);
 	return (
 		<div className="flex items-center justify-between gap-4 rounded-md border p-4">
-			<div className="space-y-1">
-				<p className="font-semibold">{timer.name}</p>
-				<p className="text-xs text-muted-foreground">
-					updated {formatDistanceToNow(new Date(timer.updatedAt))} ago
-				</p>
+			<div className="flex gap-1">
+				<Button
+					variant="destructive"
+					size="sm"
+					className="gap-2"
+					onClick={() => setOpen(true)}
+				>
+					<Trash2 size={16} />
+				</Button>
+				<Button
+					onClick={() => onLoad(timer)}
+					size="sm"
+					variant="secondary"
+					className="gap-2"
+				>
+					<Edit size={16} />
+				</Button>
+				<div className="ml-2 space-y-1">
+					<p className="font-semibold">{timer.name}</p>
+					<p className="text-xs text-muted-foreground">
+						updated {formatDistanceToNow(new Date(timer.updatedAt))} ago
+					</p>
+				</div>
 			</div>
 			<div className="flex gap-1">
 				<Button
@@ -54,15 +72,7 @@ function TimerRow({ timer, onLoad }: { timer: any; onLoad: (t: any) => void }) {
 					variant="default"
 					className="gap-2"
 				>
-					<Download size={16} /> Load
-				</Button>
-				<Button
-					variant="destructive"
-					size="sm"
-					className="gap-2"
-					onClick={() => setOpen(true)}
-				>
-					<Trash2 size={16} />
+					<Play size={16} />
 				</Button>
 			</div>
 			<Dialog open={open} onOpenChange={setOpen}>

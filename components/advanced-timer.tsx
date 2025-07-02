@@ -1963,7 +1963,8 @@ export function AdvancedTimer({
 		speakText(name);
 	}, [state, currentItemIndex, flattenedIntervals, config.speakNames]);
 
-	const handleSaveConfirm = () => {
+	// Replace handleSave with immediate save logic
+	const handleSave = () => {
 		if (!timerName.trim()) {
 			toast.error("Please provide a name");
 			return;
@@ -1983,7 +1984,6 @@ export function AdvancedTimer({
 				{
 					onSuccess: (updated) => {
 						if (onSaved) onSaved(updated);
-						setSaveOpen(false);
 					},
 				},
 			);
@@ -2004,13 +2004,10 @@ export function AdvancedTimer({
 					if (onSaved) {
 						onSaved(config);
 					}
-					setSaveOpen(false);
 				},
 			},
 		);
 	};
-
-	const handleSave = () => setSaveOpen(true);
 
 	return (
 		<div className="relative space-y-6">
@@ -2060,12 +2057,19 @@ export function AdvancedTimer({
 											placeholder="Enter timer name..."
 										/>
 										<Button
+											onClick={handleSave}
+											variant="default"
 											size="sm"
-											variant="outline"
-											className="gap-1"
-											onClick={() => handleTimerNameChange("")}
+											className="gap-2"
+											disabled={isSavingOrUpdating}
 										>
-											<Plus size={16} /> New
+											{isSavingOrUpdating ? (
+												"Saving..."
+											) : (
+												<>
+													<SaveIcon size={16} /> Save
+												</>
+											)}
 										</Button>
 									</div>
 								</div>
@@ -2115,21 +2119,6 @@ export function AdvancedTimer({
 									>
 										<Settings size={16} />
 										Settings
-									</Button>
-									<Button
-										onClick={handleSave}
-										variant="default"
-										size="sm"
-										className="gap-2"
-										disabled={isSavingOrUpdating}
-									>
-										{isSavingOrUpdating ? (
-											"Saving..."
-										) : (
-											<>
-												<SaveIcon size={16} /> Save
-											</>
-										)}
 									</Button>
 								</div>
 							</div>
@@ -2317,37 +2306,6 @@ export function AdvancedTimer({
 							</Button>
 							<Button onClick={() => setShowSettings(false)} className="flex-1">
 								Done
-							</Button>
-						</div>
-					</div>
-				</DialogContent>
-			</Dialog>
-
-			{/* Save Dialog */}
-			<Dialog open={saveOpen} onOpenChange={setSaveOpen}>
-				<DialogContent title="Save Timer" className="max-w-lg">
-					<DialogClose onClose={() => setSaveOpen(false)} />
-
-					<div className="space-y-6">
-						<div className="space-y-4">
-							<h3 className="text-base font-medium">Timer Name</h3>
-							<Input
-								value={timerName}
-								onChange={(e) => setTimerName(e.target.value)}
-								placeholder="Enter timer name"
-							/>
-						</div>
-
-						<div className="flex gap-2 pt-4">
-							<Button
-								onClick={handleSaveConfirm}
-								variant="outline"
-								className="flex-1"
-							>
-								Save
-							</Button>
-							<Button onClick={() => setSaveOpen(false)} className="flex-1">
-								Cancel
 							</Button>
 						</div>
 					</div>
