@@ -8,10 +8,10 @@ import {
 	DropdownMenuItem,
 	DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { useDeleteTimer, useTimers } from "@/hooks/use-timers";
+import { useDeleteTimer, useSaveTimer, useTimers } from "@/hooks/use-timers";
 import { formatTime } from "@/lib/timer-utils";
 import { computeTotalTime } from "@/utils/compute-total-time";
-import { Edit, MoreVertical, Play, Plus, Trash2 } from "lucide-react";
+import { Copy, Edit, MoreVertical, Play, Plus, Trash2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
@@ -19,6 +19,7 @@ export function TimersList() {
 	const { data: timers, isLoading, isError } = useTimers();
 	const router = useRouter();
 	const { mutate: deleteTimer } = useDeleteTimer();
+	const { mutate: duplicateTimer } = useSaveTimer();
 	const [confirmId, setConfirmId] = useState<string | null>(null);
 
 	if (isLoading) return <p className="text-center">Loading timers...</p>;
@@ -70,6 +71,16 @@ export function TimersList() {
 										<Edit size={16} /> Edit
 									</DropdownMenuItem>
 									<DropdownMenuItem
+										onSelect={() =>
+											duplicateTimer({
+												name: `${timer.name} (Copy)`,
+												data: timer.data,
+											})
+										}
+									>
+										<Copy size={16} /> Duplicate
+									</DropdownMenuItem>
+									<DropdownMenuItem
 										className="text-destructive"
 										onSelect={() => setConfirmId(timer.id)}
 									>
@@ -83,10 +94,10 @@ export function TimersList() {
 								variant="default"
 								size="sm"
 								className="gap-2"
-								onClick={() => router.push(`/edit?id=${timer.id}`)}
+								onClick={() => router.push(`/play?id=${timer.id}`)}
 							>
 								<Play size={16} />
-								Play
+								Start
 							</Button>
 						</div>
 					</div>

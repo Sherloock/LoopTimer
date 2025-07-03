@@ -4,6 +4,7 @@ import { Checkbox } from "@/components/advanced/checkbox";
 import { DroppableZone } from "@/components/advanced/droppable-zone";
 import { MinimalisticContainer } from "@/components/minimalistic-container";
 import { MinimalisticTimerView } from "@/components/minimalistic-timer-view";
+import { TimerCompletionScreen } from "@/components/timer-completion-screen";
 import { TimerControls } from "@/components/timer-controls";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -735,11 +736,19 @@ export function AdvancedTimer({
 	onSaved,
 	onTimerNameChange,
 	editMode = false,
+	autoStart = false,
+	onExit,
+	onSaveComplete,
+	onComplete,
 }: {
 	loadedTimer?: LoadedTimer;
 	onSaved?: (t: any) => void;
 	onTimerNameChange?: (name: string) => void;
 	editMode?: boolean;
+	autoStart?: boolean;
+	onExit?: () => void;
+	onSaveComplete?: () => void;
+	onComplete?: (timerName: string) => void;
 } = {}) {
 	const [nextId, setNextId] = useState(5); // Start from 5 since we have items with IDs 1-4
 
@@ -1522,8 +1531,17 @@ export function AdvancedTimer({
 		} else {
 			playSound(config.defaultAlarm);
 			setCompleted("🎉 Advanced Workout Complete! Great job!");
+			// Call completion callback if provided
+			onComplete?.(timerName || "Timer");
 		}
-	}, [currentItemIndex, flattenedIntervals, setCompleted, config.defaultAlarm]);
+	}, [
+		currentItemIndex,
+		flattenedIntervals,
+		setCompleted,
+		config.defaultAlarm,
+		onComplete,
+		timerName,
+	]);
 
 	const resetState = useCallback(() => {
 		setCurrentSet(1);
@@ -1543,8 +1561,12 @@ export function AdvancedTimer({
 		[baseStopTimer, resetState],
 	);
 	const handleHoldStart = useCallback(
-		() => baseHoldStart(stopTimer),
-		[baseHoldStart, stopTimer],
+		() =>
+			baseHoldStart(() => {
+				stopTimer();
+				onExit?.();
+			}),
+		[baseHoldStart, stopTimer, onExit],
 	);
 
 	// Memoized calculations
@@ -1833,7 +1855,10 @@ export function AdvancedTimer({
 
 	// Check if we should show minimalistic view
 	const isMinimalisticView =
-		!editMode && (state === "running" || state === "paused");
+		!editMode && (state === "running" || state === "paused" || autoStart);
+
+	// Check if we should show completion screen
+	const isCompletionView = !editMode && state === "completed";
 
 	// Initialize timer when idle
 	useEffect(() => {
@@ -1940,6 +1965,7 @@ export function AdvancedTimer({
 				{
 					onSuccess: (updated) => {
 						if (onSaved) onSaved(updated);
+						onSaveComplete?.();
 					},
 				},
 			);
@@ -1962,15 +1988,44 @@ export function AdvancedTimer({
 					if (onSaved) {
 						onSaved(config);
 					}
+					onSaveComplete?.();
 				},
 			},
 		);
 	};
 
+	// Auto-start timer when autoStart prop is true and timer is loaded
+	useEffect(() => {
+		if (
+			autoStart &&
+			loadedTimer &&
+			state === "idle" &&
+			flattenedIntervals.length > 0
+		) {
+			// Small delay to ensure everything is initialized
+			const timer = setTimeout(() => {
+				baseStartTimer("Timer started!");
+			}, 100);
+			return () => clearTimeout(timer);
+		}
+	}, [autoStart, loadedTimer, state, flattenedIntervals, baseStartTimer]);
+
 	return (
 		<div className="relative space-y-6">
+			{/* Completion screen when timer is finished */}
+			{isCompletionView && (
+				<TimerCompletionScreen
+					onBack={() => onExit?.()}
+					onAgain={() => {
+						resetTimer();
+						startTimer();
+					}}
+					timerName={timerName}
+				/>
+			)}
+
 			{/* Minimalistic view when timer is running */}
-			{isMinimalisticView && (
+			{isMinimalisticView && !isCompletionView && (
 				<MinimalisticContainer>
 					<MinimalisticTimerView
 						timeLeft={timeLeft}
@@ -1996,7 +2051,7 @@ export function AdvancedTimer({
 				</MinimalisticContainer>
 			)}
 
-			{!isMinimalisticView && (
+			{!isMinimalisticView && !isCompletionView && (
 				<Card>
 					<CardContent className="space-y-6 pt-6">
 						<div className="space-y-4">
