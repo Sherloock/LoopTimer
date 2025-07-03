@@ -26,7 +26,7 @@ export function TimersList() {
 		return <p className="text-center text-destructive">Error loading timers</p>;
 
 	return (
-		<div className="space-y-6">
+		<div className="space-y-4">
 			<div className="flex justify-end">
 				<Button
 					variant="default"

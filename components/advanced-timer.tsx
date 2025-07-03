@@ -734,10 +734,12 @@ export function AdvancedTimer({
 	loadedTimer,
 	onSaved,
 	onTimerNameChange,
+	editMode = false,
 }: {
 	loadedTimer?: LoadedTimer;
 	onSaved?: (t: any) => void;
 	onTimerNameChange?: (name: string) => void;
+	editMode?: boolean;
 } = {}) {
 	const [nextId, setNextId] = useState(5); // Start from 5 since we have items with IDs 1-4
 
@@ -1830,7 +1832,8 @@ export function AdvancedTimer({
 	}, []);
 
 	// Check if we should show minimalistic view
-	const isMinimalisticView = state === "running" || state === "paused";
+	const isMinimalisticView =
+		!editMode && (state === "running" || state === "paused");
 
 	// Initialize timer when idle
 	useEffect(() => {
@@ -1919,12 +1922,16 @@ export function AdvancedTimer({
 			return;
 		}
 
-		const duplicate = existingTimers?.find(
-			(t: any) => t.name === timerName.trim(),
-		);
+		// If editing an existing timer
+		if (loadedTimer) {
+			const duplicate = existingTimers?.find(
+				(t: any) => t.name === timerName.trim() && t.id !== loadedTimer.id,
+			);
+			if (duplicate) {
+				toast.error("Timer name already exists");
+				return;
+			}
 
-		// Overwrite if we have id and name unchanged
-		if (loadedTimer && timerName.trim() === loadedTimer.name) {
 			overwriteTimer(
 				{
 					id: loadedTimer.id,
@@ -1939,13 +1946,15 @@ export function AdvancedTimer({
 			return;
 		}
 
-		// Prevent duplicate names for new save
+		// Creating a brand-new timer
+		const duplicate = existingTimers?.find(
+			(t: any) => t.name === timerName.trim(),
+		);
 		if (duplicate) {
 			toast.error("Timer name already exists");
 			return;
 		}
 
-		// Save new
 		saveTimer(
 			{ name: timerName.trim(), data: config },
 			{
@@ -2005,21 +2014,23 @@ export function AdvancedTimer({
 											onChange={(e) => handleTimerNameChange(e.target.value)}
 											placeholder="Enter timer name..."
 										/>
-										<Button
-											onClick={handleSave}
-											variant="default"
-											size="sm"
-											className="gap-2"
-											disabled={isSavingOrUpdating}
-										>
-											{isSavingOrUpdating ? (
-												"Saving..."
-											) : (
-												<>
-													<SaveIcon size={16} /> Save
-												</>
-											)}
-										</Button>
+										{!editMode && (
+											<Button
+												onClick={handleSave}
+												variant="default"
+												size="sm"
+												className="gap-2"
+												disabled={isSavingOrUpdating}
+											>
+												{isSavingOrUpdating ? (
+													"Saving..."
+												) : (
+													<>
+														<SaveIcon size={16} /> Save
+													</>
+												)}
+											</Button>
+										)}
 									</div>
 								</div>
 
@@ -2138,18 +2149,38 @@ export function AdvancedTimer({
 							</DndContext>
 						</div>
 
-						<TimerControls
-							state={state}
-							onStart={startTimer}
-							onPause={pauseTimer}
-							onReset={resetTimer}
-							onStop={stopTimer}
-							onFastBackward={fastBackward}
-							onFastForward={fastForward}
-							startLabel="Start Advanced Timer"
-							resetLabel="Start New Advanced Workout"
-							disabled={flattenedIntervals.length === 0}
-						/>
+						{editMode ? (
+							<div className="flex justify-end pt-4">
+								<Button
+									onClick={handleSave}
+									variant="default"
+									size="sm"
+									className="gap-2"
+									disabled={isSavingOrUpdating}
+								>
+									{isSavingOrUpdating ? (
+										"Saving..."
+									) : (
+										<>
+											<SaveIcon size={16} /> Save
+										</>
+									)}
+								</Button>
+							</div>
+						) : (
+							<TimerControls
+								state={state}
+								onStart={startTimer}
+								onPause={pauseTimer}
+								onReset={resetTimer}
+								onStop={stopTimer}
+								onFastBackward={fastBackward}
+								onFastForward={fastForward}
+								startLabel="Start Advanced Timer"
+								resetLabel="Start New Advanced Workout"
+								disabled={flattenedIntervals.length === 0}
+							/>
+						)}
 					</CardContent>
 				</Card>
 			)}

@@ -1,6 +1,6 @@
 "use client";
 
-import { AdvancedTimer } from "@/components/advanced-timer";
+import { EditTimer } from "@/components/edit-timer";
 import { useTimers } from "@/hooks/use-timers";
 import { useSearchParams } from "next/navigation";
 import { useMemo } from "react";
@@ -18,7 +18,7 @@ export default function EditTimerPage() {
 	return (
 		<div className="min-h-screen bg-gradient-to-br from-background via-background to-muted py-8">
 			<div className="container mx-auto max-w-4xl px-4">
-				<AdvancedTimer loadedTimer={loadedTimer} />
+				<EditTimer loadedTimer={loadedTimer} />
 			</div>
 		</div>
 	);
