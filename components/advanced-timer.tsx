@@ -3,7 +3,7 @@
 import { Checkbox } from "@/components/advanced/checkbox";
 import { DroppableZone } from "@/components/advanced/droppable-zone";
 import { MinimalisticContainer } from "@/components/minimalistic-container";
-import { MinimalisticTimerView } from "@/components/minimalistic-timer-view";
+import { RunningTimerView } from "@/components/running-timer-view";
 import { TimerCompletionScreen } from "@/components/timer-completion-screen";
 import { TimerControls } from "@/components/timer-controls";
 import { Button } from "@/components/ui/button";
@@ -2027,7 +2027,7 @@ export function AdvancedTimer({
 			{/* Minimalistic view when timer is running */}
 			{isMinimalisticView && !isCompletionView && (
 				<MinimalisticContainer>
-					<MinimalisticTimerView
+					<RunningTimerView
 						timeLeft={timeLeft}
 						state={state}
 						currentSet={1}
@@ -2041,6 +2041,11 @@ export function AdvancedTimer({
 						totalSteps={flattenedIntervals.length}
 						isHolding={isHolding}
 						holdProgress={holdProgress}
+						selectedSound={config.defaultAlarm}
+						onSoundChange={(sound) => {
+							const newConfig = { ...config, defaultAlarm: sound };
+							setConfig(newConfig);
+						}}
 						onFastBackward={fastBackward}
 						onFastForward={fastForward}
 						onHoldStart={handleHoldStart}

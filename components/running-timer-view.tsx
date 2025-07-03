@@ -2,10 +2,20 @@
 
 import { TimerDisplay } from "@/components/timer-display";
 import { Button } from "@/components/ui/button";
+import { getMute, getVolume, setMute, setVolume } from "@/lib/sound-utils";
 import { formatTime, TimerState } from "@/lib/timer-utils";
-import { Pause, Play, SkipBack, SkipForward, Square } from "lucide-react";
+import {
+	Pause,
+	Play,
+	SkipBack,
+	SkipForward,
+	Square,
+	Volume2,
+	VolumeX,
+} from "lucide-react";
+import { useEffect, useState } from "react";
 
-interface MinimalisticTimerViewProps {
+interface RunningTimerViewProps {
 	// Timer state
 	timeLeft: number;
 	state: TimerState;
@@ -37,7 +47,7 @@ interface MinimalisticTimerViewProps {
 	onPause: () => void;
 }
 
-export function MinimalisticTimerView({
+export function RunningTimerView({
 	timeLeft,
 	state,
 	currentSet,
@@ -58,7 +68,27 @@ export function MinimalisticTimerView({
 	onHoldEnd,
 	onPlay,
 	onPause,
-}: MinimalisticTimerViewProps) {
+}: RunningTimerViewProps) {
+	const [isMuted, setIsMuted] = useState(false);
+	const [volume, setVolumeState] = useState(1);
+
+	useEffect(() => {
+		setIsMuted(getMute());
+		setVolumeState(getVolume());
+	}, []);
+
+	const handleMuteToggle = () => {
+		const newMutedState = !isMuted;
+		setIsMuted(newMutedState);
+		setMute(newMutedState);
+	};
+
+	const handleVolumeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+		const newVolume = parseFloat(e.target.value);
+		setVolumeState(newVolume);
+		setVolume(newVolume);
+	};
+
 	return (
 		<>
 			{/* Progress bar with total remaining */}
@@ -123,6 +153,30 @@ export function MinimalisticTimerView({
 						<SkipForward size={30} />
 					</Button>
 				</div>
+			</div>
+
+			{/* Sound controls */}
+			<div className="flex items-center justify-center gap-3 pb-4">
+				<Button
+					onClick={handleMuteToggle}
+					variant="ghost"
+					size="icon"
+					className="h-10 w-10 transition-all duration-200 hover:bg-muted/80"
+				>
+					{isMuted ? <VolumeX size={20} /> : <Volume2 size={20} />}
+				</Button>
+				<input
+					type="range"
+					min={0}
+					max={1}
+					step={0.01}
+					value={volume}
+					onChange={handleVolumeChange}
+					className="w-32 accent-blue-600"
+				/>
+				<span className="w-8 text-center text-xs text-muted-foreground">
+					{Math.round(volume * 100)}%
+				</span>
 			</div>
 
 			{/* Main timer display - perfectly centered */}

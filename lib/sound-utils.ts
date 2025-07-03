@@ -4,6 +4,8 @@
  */
 
 export const SOUND_OPTIONS = [
+	// None option
+	{ label: "None", value: "none" },
 	// Beep variants
 	{ label: "Beep (short)", value: "beep-short" },
 	{ label: "Beep ×1", value: "beep-1x" },
@@ -27,6 +29,23 @@ export const SOUND_OPTIONS = [
 ] as const;
 
 type SoundKey = (typeof SOUND_OPTIONS)[number]["value"];
+
+// Global mute state
+let isMuted = false;
+// Global volume state (0.0 to 1.0)
+let globalVolume = 1;
+
+export const setMute = (muted: boolean) => {
+	isMuted = muted;
+};
+
+export const getMute = () => isMuted;
+
+export const setVolume = (volume: number) => {
+	globalVolume = Math.max(0, Math.min(1, volume));
+};
+
+export const getVolume = () => globalVolume;
 
 /* Keep a single, lazily-created AudioContext to avoid expensive re-creation */
 const getCtx = () => {
@@ -62,8 +81,12 @@ const playTone = (
 		osc.type = type;
 		osc.frequency.value = frequency;
 
+		// Apply global volume
+		const finalVolume =
+			(typeof volume === "number" ? volume : 0.2) * globalVolume;
+
 		gain.gain.setValueAtTime(0, ctx.currentTime);
-		gain.gain.linearRampToValueAtTime(volume, ctx.currentTime + attack);
+		gain.gain.linearRampToValueAtTime(finalVolume, ctx.currentTime + attack);
 		gain.gain.linearRampToValueAtTime(
 			0,
 			ctx.currentTime + durationMs / 1000 - decay,
@@ -79,32 +102,164 @@ const playTone = (
 	}
 };
 
-const playBeep = (duration = 150) =>
-	playTone(1000, duration, { type: "square" });
+// Improved beep with softer frequency and smoother waveform
+const playBeep = (duration = 300) => {
+	const ctx = getCtx();
+	const osc = ctx.createOscillator();
+	const gain = ctx.createGain();
 
-const playBeepShort = () => playTone(1000, 80, { type: "square" });
+	// Use a more pleasant frequency for beeps
+	osc.type = "sine";
+	osc.frequency.setValueAtTime(750, ctx.currentTime);
 
-const playBell = () => {
-	// Quick bell-like ping: start high freq then drop with decay
+	// Create a more natural beep envelope
+	const now = ctx.currentTime;
+	gain.gain.setValueAtTime(0, now);
+	gain.gain.linearRampToValueAtTime(0.2, now + 0.05); // Gentle attack
+	gain.gain.setValueAtTime(0.2, now + (duration / 1000) * 0.7); // Hold
+	gain.gain.linearRampToValueAtTime(0, now + duration / 1000); // Gentle decay
+
+	osc.connect(gain);
+	gain.connect(ctx.destination);
+	osc.start();
+	osc.stop(now + duration / 1000);
+};
+
+const playBeepShort = () => {
 	const ctx = getCtx();
 	const osc = ctx.createOscillator();
 	const gain = ctx.createGain();
 
 	osc.type = "sine";
-	osc.frequency.setValueAtTime(1500, ctx.currentTime);
-	osc.frequency.exponentialRampToValueAtTime(700, ctx.currentTime + 0.3);
+	osc.frequency.setValueAtTime(800, ctx.currentTime);
 
-	gain.gain.setValueAtTime(0.0001, ctx.currentTime);
-	gain.gain.exponentialRampToValueAtTime(0.3, ctx.currentTime + 0.01);
-	gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 0.8);
+	const now = ctx.currentTime;
+	gain.gain.setValueAtTime(0, now);
+	gain.gain.linearRampToValueAtTime(0.18, now + 0.03); // Quick but gentle attack
+	gain.gain.setValueAtTime(0.18, now + 0.05); // Hold
+	gain.gain.linearRampToValueAtTime(0, now + 0.15); // Gentle decay
 
 	osc.connect(gain);
 	gain.connect(ctx.destination);
 	osc.start();
-	osc.stop(ctx.currentTime + 0.8);
+	osc.stop(now + 0.15);
 };
 
-const playBellShort = () => playTone(1500, 300, { type: "sine", volume: 0.3 });
+const playBell = () => {
+	// Create a more authentic bell sound with harmonics and resonance
+	const ctx = getCtx();
+
+	// Create multiple oscillators for bell harmonics
+	const osc1 = ctx.createOscillator(); // Fundamental
+	const osc2 = ctx.createOscillator(); // Harmonic 1
+	const osc3 = ctx.createOscillator(); // Harmonic 2
+	const gain1 = ctx.createGain();
+	const gain2 = ctx.createGain();
+	const gain3 = ctx.createGain();
+
+	// Bell-like frequency relationships (typical bell harmonics)
+	const fundamental = 800;
+	const harmonic1 = fundamental * 2.2; // Major third
+	const harmonic2 = fundamental * 3.0; // Perfect fifth
+
+	// Set up fundamental tone
+	osc1.type = "sine";
+	osc1.frequency.setValueAtTime(fundamental, ctx.currentTime);
+	osc1.frequency.exponentialRampToValueAtTime(
+		fundamental * 0.95,
+		ctx.currentTime + 0.8,
+	);
+
+	// Set up harmonics
+	osc2.type = "sine";
+	osc2.frequency.setValueAtTime(harmonic1, ctx.currentTime);
+	osc2.frequency.exponentialRampToValueAtTime(
+		harmonic1 * 0.97,
+		ctx.currentTime + 0.8,
+	);
+
+	osc3.type = "sine";
+	osc3.frequency.setValueAtTime(harmonic2, ctx.currentTime);
+	osc3.frequency.exponentialRampToValueAtTime(
+		harmonic2 * 0.98,
+		ctx.currentTime + 0.8,
+	);
+
+	// Bell-like envelope with quick attack and long decay
+	const now = ctx.currentTime;
+
+	// Fundamental envelope
+	gain1.gain.setValueAtTime(0, now);
+	gain1.gain.linearRampToValueAtTime(0.4, now + 0.02); // Quick attack
+	gain1.gain.exponentialRampToValueAtTime(0.0001, now + 1.2); // Long decay
+
+	// Harmonic envelopes (slightly different timing for richness)
+	gain2.gain.setValueAtTime(0, now);
+	gain2.gain.linearRampToValueAtTime(0.15, now + 0.01);
+	gain2.gain.exponentialRampToValueAtTime(0.0001, now + 1.0);
+
+	gain3.gain.setValueAtTime(0, now);
+	gain3.gain.linearRampToValueAtTime(0.1, now + 0.03);
+	gain3.gain.exponentialRampToValueAtTime(0.0001, now + 1.4);
+
+	// Connect oscillators to gains
+	osc1.connect(gain1);
+	osc2.connect(gain2);
+	osc3.connect(gain3);
+
+	// Connect gains to destination
+	gain1.connect(ctx.destination);
+	gain2.connect(ctx.destination);
+	gain3.connect(ctx.destination);
+
+	// Start and stop oscillators
+	osc1.start();
+	osc2.start();
+	osc3.start();
+
+	osc1.stop(now + 1.2);
+	osc2.stop(now + 1.0);
+	osc3.stop(now + 1.4);
+};
+
+const playBellShort = () => {
+	// Shorter version of the bell sound
+	const ctx = getCtx();
+
+	const osc1 = ctx.createOscillator();
+	const osc2 = ctx.createOscillator();
+	const gain1 = ctx.createGain();
+	const gain2 = ctx.createGain();
+
+	const fundamental = 1000;
+	const harmonic = fundamental * 2.2;
+
+	osc1.type = "sine";
+	osc1.frequency.setValueAtTime(fundamental, ctx.currentTime);
+
+	osc2.type = "sine";
+	osc2.frequency.setValueAtTime(harmonic, ctx.currentTime);
+
+	const now = ctx.currentTime;
+
+	gain1.gain.setValueAtTime(0, now);
+	gain1.gain.linearRampToValueAtTime(0.3, now + 0.01);
+	gain1.gain.exponentialRampToValueAtTime(0.0001, now + 0.4);
+
+	gain2.gain.setValueAtTime(0, now);
+	gain2.gain.linearRampToValueAtTime(0.1, now + 0.01);
+	gain2.gain.exponentialRampToValueAtTime(0.0001, now + 0.4);
+
+	osc1.connect(gain1);
+	osc2.connect(gain2);
+	gain1.connect(ctx.destination);
+	gain2.connect(ctx.destination);
+
+	osc1.start();
+	osc2.start();
+	osc1.stop(now + 0.4);
+	osc2.stop(now + 0.4);
+};
 
 const playBellPattern = (count: number) => {
 	for (let i = 0; i < count; i++) {
@@ -132,12 +287,13 @@ const playGongPattern = (count: number) => {
 	}
 };
 
+// Improved whistle with lower frequency and softer volume
 const playWhistle = (duration = 500) =>
-	playTone(2000, duration, {
+	playTone(1200, duration, {
 		type: "sine",
-		volume: 0.25,
-		attack: 0.01,
-		decay: 0.2,
+		volume: 0.18,
+		attack: 0.02,
+		decay: 0.25,
 	});
 
 const playWhistlePattern = (count: number) => {
@@ -147,7 +303,9 @@ const playWhistlePattern = (count: number) => {
 };
 
 export const playSound = (soundKey?: string) => {
-	if (!soundKey) return;
+	// Check if sound is muted or if "none" is selected
+	if (!soundKey || soundKey === "none" || isMuted) return;
+
 	const key = soundKey as SoundKey;
 
 	const [category, variant] = key.split("-") as [string, string | undefined];
@@ -197,7 +355,7 @@ export const playSound = (soundKey?: string) => {
 
 // ====================== Speech Utils ======================
 export const speakText = (text?: string) => {
-	if (!text) return;
+	if (!text || isMuted) return;
 	try {
 		if (typeof window === "undefined" || !("speechSynthesis" in window)) return;
 		const utter = new SpeechSynthesisUtterance(text);
