@@ -2041,11 +2041,6 @@ export function AdvancedTimer({
 						totalSteps={flattenedIntervals.length}
 						isHolding={isHolding}
 						holdProgress={holdProgress}
-						selectedSound={config.defaultAlarm}
-						onSoundChange={(sound) => {
-							const newConfig = { ...config, defaultAlarm: sound };
-							setConfig(newConfig);
-						}}
 						onFastBackward={fastBackward}
 						onFastForward={fastForward}
 						onHoldStart={handleHoldStart}
@@ -2323,17 +2318,23 @@ export function AdvancedTimer({
 						</div>
 
 						{/* Speak names toggle */}
-						<div className="flex items-center gap-2">
-							<Checkbox
-								id="speak-names"
-								checked={config.speakNames}
-								onCheckedChange={(checked) =>
-									setConfig((prev) => ({ ...prev, speakNames: !!checked }))
-								}
-							/>
-							<Label htmlFor="speak-names" className="text-sm">
-								Speak interval names
-							</Label>
+						<div className="space-y-2">
+							<div className="flex items-center gap-2">
+								<Checkbox
+									id="speak-names"
+									checked={config.speakNames}
+									onCheckedChange={(checked) =>
+										setConfig((prev) => ({ ...prev, speakNames: !!checked }))
+									}
+								/>
+								<Label htmlFor="speak-names" className="text-sm">
+									Speak interval names
+								</Label>
+							</div>
+							<p className="text-xs text-muted-foreground">
+								Note: Speech synthesis is disabled when volume is below 20% to
+								prevent jarring audio.
+							</p>
 						</div>
 
 						<div className="flex gap-2 pt-4">
