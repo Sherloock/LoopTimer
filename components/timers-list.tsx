@@ -1,15 +1,25 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { useTimers } from "@/hooks/use-timers";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
+import {
+	DropdownMenu,
+	DropdownMenuContent,
+	DropdownMenuItem,
+	DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { useDeleteTimer, useTimers } from "@/hooks/use-timers";
 import { formatTime } from "@/lib/timer-utils";
 import { computeTotalTime } from "@/utils/compute-total-time";
-import { Edit, Plus } from "lucide-react";
+import { Edit, MoreVertical, Play, Plus, Trash2 } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { useState } from "react";
 
 export function TimersList() {
 	const { data: timers, isLoading, isError } = useTimers();
 	const router = useRouter();
+	const { mutate: deleteTimer } = useDeleteTimer();
+	const [confirmId, setConfirmId] = useState<string | null>(null);
 
 	if (isLoading) return <p className="text-center">Loading timers...</p>;
 	if (isError)
@@ -44,17 +54,68 @@ export function TimersList() {
 								{formatTime(totalSeconds)}
 							</p>
 						</div>
-						<Button
-							variant="secondary"
-							size="sm"
-							className="gap-2"
-							onClick={() => router.push(`/edit?id=${timer.id}`)}
-						>
-							<Edit size={16} /> Edit
-						</Button>
+
+						<div className="flex items-center gap-2">
+							{/* Menu */}
+							<DropdownMenu>
+								<DropdownMenuTrigger asChild>
+									<Button variant="ghost" size="icon">
+										<MoreVertical size={16} />
+									</Button>
+								</DropdownMenuTrigger>
+								<DropdownMenuContent align="end">
+									<DropdownMenuItem
+										onSelect={() => router.push(`/edit?id=${timer.id}`)}
+									>
+										<Edit size={16} /> Edit
+									</DropdownMenuItem>
+									<DropdownMenuItem
+										className="text-destructive"
+										onSelect={() => setConfirmId(timer.id)}
+									>
+										<Trash2 size={16} /> Delete
+									</DropdownMenuItem>
+								</DropdownMenuContent>
+							</DropdownMenu>
+
+							{/* Play */}
+							<Button
+								variant="default"
+								size="sm"
+								className="gap-2"
+								onClick={() => router.push(`/edit?id=${timer.id}`)}
+							>
+								<Play size={16} />
+								Play
+							</Button>
+						</div>
 					</div>
 				);
 			})}
+
+			{/* Delete confirmation dialog */}
+			{confirmId && (
+				<Dialog open={true} onOpenChange={() => setConfirmId(null)}>
+					<DialogContent title="Delete Timer?">
+						<p>Are you sure you want to delete this timer?</p>
+						<div className="flex justify-end gap-2 pt-4">
+							<Button variant="outline" onClick={() => setConfirmId(null)}>
+								Cancel
+							</Button>
+							<Button
+								variant="destructive"
+								onClick={() => {
+									deleteTimer(confirmId, {
+										onSuccess: () => setConfirmId(null),
+									});
+								}}
+							>
+								Delete
+							</Button>
+						</div>
+					</DialogContent>
+				</Dialog>
+			)}
 		</div>
 	);
 }
