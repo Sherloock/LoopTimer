@@ -1,5 +1,5 @@
 import { Header } from "@/components/header";
-import { WorkoutTimer } from "@/components/workout-timer";
+import { TimersList } from "@/components/timers-list";
 
 export default function HomePage() {
 	return (
@@ -15,7 +15,7 @@ export default function HomePage() {
 							Maximize your training with precision timing
 						</p>
 					</div> */}
-					<WorkoutTimer />
+					<TimersList />
 				</div>
 			</main>
 		</div>

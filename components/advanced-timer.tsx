@@ -1,5 +1,7 @@
 "use client";
 
+import { Checkbox } from "@/components/advanced/checkbox";
+import { DroppableZone } from "@/components/advanced/droppable-zone";
 import { MinimalisticContainer } from "@/components/minimalistic-container";
 import { MinimalisticTimerView } from "@/components/minimalistic-timer-view";
 import { TimerControls } from "@/components/timer-controls";
@@ -29,7 +31,6 @@ import {
 	KeyboardSensor,
 	PointerSensor,
 	useDndMonitor,
-	useDroppable,
 	useSensor,
 	useSensors,
 } from "@dnd-kit/core";
@@ -118,58 +119,6 @@ const getDefaultNameForType = (type: "prepare" | "work" | "rest"): string => {
 			return "INTERVAL";
 	}
 };
-
-// Simple Checkbox Component
-function Checkbox({
-	id,
-	checked,
-	onCheckedChange,
-}: {
-	id: string;
-	checked: boolean;
-	onCheckedChange: (checked: boolean) => void;
-}) {
-	return (
-		<input
-			id={id}
-			type="checkbox"
-			checked={checked}
-			onChange={(e) => onCheckedChange(e.target.checked)}
-			className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-		/>
-	);
-}
-
-// Droppable Zone Component
-function DroppableZone({
-	id,
-	children,
-	className = "",
-	isOver = false,
-	style,
-}: {
-	id: string;
-	children: React.ReactNode;
-	className?: string;
-	isOver?: boolean;
-	style?: React.CSSProperties;
-}) {
-	const { setNodeRef, isOver: isDndOver } = useDroppable({ id });
-
-	return (
-		<div
-			ref={setNodeRef}
-			className={`${className} transition-all duration-200 ${
-				isDndOver || isOver
-					? "border-dashed border-blue-400 bg-blue-50 shadow-inner"
-					: ""
-			}`}
-			style={style}
-		>
-			{children}
-		</div>
-	);
-}
 
 // Loop Settings Dialog Component
 function LoopSettingsDialog({
