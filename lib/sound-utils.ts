@@ -32,20 +32,12 @@ type SoundKey = (typeof SOUND_OPTIONS)[number]["value"];
 
 // Global mute state
 let isMuted = false;
-// Global volume state (0.0 to 1.0)
-let globalVolume = 1;
 
 export const setMute = (muted: boolean) => {
 	isMuted = muted;
 };
 
 export const getMute = () => isMuted;
-
-export const setVolume = (volume: number) => {
-	globalVolume = Math.max(0, Math.min(1, volume));
-};
-
-export const getVolume = () => globalVolume;
 
 /* Keep a single, lazily-created AudioContext to avoid expensive re-creation */
 const getCtx = () => {
@@ -81,9 +73,8 @@ const playTone = (
 		osc.type = type;
 		osc.frequency.value = frequency;
 
-		// Apply global volume
-		const finalVolume =
-			(typeof volume === "number" ? volume : 0.2) * globalVolume;
+		// Use the provided volume directly
+		const finalVolume = typeof volume === "number" ? volume : 0.2;
 
 		gain.gain.setValueAtTime(0, ctx.currentTime);
 		gain.gain.linearRampToValueAtTime(finalVolume, ctx.currentTime + attack);
@@ -112,14 +103,13 @@ const playBeep = (duration = 300) => {
 	osc.type = "sine";
 	osc.frequency.setValueAtTime(750, ctx.currentTime);
 
-	// Create a more natural beep envelope with global volume applied
+	// Create a more natural beep envelope
 	const now = ctx.currentTime;
-	const baseVolume = 0.2;
-	const finalVolume = baseVolume * globalVolume;
+	const volume = 0.2;
 
 	gain.gain.setValueAtTime(0, now);
-	gain.gain.linearRampToValueAtTime(finalVolume, now + 0.05); // Gentle attack
-	gain.gain.setValueAtTime(finalVolume, now + (duration / 1000) * 0.7); // Hold
+	gain.gain.linearRampToValueAtTime(volume, now + 0.05); // Gentle attack
+	gain.gain.setValueAtTime(volume, now + (duration / 1000) * 0.7); // Hold
 	gain.gain.linearRampToValueAtTime(0, now + duration / 1000); // Gentle decay
 
 	osc.connect(gain);
@@ -137,12 +127,11 @@ const playBeepShort = () => {
 	osc.frequency.setValueAtTime(800, ctx.currentTime);
 
 	const now = ctx.currentTime;
-	const baseVolume = 0.18;
-	const finalVolume = baseVolume * globalVolume;
+	const volume = 0.18;
 
 	gain.gain.setValueAtTime(0, now);
-	gain.gain.linearRampToValueAtTime(finalVolume, now + 0.03); // Quick but gentle attack
-	gain.gain.setValueAtTime(finalVolume, now + 0.05); // Hold
+	gain.gain.linearRampToValueAtTime(volume, now + 0.03); // Quick but gentle attack
+	gain.gain.setValueAtTime(volume, now + 0.05); // Hold
 	gain.gain.linearRampToValueAtTime(0, now + 0.15); // Gentle decay
 
 	osc.connect(gain);
@@ -194,24 +183,21 @@ const playBell = () => {
 	// Bell-like envelope with quick attack and long decay
 	const now = ctx.currentTime;
 
-	// Fundamental envelope with global volume applied
-	const baseVolume1 = 0.4;
-	const finalVolume1 = baseVolume1 * globalVolume;
+	// Fundamental envelope
+	const volume1 = 0.4;
 	gain1.gain.setValueAtTime(0, now);
-	gain1.gain.linearRampToValueAtTime(finalVolume1, now + 0.02); // Quick attack
+	gain1.gain.linearRampToValueAtTime(volume1, now + 0.02); // Quick attack
 	gain1.gain.exponentialRampToValueAtTime(0.0001, now + 1.2); // Long decay
 
-	// Harmonic envelopes (slightly different timing for richness) with global volume applied
-	const baseVolume2 = 0.15;
-	const finalVolume2 = baseVolume2 * globalVolume;
+	// Harmonic envelopes (slightly different timing for richness)
+	const volume2 = 0.15;
 	gain2.gain.setValueAtTime(0, now);
-	gain2.gain.linearRampToValueAtTime(finalVolume2, now + 0.01);
+	gain2.gain.linearRampToValueAtTime(volume2, now + 0.01);
 	gain2.gain.exponentialRampToValueAtTime(0.0001, now + 1.0);
 
-	const baseVolume3 = 0.1;
-	const finalVolume3 = baseVolume3 * globalVolume;
+	const volume3 = 0.1;
 	gain3.gain.setValueAtTime(0, now);
-	gain3.gain.linearRampToValueAtTime(finalVolume3, now + 0.03);
+	gain3.gain.linearRampToValueAtTime(volume3, now + 0.03);
 	gain3.gain.exponentialRampToValueAtTime(0.0001, now + 1.4);
 
 	// Connect oscillators to gains
@@ -254,17 +240,15 @@ const playBellShort = () => {
 
 	const now = ctx.currentTime;
 
-	// Apply global volume to both gain nodes
-	const baseVolume1 = 0.3;
-	const finalVolume1 = baseVolume1 * globalVolume;
+	// Apply volume to both gain nodes
+	const volume1 = 0.3;
 	gain1.gain.setValueAtTime(0, now);
-	gain1.gain.linearRampToValueAtTime(finalVolume1, now + 0.01);
+	gain1.gain.linearRampToValueAtTime(volume1, now + 0.01);
 	gain1.gain.exponentialRampToValueAtTime(0.0001, now + 0.4);
 
-	const baseVolume2 = 0.1;
-	const finalVolume2 = baseVolume2 * globalVolume;
+	const volume2 = 0.1;
 	gain2.gain.setValueAtTime(0, now);
-	gain2.gain.linearRampToValueAtTime(finalVolume2, now + 0.01);
+	gain2.gain.linearRampToValueAtTime(volume2, now + 0.01);
 	gain2.gain.exponentialRampToValueAtTime(0.0001, now + 0.4);
 
 	osc1.connect(gain1);
@@ -320,8 +304,8 @@ const playWhistlePattern = (count: number) => {
 };
 
 export const playSound = (soundKey?: string) => {
-	// Check if sound is muted, volume is 0, or if "none" is selected
-	if (!soundKey || soundKey === "none" || isMuted || globalVolume === 0) return;
+	// Check if sound is muted or if "none" is selected
+	if (!soundKey || soundKey === "none" || isMuted) return;
 
 	const key = soundKey as SoundKey;
 

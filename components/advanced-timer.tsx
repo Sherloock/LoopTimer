@@ -2318,23 +2318,17 @@ export function AdvancedTimer({
 						</div>
 
 						{/* Speak names toggle */}
-						<div className="space-y-2">
-							<div className="flex items-center gap-2">
-								<Checkbox
-									id="speak-names"
-									checked={config.speakNames}
-									onCheckedChange={(checked) =>
-										setConfig((prev) => ({ ...prev, speakNames: !!checked }))
-									}
-								/>
-								<Label htmlFor="speak-names" className="text-sm">
-									Speak interval names
-								</Label>
-							</div>
-							<p className="text-xs text-muted-foreground">
-								Note: Speech synthesis is disabled when volume is below 20% to
-								prevent jarring audio.
-							</p>
+						<div className="flex items-center gap-2">
+							<Checkbox
+								id="speak-names"
+								checked={config.speakNames}
+								onCheckedChange={(checked) =>
+									setConfig((prev) => ({ ...prev, speakNames: !!checked }))
+								}
+							/>
+							<Label htmlFor="speak-names" className="text-sm">
+								Speak interval names
+							</Label>
 						</div>
 
 						<div className="flex gap-2 pt-4">
