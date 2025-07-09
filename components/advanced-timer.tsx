@@ -46,57 +46,16 @@ import { toast } from "sonner";
 
 // Externalised components
 import { SortableItem } from "@/components/advanced/sortable-item";
-
-interface IntervalStep {
-	id: string;
-	name: string;
-	duration: number;
-	type: "prepare" | "work" | "rest";
-	color?: string;
-	skipOnLastLoop?: boolean;
-	sound?: string;
-}
-
-interface LoopGroup {
-	id: string;
-	name: string;
-	loops: number;
-	items: WorkoutItem[];
-	collapsed?: boolean;
-	color?: string;
-}
-
-type WorkoutItem = IntervalStep | LoopGroup;
-
-interface ColorSettings {
-	prepare: string;
-	work: string;
-	rest: string;
-	loop: string;
-	nestedLoop: string;
-}
-
-interface AdvancedConfig {
-	items: WorkoutItem[];
-	colors: ColorSettings;
-	defaultAlarm: string;
-	speakNames: boolean;
-}
-
-interface LoadedTimer {
-	id: string;
-	name: string;
-	data: any;
-}
-
-// Helper functions
-const isLoop = (item: WorkoutItem): item is LoopGroup => {
-	return "loops" in item && "items" in item;
-};
-
-const isInterval = (item: WorkoutItem): item is IntervalStep => {
-	return "duration" in item && "type" in item;
-};
+import {
+	AdvancedConfig,
+	ColorSettings,
+	IntervalStep,
+	isInterval,
+	isLoop,
+	LoadedTimer,
+	LoopGroup,
+	WorkoutItem,
+} from "@/types/advanced-timer";
 
 export function AdvancedTimer({
 	loadedTimer,
