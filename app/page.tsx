@@ -5,7 +5,7 @@ export default function HomePage() {
 	return (
 		<div className="min-h-screen bg-gradient-to-br from-background via-background to-muted">
 			<Header />
-			<main className="container mx-auto px-4 py-8">
+			<main className="container mx-auto py-8">
 				<div className="mx-auto max-w-4xl">
 					{/* <div className="text-center mb-8">
 						<h1 className="text-4xl font-bold text-foreground mb-4">

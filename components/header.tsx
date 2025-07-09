@@ -23,7 +23,9 @@ export function Header() {
 				<div className="flex items-center justify-between">
 					<div className="flex items-center space-x-2">
 						<Timer className="h-6 w-6 text-primary" />
-						<span className="text-xl font-bold">Workout Timer</span>
+						<span className="hidden text-xl font-bold sm:inline">
+							Workout Timer
+						</span>
 					</div>
 
 					<div className="flex items-center space-x-2">
