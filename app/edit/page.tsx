@@ -1,9 +1,7 @@
 "use client";
 
 import { EditTimer } from "@/components/edit-timer";
-import { Button } from "@/components/ui/button";
 import { useTimers } from "@/hooks/use-timers";
-import { ArrowLeft } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useMemo } from "react";
 
@@ -27,17 +25,12 @@ export default function EditTimerPage() {
 	};
 
 	return (
-		<div className="min-h-screen bg-gradient-to-br from-background via-background to-muted py-8">
-			<div className="container mx-auto max-w-4xl px-4">
-				<div className="mb-6">
-					<Button variant="ghost" onClick={handleBack} className="gap-2">
-						<ArrowLeft size={16} />
-						Back
-					</Button>
-				</div>
+		<div className="min-h-screen bg-gradient-to-br from-background via-background to-muted py-1">
+			<div className="container mx-auto max-w-4xl px-1">
 				<EditTimer
 					loadedTimer={loadedTimer}
 					onSaveComplete={handleSaveComplete}
+					onExit={handleBack}
 				/>
 			</div>
 		</div>

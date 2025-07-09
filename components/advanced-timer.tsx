@@ -40,7 +40,7 @@ import {
 	sortableKeyboardCoordinates,
 	verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
-import { Repeat, Save as SaveIcon, Settings } from "lucide-react";
+import { ArrowLeft, Repeat, Save as SaveIcon, Settings } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 
@@ -1550,39 +1550,43 @@ export function AdvancedTimer({
 
 			{!isMinimalisticView && !isCompletionView && (
 				<Card>
+					{/* Sticky top bar with Back & Save */}
+					<div className="sticky top-0 z-10 flex items-center justify-between gap-2 border-b bg-background/80 px-4 py-2 backdrop-blur">
+						<Button variant="ghost" size="icon" onClick={() => onExit?.()}>
+							<ArrowLeft size={16} />
+						</Button>
+
+						<Button
+							onClick={handleSave}
+							variant="default"
+							size="sm"
+							className="gap-2"
+							disabled={isSavingOrUpdating}
+						>
+							{isSavingOrUpdating ? (
+								"Saving..."
+							) : (
+								<>
+									<SaveIcon size={16} /> Save
+								</>
+							)}
+						</Button>
+					</div>
+
 					<CardContent className="space-y-6 pt-6">
 						<div className="space-y-4">
 							<div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-start">
 								{/* Timer Name Input - Top Left */}
 								<div className="space-y-2">
-									<Label htmlFor="timer-name" className="text-sm font-medium">
-										Timer Name
-									</Label>
 									<div className="flex gap-2">
 										<Input
 											id="timer-name"
-											className="w-48"
+											className="flex-1"
 											value={timerName}
 											onChange={(e) => handleTimerNameChange(e.target.value)}
 											placeholder="Enter timer name..."
 										/>
-										{!editMode && (
-											<Button
-												onClick={handleSave}
-												variant="default"
-												size="sm"
-												className="gap-2"
-												disabled={isSavingOrUpdating}
-											>
-												{isSavingOrUpdating ? (
-													"Saving..."
-												) : (
-													<>
-														<SaveIcon size={16} /> Save
-													</>
-												)}
-											</Button>
-										)}
+										{/* Save button moved to sticky top bar */}
 									</div>
 								</div>
 
@@ -1637,10 +1641,7 @@ export function AdvancedTimer({
 									items={config.items.map((item) => item.id)}
 									strategy={verticalListSortingStrategy}
 								>
-									<DroppableZone
-										id="main-container"
-										className="max-h-96 space-y-3 overflow-y-auto"
-									>
+									<DroppableZone id="main-container" className="space-y-3">
 										{config.items.map((item, idx) => (
 											<div key={item.id} className="relative">
 												{/* Drop indicator before the first root item */}
@@ -1692,25 +1693,7 @@ export function AdvancedTimer({
 							</DndContext>
 						</div>
 
-						{editMode ? (
-							<div className="flex justify-end pt-4">
-								<Button
-									onClick={handleSave}
-									variant="default"
-									size="sm"
-									className="gap-2"
-									disabled={isSavingOrUpdating}
-								>
-									{isSavingOrUpdating ? (
-										"Saving..."
-									) : (
-										<>
-											<SaveIcon size={16} /> Save
-										</>
-									)}
-								</Button>
-							</div>
-						) : (
+						{editMode ? null : (
 							<TimerControls
 								state={state}
 								onStart={startTimer}

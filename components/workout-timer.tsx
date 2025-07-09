@@ -59,6 +59,9 @@ export function WorkoutTimer() {
 								setSelectedTimer(null);
 							}
 						}}
+						onExit={() => {
+							setActiveTab("saved");
+						}}
 					/>
 				</TabsContent>
 
