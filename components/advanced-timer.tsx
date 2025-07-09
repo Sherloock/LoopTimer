@@ -12,7 +12,6 @@ import { ColorPicker } from "@/components/ui/color-picker";
 import { Dialog, DialogClose, DialogContent } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { NumberInput } from "@/components/ui/number-input";
 import { StatCard } from "@/components/ui/stat-card";
 import { useTimerState } from "@/hooks/use-timer-state";
 import { useSaveTimer, useTimers, useUpdateTimer } from "@/hooks/use-timers";
@@ -39,23 +38,14 @@ import {
 	arrayMove,
 	SortableContext,
 	sortableKeyboardCoordinates,
-	useSortable,
 	verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
-import { CSS } from "@dnd-kit/utilities";
-import {
-	ChevronDown,
-	ChevronRight,
-	Copy,
-	GripVertical,
-	Plus,
-	Repeat,
-	Save as SaveIcon,
-	Settings,
-	Trash2,
-} from "lucide-react";
+import { Repeat, Save as SaveIcon, Settings } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
+
+// Externalised components
+import { SortableItem } from "@/components/advanced/sortable-item";
 
 interface IntervalStep {
 	id: string;
@@ -108,629 +98,6 @@ const isInterval = (item: WorkoutItem): item is IntervalStep => {
 	return "duration" in item && "type" in item;
 };
 
-const getDefaultNameForType = (type: "prepare" | "work" | "rest"): string => {
-	switch (type) {
-		case "prepare":
-			return "PREPARE";
-		case "work":
-			return "WORK";
-		case "rest":
-			return "REST";
-		default:
-			return "INTERVAL";
-	}
-};
-
-// Loop Settings Dialog Component
-function LoopSettingsDialog({
-	isOpen,
-	onClose,
-	item,
-	onUpdate,
-	onDuplicate,
-	onDelete,
-	onMoveToTop,
-	onMoveToBottom,
-	colors,
-}: {
-	isOpen: boolean;
-	onClose: () => void;
-	item: LoopGroup;
-	onUpdate: (id: string, field: string, value: any) => void;
-	onDuplicate: (id: string) => void;
-	onDelete: (id: string) => void;
-	onMoveToTop: (id: string) => void;
-	onMoveToBottom: (id: string) => void;
-	colors: ColorSettings;
-}) {
-	const itemColor = item.color || colors.loop;
-
-	return (
-		<Dialog open={isOpen} onOpenChange={onClose}>
-			<DialogContent title={`${item.name} Settings`} className="max-w-md">
-				<DialogClose onClose={onClose} />
-
-				<div className="space-y-4">
-					<div className="space-y-2">
-						<Label>Loop Name</Label>
-						<Input
-							value={item.name}
-							onChange={(e) => onUpdate(item.id, "name", e.target.value)}
-							placeholder="Loop name"
-						/>
-					</div>
-
-					<div className="space-y-2">
-						<Label>Number of Loops</Label>
-						<NumberInput
-							value={item.loops}
-							onChange={(value) => onUpdate(item.id, "loops", value)}
-							min={1}
-							step={1}
-						/>
-					</div>
-
-					<ColorPicker
-						label="Custom Color"
-						value={itemColor}
-						onChange={(color) => onUpdate(item.id, "color", color)}
-					/>
-
-					<div className="flex gap-2">
-						<Button
-							onClick={() => {
-								onMoveToTop(item.id);
-								onClose();
-							}}
-							variant="outline"
-							className="flex-1 gap-2"
-						>
-							↑ Top
-						</Button>
-						<Button
-							onClick={() => {
-								onMoveToBottom(item.id);
-								onClose();
-							}}
-							variant="outline"
-							className="flex-1 gap-2"
-						>
-							↓ Bottom
-						</Button>
-					</div>
-
-					<div className="flex gap-2 pt-4">
-						<Button
-							onClick={() => {
-								onDuplicate(item.id);
-								onClose();
-							}}
-							variant="outline"
-							className="flex-1 gap-2"
-						>
-							<Copy size={16} />
-							Duplicate
-						</Button>
-						<Button
-							onClick={() => {
-								onDelete(item.id);
-								onClose();
-							}}
-							variant="destructive"
-							className="flex-1 gap-2"
-						>
-							<Trash2 size={16} />
-							Delete
-						</Button>
-					</div>
-				</div>
-			</DialogContent>
-		</Dialog>
-	);
-}
-
-// Interval Settings Dialog Component
-function IntervalSettingsDialog({
-	isOpen,
-	onClose,
-	item,
-	onUpdate,
-	onDuplicate,
-	onDelete,
-	onMoveToTop,
-	onMoveToBottom,
-	colors,
-}: {
-	isOpen: boolean;
-	onClose: () => void;
-	item: IntervalStep;
-	onUpdate: (id: string, field: string, value: any) => void;
-	onDuplicate: (id: string) => void;
-	onDelete: (id: string) => void;
-	onMoveToTop: (id: string) => void;
-	onMoveToBottom: (id: string) => void;
-	colors: ColorSettings;
-}) {
-	const itemColor = item.color || colors[item.type];
-
-	const getDefaultNameForType = (type: "prepare" | "work" | "rest"): string => {
-		switch (type) {
-			case "prepare":
-				return "PREPARE";
-			case "work":
-				return "WORK";
-			case "rest":
-				return "REST";
-			default:
-				return "INTERVAL";
-		}
-	};
-
-	const handleTypeChange = (newType: "prepare" | "work" | "rest") => {
-		onUpdate(item.id, "type", newType);
-		onUpdate(item.id, "name", getDefaultNameForType(newType));
-	};
-
-	return (
-		<Dialog open={isOpen} onOpenChange={onClose}>
-			<DialogContent title={`${item.name} Settings`} className="max-w-md">
-				<DialogClose onClose={onClose} />
-
-				<div className="space-y-4">
-					<div className="space-y-2">
-						<Label>Interval Name</Label>
-						<Input
-							value={item.name}
-							onChange={(e) => onUpdate(item.id, "name", e.target.value)}
-							placeholder="Interval name"
-						/>
-					</div>
-
-					<div className="space-y-2">
-						<Label>Duration (seconds)</Label>
-						<NumberInput
-							value={item.duration}
-							onChange={(value) => onUpdate(item.id, "duration", value)}
-							min={1}
-							step={5}
-						/>
-					</div>
-
-					<div className="space-y-2">
-						<Label>Interval Type</Label>
-						<select
-							value={item.type}
-							onChange={(e) =>
-								handleTypeChange(e.target.value as "prepare" | "work" | "rest")
-							}
-							className="w-full rounded-md border px-3 py-2"
-						>
-							<option value="prepare">Prepare</option>
-							<option value="work">Work</option>
-							<option value="rest">Rest</option>
-						</select>
-					</div>
-
-					{/* Sound selector */}
-					<div className="space-y-2">
-						<Label>Sound</Label>
-						<div className="flex gap-2">
-							<select
-								value={item.sound ?? ""}
-								onChange={(e) => {
-									const val = e.target.value || undefined;
-									onUpdate(item.id, "sound", val);
-									playSound(val);
-								}}
-								className="flex-1 rounded-md border px-3 py-2"
-							>
-								<option value="">Default</option>
-								{SOUND_OPTIONS.map((opt) => (
-									<option key={opt.value} value={opt.value}>
-										{opt.label}
-									</option>
-								))}
-							</select>
-
-							<Button
-								variant="outline"
-								size="icon"
-								onClick={() => playSound(item.sound || undefined)}
-							>
-								▶
-							</Button>
-						</div>
-					</div>
-
-					<ColorPicker
-						label="Custom Color"
-						value={itemColor}
-						onChange={(color) => onUpdate(item.id, "color", color)}
-					/>
-
-					<div className="flex items-center gap-2">
-						<Checkbox
-							id={`skip-last-${item.id}`}
-							checked={Boolean(item.skipOnLastLoop)}
-							onCheckedChange={(checked) =>
-								onUpdate(item.id, "skipOnLastLoop", checked)
-							}
-						/>
-						<Label htmlFor={`skip-last-${item.id}`} className="text-sm">
-							Skip on last loop
-						</Label>
-					</div>
-
-					<div className="flex gap-2">
-						<Button
-							onClick={() => {
-								onMoveToTop(item.id);
-								onClose();
-							}}
-							variant="outline"
-							className="flex-1 gap-2"
-						>
-							↑ Top
-						</Button>
-						<Button
-							onClick={() => {
-								onMoveToBottom(item.id);
-								onClose();
-							}}
-							variant="outline"
-							className="flex-1 gap-2"
-						>
-							↓ Bottom
-						</Button>
-					</div>
-
-					<div className="flex gap-2 pt-4">
-						<Button
-							onClick={() => {
-								onDuplicate(item.id);
-								onClose();
-							}}
-							variant="outline"
-							className="flex-1 gap-2"
-						>
-							<Copy size={16} />
-							Duplicate
-						</Button>
-						<Button
-							onClick={() => {
-								onDelete(item.id);
-								onClose();
-							}}
-							variant="destructive"
-							className="flex-1 gap-2"
-						>
-							<Trash2 size={16} />
-							Delete
-						</Button>
-					</div>
-				</div>
-			</DialogContent>
-		</Dialog>
-	);
-}
-
-// Sortable Item Component
-function SortableItem({
-	item,
-	onUpdate,
-	onRemove,
-	onToggleCollapse,
-	onAddToLoop,
-	onDuplicate,
-	onMoveToTop,
-	onMoveToBottom,
-	activeId,
-	isNested = false,
-	colors,
-}: {
-	item: WorkoutItem;
-	onUpdate: (id: string, field: string, value: any) => void;
-	onRemove: (id: string) => void;
-	onToggleCollapse?: (id: string) => void;
-	onAddToLoop?: (loopId: string) => void;
-	onDuplicate?: (id: string) => void;
-	onMoveToTop?: (id: string) => void;
-	onMoveToBottom?: (id: string) => void;
-	activeId: string | null | undefined;
-	isNested?: boolean;
-	colors: ColorSettings;
-}) {
-	const [showSettings, setShowSettings] = useState(false);
-
-	const {
-		attributes,
-		listeners,
-		setNodeRef,
-		transform,
-		transition,
-		isDragging,
-		isOver,
-	} = useSortable({ id: item.id });
-
-	const style = {
-		transform: CSS.Transform.toString(transform),
-		transition,
-		opacity: isDragging ? 0.5 : 1,
-	};
-
-	const isActiveDropTarget = activeId && activeId !== item.id && isLoop(item);
-
-	// Get colors based on item type
-	const getItemColors = () => {
-		if (isLoop(item)) {
-			const color = item.color || (isNested ? colors.nestedLoop : colors.loop);
-			return {
-				borderColor: color,
-				bgColor: `${color}20`,
-			};
-		} else {
-			const color = item.color || colors[item.type];
-			return {
-				borderColor: color,
-				bgColor: `${color}20`,
-			};
-		}
-	};
-
-	const { borderColor, bgColor } = getItemColors();
-
-	if (isLoop(item)) {
-		return (
-			<>
-				<div ref={setNodeRef} style={style} className="relative space-y-2">
-					{/* Item ID badge */}
-					<span className="absolute right-0 top-0 z-10 m-1 select-all rounded bg-muted px-1 text-xs text-muted-foreground">
-						{item.id}
-					</span>
-					{/* Loop Header */}
-					<div
-						className={`rounded-lg border-2 border-dashed p-3 ${
-							isActiveDropTarget ? "border-blue-400 bg-blue-100" : ""
-						}`}
-						style={{
-							borderColor: isActiveDropTarget ? "#3b82f6" : borderColor,
-							backgroundColor: isActiveDropTarget ? "#dbeafe" : bgColor,
-						}}
-					>
-						<div className="flex items-center gap-2 sm:gap-3">
-							<Button
-								variant="ghost"
-								size="sm"
-								onClick={() => onToggleCollapse?.(item.id)}
-								className="h-8 w-8 shrink-0 p-0"
-							>
-								{item.collapsed ? (
-									<ChevronRight size={16} />
-								) : (
-									<ChevronDown size={16} />
-								)}
-							</Button>
-
-							<Repeat
-								size={16}
-								style={{ color: borderColor }}
-								className="shrink-0"
-							/>
-
-							<Input
-								value={item.name}
-								onChange={(e) => onUpdate(item.id, "name", e.target.value)}
-								className="min-w-[120px] flex-1"
-								placeholder="Loop name"
-							/>
-
-							<div className="flex shrink-0 items-center gap-1 sm:gap-2">
-								<span className="text-sm text-muted-foreground">×</span>
-								<NumberInput
-									value={item.loops}
-									onChange={(value) => onUpdate(item.id, "loops", value)}
-									min={1}
-									step={1}
-									className="w-20 min-w-[80px] sm:w-24"
-								/>
-							</div>
-
-							<div className="flex shrink-0 gap-1 sm:gap-2">
-								<Button
-									variant="outline"
-									size="sm"
-									onClick={() => onAddToLoop?.(item.id)}
-									className="min-w-[60px] gap-1 px-2 sm:min-w-[80px] sm:px-3"
-								>
-									<Plus size={12} />
-									<span className="hidden sm:inline">Add</span>
-								</Button>
-
-								<Button
-									variant="ghost"
-									size="icon"
-									onClick={() => setShowSettings(true)}
-									className="h-8 w-8 sm:h-9 sm:w-9"
-								>
-									<Settings size={14} />
-								</Button>
-
-								<div
-									{...attributes}
-									{...listeners}
-									className="flex h-8 w-8 cursor-grab items-center justify-center sm:h-9 sm:w-9"
-								>
-									<GripVertical size={16} className="text-gray-400" />
-								</div>
-							</div>
-						</div>
-					</div>
-
-					{/* C-shaped container for loop items */}
-					{!item.collapsed && (
-						<div className="relative">
-							{/* Enhanced C-shape visual wrapper using border style */}
-							<div
-								className="absolute bottom-2 left-6 top-2 w-0 border-l-2 border-dashed"
-								style={{ borderColor: borderColor }}
-							/>
-							<div
-								className="absolute left-4 top-2 h-0 w-4 border-t-2 border-dashed"
-								style={{ borderColor: borderColor }}
-							/>
-							<div
-								className="absolute bottom-2 left-4 h-0 w-4 border-b-2 border-dashed"
-								style={{ borderColor: borderColor }}
-							/>
-
-							{/* Loop content with proper spacing */}
-							<div className="ml-12 mr-4 space-y-2">
-								{item.items.length > 0 ? (
-									<DroppableZone
-										id={`drop-${item.id}`}
-										isOver={Boolean(isActiveDropTarget)}
-										className="space-y-2"
-									>
-										<SortableContext
-											items={item.items.map((subItem) => subItem.id)}
-											strategy={verticalListSortingStrategy}
-										>
-											{item.items.map((subItem, idx) => (
-												<div key={subItem.id} className="relative">
-													{/* Drop indicator before the first item */}
-													{activeId && idx === 0 && (
-														<DroppableZone
-															id={`drop-before-${subItem.id}`}
-															className="-my-3 h-6 bg-transparent"
-															style={{ minHeight: 24 }}
-														>
-															{isOver && activeId !== subItem.id && (
-																<div className="absolute left-0 right-0 top-0 h-2 rounded-full bg-blue-400 opacity-60" />
-															)}
-														</DroppableZone>
-													)}
-													<SortableItem
-														item={subItem}
-														onUpdate={onUpdate}
-														onRemove={onRemove}
-														onToggleCollapse={onToggleCollapse}
-														onAddToLoop={onAddToLoop}
-														onDuplicate={onDuplicate}
-														onMoveToTop={onMoveToTop}
-														onMoveToBottom={onMoveToBottom}
-														activeId={activeId}
-														isNested={true}
-														colors={colors}
-													/>
-													{/* Drop indicator after each item */}
-													<DroppableZone
-														id={`drop-after-${subItem.id}`}
-														className="-my-3 h-6 bg-transparent"
-														style={{ minHeight: 24 }}
-													>
-														{isOver && activeId !== subItem.id && (
-															<div className="absolute bottom-0 left-0 right-0 h-2 rounded-full bg-blue-400 opacity-60" />
-														)}
-													</DroppableZone>
-												</div>
-											))}
-										</SortableContext>
-									</DroppableZone>
-								) : (
-									<DroppableZone
-										id={`empty-${item.id}`}
-										className="rounded-lg border-2 border-dashed border-gray-300 bg-gray-50 p-4 text-center text-muted-foreground dark:border-gray-600 dark:bg-gray-800"
-									>
-										Drop intervals or loops here
-									</DroppableZone>
-								)}
-							</div>
-						</div>
-					)}
-				</div>
-
-				<LoopSettingsDialog
-					isOpen={showSettings}
-					onClose={() => setShowSettings(false)}
-					item={item}
-					onUpdate={onUpdate}
-					onDuplicate={() => onDuplicate?.(item.id)}
-					onDelete={() => onRemove(item.id)}
-					onMoveToTop={() => onMoveToTop?.(item.id)}
-					onMoveToBottom={() => onMoveToBottom?.(item.id)}
-					colors={colors}
-				/>
-			</>
-		);
-	}
-
-	return (
-		<>
-			<div
-				ref={setNodeRef}
-				style={{
-					...style,
-					borderColor: isOver && activeId ? "#3b82f6" : borderColor,
-					backgroundColor: isOver && activeId ? "#dbeafe" : bgColor,
-				}}
-				className={`relative flex items-center gap-2 rounded-lg border-2 p-2 transition-all duration-200 sm:gap-3 sm:p-3 ${
-					isNested ? "border-opacity-60" : ""
-				} ${isOver && activeId ? "border-blue-400 bg-blue-100 shadow-lg" : ""}`}
-			>
-				{/* Item ID badge */}
-				<span className="absolute right-0 top-0 z-10 m-1 select-all rounded bg-muted px-1 text-xs text-muted-foreground">
-					{item.id}
-				</span>
-				<Input
-					value={item.name}
-					onChange={(e) => onUpdate(item.id, "name", e.target.value)}
-					className="min-w-[100px] flex-1"
-					placeholder="Exercise name"
-				/>
-
-				<NumberInput
-					value={item.duration}
-					onChange={(value) => onUpdate(item.id, "duration", value)}
-					min={1}
-					step={5}
-					className="w-24 min-w-[90px] sm:w-32"
-				/>
-
-				<div className="flex shrink-0 gap-1">
-					<Button
-						variant="ghost"
-						size="icon"
-						onClick={() => setShowSettings(true)}
-						className="h-8 w-8 sm:h-9 sm:w-9"
-					>
-						<Settings size={14} />
-					</Button>
-				</div>
-
-				<div
-					{...attributes}
-					{...listeners}
-					className="flex h-8 w-8 cursor-grab items-center justify-center sm:h-9 sm:w-9"
-				>
-					<GripVertical size={16} className="text-gray-400" />
-				</div>
-			</div>
-
-			<IntervalSettingsDialog
-				isOpen={showSettings}
-				onClose={() => setShowSettings(false)}
-				item={item}
-				onUpdate={onUpdate}
-				onDuplicate={() => onDuplicate?.(item.id)}
-				onDelete={() => onRemove(item.id)}
-				onMoveToTop={() => onMoveToTop?.(item.id)}
-				onMoveToBottom={() => onMoveToBottom?.(item.id)}
-				colors={colors}
-			/>
-		</>
-	);
-}
-
 export function AdvancedTimer({
 	loadedTimer,
 	onSaved,
@@ -750,7 +117,7 @@ export function AdvancedTimer({
 	onSaveComplete?: () => void;
 	onComplete?: (timerName: string) => void;
 } = {}) {
-	const [nextId, setNextId] = useState(5); // Start from 5 since we have items with IDs 1-4
+	const [nextId, setNextId] = useState(6); // Start from 6 since default items now use IDs 1-5
 
 	// Keep a ref in sync with nextId state to guarantee synchronous, unique ID generation
 	const nextIdRef = useRef(nextId);
@@ -762,14 +129,20 @@ export function AdvancedTimer({
 
 	const [config, setConfig] = useState<AdvancedConfig>({
 		items: [
-			{ id: "1", name: "PREPARE", duration: 5, type: "prepare" },
 			{
-				id: "2",
+				id: "1",
+				name: "WARM-UP",
+				loops: 1,
+				items: [{ id: "2", name: "PREPARE", duration: 5, type: "prepare" }],
+				collapsed: false,
+			},
+			{
+				id: "3",
 				name: "MAIN WORKOUT",
 				loops: 3,
 				items: [
-					{ id: "3", name: "WORK", duration: 30, type: "work" },
-					{ id: "4", name: "REST", duration: 10, type: "rest" },
+					{ id: "4", name: "WORK", duration: 30, type: "work" },
+					{ id: "5", name: "REST", duration: 10, type: "rest" },
 				],
 				collapsed: false,
 			},
@@ -788,7 +161,36 @@ export function AdvancedTimer({
 	// Update config when a saved timer is loaded
 	useEffect(() => {
 		if (loadedTimer?.data) {
-			setConfig(loadedTimer.data as AdvancedConfig);
+			// Sanitize incoming data so that only loops exist at root and loops contain ONLY intervals
+
+			const sanitizeConfig = (data: AdvancedConfig): AdvancedConfig => {
+				const loops: LoopGroup[] = [];
+				const rootIntervals: IntervalStep[] = [];
+
+				data.items.forEach((itm) => {
+					if (isLoop(itm)) {
+						const sanitizedItems = itm.items.filter(isInterval);
+						loops.push({ ...itm, items: sanitizedItems });
+					} else {
+						rootIntervals.push(itm);
+					}
+				});
+
+				if (rootIntervals.length) {
+					loops.unshift({
+						id: Date.now().toString(),
+						name: "LOOP",
+						loops: 1,
+						items: rootIntervals,
+						collapsed: false,
+					});
+				}
+
+				return { ...data, items: loops };
+			};
+
+			const normalized = sanitizeConfig(loadedTimer.data as AdvancedConfig);
+			setConfig(normalized);
 
 			// update next id to avoid collisions
 			const extractIds = (items: WorkoutItem[]): number[] => {
@@ -801,7 +203,7 @@ export function AdvancedTimer({
 				}, []);
 			};
 
-			const ids = extractIds(loadedTimer.data.items ?? []);
+			const ids = extractIds(normalized.items ?? []);
 			const maxId = ids.length ? Math.max(...ids) : 0;
 			setNextId(maxId + 1);
 		}
@@ -1001,6 +403,10 @@ export function AdvancedTimer({
 		): WorkoutItem[] => {
 			return items.map((item) => {
 				if (item.id === loopId && isLoop(item)) {
+					// Disallow adding loops inside loops
+					if (isLoop(newItem)) {
+						return item;
+					}
 					return { ...item, items: [...item.items, newItem] };
 				}
 				if (isLoop(item)) {
@@ -1131,6 +537,37 @@ export function AdvancedTimer({
 			const overLocation = findItemLocation(config.items, overIdStr);
 			console.log({ activeLocation, overLocation });
 
+			// Root-level constraints – fetch the actual objects once
+			const activeItemObj = findItemById(config.items, activeIdStr);
+			const overItemObj = findItemById(config.items, overIdStr);
+
+			// 1. Prevent dragging a loop into another loop (loops must stay at root)
+			if (activeItemObj && isLoop(activeItemObj)) {
+				const droppingIntoLoopZone =
+					(overIdStr.startsWith("drop-") &&
+						!overIdStr.startsWith("drop-before-") &&
+						!overIdStr.startsWith("drop-after-")) ||
+					overIdStr.startsWith("empty-");
+
+				const droppingOntoLoopHeader =
+					overItemObj && isLoop(overItemObj) && overItemObj.id !== activeIdStr;
+
+				const droppingInsideLoopItem = Boolean(overLocation?.loopId);
+
+				if (
+					droppingIntoLoopZone ||
+					droppingOntoLoopHeader ||
+					droppingInsideLoopItem
+				) {
+					return; // Block the operation entirely
+				}
+			}
+
+			// 2. Prevent placing an interval at root level
+			if (activeItemObj && isInterval(activeItemObj) && !overLocation?.loopId) {
+				return;
+			}
+
 			// Find and remove the dragged item from anywhere in the structure
 			const findAndRemoveItem = (
 				items: WorkoutItem[],
@@ -1193,7 +630,7 @@ export function AdvancedTimer({
 			}
 
 			// Handle dropping directly onto a loop HEADER – insert as FIRST item of that loop
-			const overItemObj = findItemById(config.items, overIdStr);
+			// (overItemObj already defined above)
 			if (overItemObj && isLoop(overItemObj)) {
 				// 🛑 Guard: Don't allow a loop to be inserted into itself
 				if (overItemObj.id === activeIdStr) {
@@ -1902,6 +1339,8 @@ export function AdvancedTimer({
 	}, [currentInterval]);
 
 	useEffect(() => {
+		// Play short countdown beeps only while actively running
+		if (state !== "running") return;
 		if (!currentInterval) return;
 
 		const soundKey = (currentInterval.sound || config.defaultAlarm) as string;
@@ -1914,7 +1353,6 @@ export function AdvancedTimer({
 		let beepCount = 1;
 		if (variant === "2x") beepCount = 2;
 		else if (variant === "3x") beepCount = 3;
-		else beepCount = 1; // short & 1x
 
 		if (timeLeft >= 1 && timeLeft <= 3 && timeLeft <= beepCount) {
 			if (!playedSecondsRef.current.has(timeLeft)) {
@@ -1923,7 +1361,7 @@ export function AdvancedTimer({
 				playSound(shortKey);
 			}
 		}
-	}, [timeLeft, currentInterval, config.defaultAlarm]);
+	}, [state, timeLeft, currentInterval, config.defaultAlarm]);
 
 	// ======= Speak interval names while running =======
 	useEffect(() => {
@@ -2108,15 +1546,6 @@ export function AdvancedTimer({
 							<div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
 								<h3 className="text-lg font-semibold">Workout Sequence</h3>
 								<div className="flex flex-wrap gap-2">
-									<Button
-										onClick={addInterval}
-										variant="outline"
-										size="sm"
-										className="gap-2"
-									>
-										<Plus size={16} />
-										Add Interval
-									</Button>
 									<Button
 										onClick={addLoop}
 										variant="outline"
