@@ -131,18 +131,17 @@ export function AdvancedTimer({
 		items: [
 			{
 				id: "1",
-				name: "WARM-UP",
-				loops: 1,
-				items: [{ id: "2", name: "PREPARE", duration: 5, type: "prepare" }],
-				collapsed: false,
+				name: "PREPARE",
+				duration: 5,
+				type: "prepare",
 			},
 			{
-				id: "3",
+				id: "2",
 				name: "MAIN WORKOUT",
 				loops: 3,
 				items: [
-					{ id: "4", name: "WORK", duration: 30, type: "work" },
-					{ id: "5", name: "REST", duration: 10, type: "rest" },
+					{ id: "3", name: "WORK", duration: 30, type: "work" },
+					{ id: "4", name: "REST", duration: 10, type: "rest" },
 				],
 				collapsed: false,
 			},
@@ -504,14 +503,37 @@ export function AdvancedTimer({
 
 	const handleDragEnd = useCallback(
 		(event: DragEndEvent) => {
+			/* ---------------------------------------------------------------------
+			 *                           HANDLE DRAG END
+			 *
+			 *  This callback orchestrates **all** state transitions that happen when
+			 *  the user releases a dragged item.  The high-level flow is:
+			 *
+			 *    1. House-keeping – reset `activeId` & exit early when the drop target
+			 *       is invalid.
+			 *    2. Collect meta-data (ids, locations, actual objects) required by the
+			 *       various guard-clauses and insertion strategies.
+			 *    3. Guard-clauses – cancel the operation whenever a business rule is
+			 *       violated (e.g. loops cannot be nested, intervals must live inside
+			 *       a loop, an item cannot be dropped on itself, etc.).
+			 *    4. Immutable remove → insert – depending on where the item was dropped
+			 *       we remove it from the old position and re-insert it into the new one
+			 *       using helper utilities. Each scenario (drop-zone, header, before/
+			 *       after, root reorder, etc.) has its own dedicated block so the intent
+			 *       is crystal clear.
+			 *
+			 *  All helper utilities (`findItemLocation`, `findAndRemoveItem`, …) are
+			 *  defined inline so they can freely access `config.items` while still
+			 *  benefiting from `useCallback` memoisation.
+			 * ------------------------------------------------------------------- */
 			const { active, over } = event;
 			setActiveId(null);
 
+			// Bail out when the user lets go outside a valid drop-zone
 			if (!over) return;
 
 			const activeIdStr = active.id as string;
 			const overIdStr = over.id as string;
-			console.log({ activeIdStr, overIdStr, active, over });
 
 			// Find which loop contains an item (if any)
 			const findItemLocation = (
@@ -519,6 +541,9 @@ export function AdvancedTimer({
 				targetId: string,
 				parentLoopId?: string,
 			): { loopId?: string; index: number } | null => {
+				// Recursively walk the tree and return the index & parent loop (if any)
+				// for the requested `targetId`. This information is reused multiple times
+				// later when deciding where to put the dragged item.
 				for (let i = 0; i < items.length; i++) {
 					const item = items[i];
 					if (item.id === targetId) {
@@ -535,12 +560,15 @@ export function AdvancedTimer({
 			// Check item locations upfront
 			const activeLocation = findItemLocation(config.items, activeIdStr);
 			const overLocation = findItemLocation(config.items, overIdStr);
-			console.log({ activeLocation, overLocation });
 
 			// Root-level constraints – fetch the actual objects once
 			const activeItemObj = findItemById(config.items, activeIdStr);
 			const overItemObj = findItemById(config.items, overIdStr);
 
+			// ------------------------------------------------------------------
+			// GUARD 1 – A *loop* cannot be dropped **inside** another loop, nor onto
+			//           any of its inner drop-zones.  Loops are always root-level.
+			// ------------------------------------------------------------------
 			// 1. Prevent dragging a loop into another loop (loops must stay at root)
 			if (activeItemObj && isLoop(activeItemObj)) {
 				const droppingIntoLoopZone =
@@ -563,8 +591,20 @@ export function AdvancedTimer({
 				}
 			}
 
-			// 2. Prevent placing an interval at root level
-			if (activeItemObj && isInterval(activeItemObj) && !overLocation?.loopId) {
+			// ------------------------------------------------------------------
+			// GUARD 2 – An *interval* cannot be placed at the root level. Intervals
+			//           must live inside a loop.
+			// ------------------------------------------------------------------
+			// 2. Prevent placing an interval at the root level. We still allow
+			//    dropping intervals onto loop headers or dedicated loop drop-zones.
+			const isRootDrop = !(
+				overIdStr.startsWith("drop-") ||
+				overIdStr.startsWith("empty-") ||
+				(overItemObj && isLoop(overItemObj)) ||
+				overLocation?.loopId
+			);
+
+			if (activeItemObj && isInterval(activeItemObj) && isRootDrop) {
 				return;
 			}
 
@@ -596,7 +636,16 @@ export function AdvancedTimer({
 				return { items: newItems, removedItem };
 			};
 
+			// ============================= SCENARIOS ============================
+			// From this point onward every if-block handles **one** concrete drop
+			// scenario.  Each block performs the exact same two steps:
+			//   1) `findAndRemoveItem` – extract the dragged item immutably.
+			//   2) Produce the next state by inserting the item at the new position.
+			// The function returns immediately after a successful state update so that
+			// only one scenario can ever run per invocation.
+			// ====================================================================
 			// Handle dropping into a loop (drop zones) - ONLY for empty loop areas (not before/after indicators)
+			// CASE A – Dropped *inside* an existing loop (empty interior area)
 			if (
 				(overIdStr.startsWith("drop-") &&
 					!overIdStr.startsWith("drop-before-") &&
@@ -630,9 +679,9 @@ export function AdvancedTimer({
 			}
 
 			// Handle dropping directly onto a loop HEADER – insert as FIRST item of that loop
-			// (overItemObj already defined above)
+			// CASE B – Dropped on the *header* of a loop, meaning we prepend the item.
 			if (overItemObj && isLoop(overItemObj)) {
-				// 🛑 Guard: Don't allow a loop to be inserted into itself
+				// �� Guard: Don't allow a loop to be inserted into itself
 				if (overItemObj.id === activeIdStr) {
 					return; // Exit early – no changes needed
 				}
@@ -666,6 +715,8 @@ export function AdvancedTimer({
 			}
 
 			// Handle drop-before and drop-after zones specifically
+			// CASE C – Dropped on virtual before/after drop-zones that live between
+			//          siblings. The target location may be inside a loop **or** at root.
 			if (
 				overIdStr.startsWith("drop-before-") ||
 				overIdStr.startsWith("drop-after-")
@@ -764,6 +815,8 @@ export function AdvancedTimer({
 			}
 
 			// Handle dropping onto main container area (move out of loop to end)
+			// CASE D – Dropped on the whitespace below all root items.  We treat this
+			//          as appending the item to the very end at root level.
 			if (overIdStr === "main-container") {
 				setConfig((prev) => {
 					const result = findAndRemoveItem(prev.items);
@@ -779,6 +832,8 @@ export function AdvancedTimer({
 			}
 
 			// Handle dropping an item directly onto another item (insert after the target)
+			// CASE E – Dropped directly onto an item (not on a drop-zone).  We insert
+			//          the dragged element **after** the hovered element.
 			if (overLocation && activeIdStr !== overIdStr) {
 				setConfig((prev) => {
 					const result = findAndRemoveItem(prev.items);
@@ -831,6 +886,7 @@ export function AdvancedTimer({
 			}
 
 			// Handle reordering within the same loop
+			// CASE F – Simple re-ordering inside the **same** parent loop.
 			if (
 				activeLocation &&
 				overLocation &&
@@ -871,6 +927,8 @@ export function AdvancedTimer({
 			}
 
 			// Handle moving from inside a loop to outside at specific position
+			// CASE G – Moving an item from *inside* a loop to a specific position at
+			//          the root level (while hovering over another root item).
 			if (
 				activeLocation?.loopId &&
 				overLocation &&
@@ -890,6 +948,7 @@ export function AdvancedTimer({
 			}
 
 			// Handle reordering at root level
+			// CASE H – Plain root-level reorder (dragging a root item over another).
 			if (
 				activeIdStr !== overIdStr &&
 				!activeLocation?.loopId &&
@@ -1312,16 +1371,16 @@ export function AdvancedTimer({
 	const DndMonitor = () => {
 		useDndMonitor({
 			onDragStart(event) {
-				console.log("onDragStart", event);
+				/* onDragStart */
 			},
 			// onDragMove(event) {
 			// 	console.log("onDragMove", event);
 			// },
 			onDragOver(event) {
-				console.log("onDragOver", event);
+				/* onDragOver */
 			},
 			onDragEnd(event) {
-				console.log("onDragEnd", event);
+				/* onDragEnd */
 			},
 			// onDragCancel(event) {
 			// 	console.log("onDragCancel", event);
