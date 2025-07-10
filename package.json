@@ -18,7 +18,6 @@
 		"prisma:studio": "npx prisma studio",
 		"prisma:seed": "npx prisma db seed",
 		"vercel": "vercel",
-		"vercel:dev": "vercel dev",
 		"vercel:prod": "vercel --prod"
 	},
 	"dependencies": {

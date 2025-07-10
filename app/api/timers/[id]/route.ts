@@ -3,9 +3,13 @@ import { getTimerById } from "@/actions/timers/getTimerById";
 import { updateTimer } from "@/actions/timers/updateTimer";
 import { NextResponse } from "next/server";
 
-export async function GET(_: Request, { params }: { params: { id: string } }) {
+export async function GET(
+	_: Request,
+	{ params }: { params: Promise<{ id: string }> },
+) {
 	try {
-		const timer = await getTimerById(params.id);
+		const { id } = await params;
+		const timer = await getTimerById(id);
 		return NextResponse.json(timer);
 	} catch (error) {
 		return NextResponse.json(
@@ -17,11 +21,12 @@ export async function GET(_: Request, { params }: { params: { id: string } }) {
 
 export async function PUT(
 	req: Request,
-	{ params }: { params: { id: string } },
+	{ params }: { params: Promise<{ id: string }> },
 ) {
 	try {
+		const { id } = await params;
 		const body = await req.json();
-		const timer = await updateTimer(params.id, body);
+		const timer = await updateTimer(id, body);
 		return NextResponse.json(timer);
 	} catch (error) {
 		return NextResponse.json(
@@ -33,10 +38,11 @@ export async function PUT(
 
 export async function DELETE(
 	_: Request,
-	{ params }: { params: { id: string } },
+	{ params }: { params: Promise<{ id: string }> },
 ) {
 	try {
-		await deleteTimer(params.id);
+		const { id } = await params;
+		await deleteTimer(id);
 		return NextResponse.json({ success: true });
 	} catch (error) {
 		return NextResponse.json(
