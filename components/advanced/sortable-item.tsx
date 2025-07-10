@@ -111,6 +111,15 @@ export function SortableItem(props: Props) {
 						}}
 					>
 						<div className="flex flex-wrap items-center gap-2 sm:flex-nowrap sm:gap-3">
+							{/* Drag handle at the end of the name */}
+							<div
+								{...attributes}
+								{...listeners}
+								className="flex h-8 w-8 cursor-grab items-center justify-center"
+							>
+								<GripVertical size={16} className="text-gray-400" />
+							</div>
+
 							<Button
 								variant="ghost"
 								size="sm"
@@ -137,14 +146,6 @@ export function SortableItem(props: Props) {
 									className="w-full"
 									placeholder="Loop name"
 								/>
-								{/* Drag handle at the end of the name */}
-								<div
-									{...attributes}
-									{...listeners}
-									className="flex h-8 w-8 cursor-grab items-center justify-center"
-								>
-									<GripVertical size={16} className="text-gray-400" />
-								</div>
 							</div>
 
 							<div className="flex min-w-[80px] items-center gap-2">
@@ -299,12 +300,6 @@ export function SortableItem(props: Props) {
 				} ${isOver && activeId ? "border-blue-400 bg-blue-100 shadow-lg" : ""}`}
 			>
 				<div className="flex min-w-[100px] flex-1 items-center gap-2">
-					<Input
-						value={interval.name}
-						onChange={(e) => onUpdate(interval.id, "name", e.target.value)}
-						className="w-full"
-						placeholder="Exercise name"
-					/>
 					{/* Drag handle at the end of the name */}
 					<div
 						{...attributes}
@@ -313,6 +308,12 @@ export function SortableItem(props: Props) {
 					>
 						<GripVertical size={16} className="text-gray-400" />
 					</div>
+					<Input
+						value={interval.name}
+						onChange={(e) => onUpdate(interval.id, "name", e.target.value)}
+						className="w-full"
+						placeholder="Exercise name"
+					/>
 				</div>
 				<div className="flex min-w-[90px] items-center gap-2">
 					<TimeInput
