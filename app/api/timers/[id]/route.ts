@@ -3,11 +3,7 @@ import { getTimerById } from "@/actions/timers/getTimerById";
 import { updateTimer } from "@/actions/timers/updateTimer";
 import { NextResponse } from "next/server";
 
-interface Params {
-	params: { id: string };
-}
-
-export async function GET(_: Request, { params }: Params) {
+export async function GET(_: Request, { params }: { params: { id: string } }) {
 	try {
 		const timer = await getTimerById(params.id);
 		return NextResponse.json(timer);
@@ -19,7 +15,10 @@ export async function GET(_: Request, { params }: Params) {
 	}
 }
 
-export async function PUT(req: Request, { params }: Params) {
+export async function PUT(
+	req: Request,
+	{ params }: { params: { id: string } },
+) {
 	try {
 		const body = await req.json();
 		const timer = await updateTimer(params.id, body);
@@ -32,7 +31,10 @@ export async function PUT(req: Request, { params }: Params) {
 	}
 }
 
-export async function DELETE(_: Request, { params }: Params) {
+export async function DELETE(
+	_: Request,
+	{ params }: { params: { id: string } },
+) {
 	try {
 		await deleteTimer(params.id);
 		return NextResponse.json({ success: true });
