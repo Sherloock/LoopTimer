@@ -654,7 +654,7 @@ export function AdvancedTimer({
 			// Handle dropping directly onto a loop HEADER – insert as FIRST item of that loop
 			// CASE B – Dropped on the *header* of a loop, meaning we prepend the item.
 			if (overItemObj && isLoop(overItemObj)) {
-				// �� Guard: Don't allow a loop to be inserted into itself
+				// 🛑 Guard: Don't allow a loop to be inserted into itself
 				if (overItemObj.id === activeIdStr) {
 					return; // Exit early – no changes needed
 				}
@@ -939,7 +939,7 @@ export function AdvancedTimer({
 				});
 			}
 		},
-		[addItemToLoop, config.items],
+		[addItemToLoop, config.items, findItemById],
 	);
 
 	// Initialize timer - only when state changes to idle
@@ -952,7 +952,7 @@ export function AdvancedTimer({
 			}
 			setCurrentSet(1);
 		}
-	}, [state]); // Remove config dependency to prevent constant recalculation
+	}, [state, flattenedIntervals, setCurrentSet]);
 
 	// Separate effect for config changes
 	useEffect(() => {
@@ -961,22 +961,7 @@ export function AdvancedTimer({
 			setCurrentType(mapIntervalTypeToTimerType(flattenedIntervals[0].type));
 			setCurrentItemIndex(0);
 		}
-	}, [flattenedIntervals]); // Only when flattened intervals change
-
-	// Timer countdown logic
-	useEffect(() => {
-		let interval: NodeJS.Timeout;
-
-		if (state === "running" && timeLeft > 0) {
-			interval = setInterval(() => {
-				setTimeLeft((prev) => prev - 1);
-			}, 1000);
-		} else if (state === "running" && timeLeft === 0) {
-			handleTimerComplete();
-		}
-
-		return () => clearInterval(interval);
-	}, [state, timeLeft]); // Keep this as is
+	}, [flattenedIntervals, state]);
 
 	const handleTimerComplete = useCallback(() => {
 		const nextIndex = currentItemIndex + 1;
@@ -1011,6 +996,21 @@ export function AdvancedTimer({
 		onComplete,
 		timerName,
 	]);
+
+	// Timer countdown logic
+	useEffect(() => {
+		let interval: NodeJS.Timeout;
+
+		if (state === "running" && timeLeft > 0) {
+			interval = setInterval(() => {
+				setTimeLeft((prev) => prev - 1);
+			}, 1000);
+		} else if (state === "running" && timeLeft === 0) {
+			handleTimerComplete();
+		}
+
+		return () => clearInterval(interval);
+	}, [state, timeLeft, handleTimerComplete]);
 
 	const resetState = useCallback(() => {
 		setCurrentSet(1);
