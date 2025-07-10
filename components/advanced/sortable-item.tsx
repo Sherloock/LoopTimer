@@ -180,7 +180,7 @@ export function SortableItem(props: Props) {
 										className="min-w-[60px] gap-1 px-2"
 									>
 										<Plus size={12} />
-										<span className="hidden sm:inline">Add</span>
+										<span className="">Add Interval</span>
 									</Button>
 									<div className="ml-auto flex items-center">
 										<span className="text-xs text-muted-foreground">
