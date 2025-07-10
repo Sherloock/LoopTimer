@@ -31,40 +31,40 @@ export function TimerDisplay({
 }: TimerDisplayProps) {
 	const getIntervalBadgeColor = () => {
 		switch (intervalType) {
-		case "prepare":
-			return "bg-orange-500 hover:bg-orange-600 text-white";
-		case "workout":
-			return "bg-green-500 hover:bg-green-600 text-white";
-		case "rest":
-			return "bg-blue-500 hover:bg-blue-600 text-white";
-		default:
-			return "default";
+			case "prepare":
+				return "bg-orange-500 hover:bg-orange-600 text-white";
+			case "workout":
+				return "bg-green-500 hover:bg-green-600 text-white";
+			case "rest":
+				return "bg-blue-500 hover:bg-blue-600 text-white";
+			default:
+				return "default";
 		}
 	};
 
 	const getTimerDisplayColor = () => {
 		switch (intervalType) {
-		case "prepare":
-			return "text-orange-500";
-		case "workout":
-			return "text-green-500";
-		case "rest":
-			return "text-blue-500";
-		default:
-			return "text-primary";
+			case "prepare":
+				return "text-orange-500";
+			case "workout":
+				return "text-green-500";
+			case "rest":
+				return "text-blue-500";
+			default:
+				return "text-primary";
 		}
 	};
 
 	const getProgressColor = () => {
 		switch (intervalType) {
-		case "prepare":
-			return "bg-orange-500";
-		case "workout":
-			return "bg-green-500";
-		case "rest":
-			return "bg-blue-500";
-		default:
-			return "";
+			case "prepare":
+				return "bg-orange-500";
+			case "workout":
+				return "bg-green-500";
+			case "rest":
+				return "bg-blue-500";
+			default:
+				return "";
 		}
 	};
 
