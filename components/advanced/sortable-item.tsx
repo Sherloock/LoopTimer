@@ -6,12 +6,15 @@ import { DroppableZone } from "@/components/advanced/droppable-zone";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { NumberInput } from "@/components/ui/number-input";
+import { TimeInput } from "@/components/ui/time-input";
 import {
 	ColorSettings,
 	IntervalStep,
 	isLoop,
 	WorkoutItem,
 } from "@/types/advanced-timer";
+import { computeTotalTime } from "@/utils/compute-total-time";
+import { formatTimeInput } from "@/utils/timer-shared";
 import {
 	SortableContext,
 	useSortable,
@@ -89,6 +92,9 @@ export function SortableItem(props: Props) {
 
 	// ============ LOOP RENDER ============
 	if (isLoop(item)) {
+		const loopLength = formatTimeInput(
+			computeTotalTime(item.items) * item.loops,
+		);
 		return (
 			<>
 				<div ref={setNodeRef} style={style} className="relative space-y-2">
@@ -124,50 +130,59 @@ export function SortableItem(props: Props) {
 								className="shrink-0"
 							/>
 
-							<Input
-								value={item.name}
-								onChange={(e) => onUpdate(item.id, "name", e.target.value)}
-								className="w-full min-w-[120px] flex-1 sm:w-auto"
-								placeholder="Loop name"
-							/>
+							<div className="flex min-w-[120px] flex-1 items-center gap-2">
+								<Input
+									value={item.name}
+									onChange={(e) => onUpdate(item.id, "name", e.target.value)}
+									className="w-full"
+									placeholder="Loop name"
+								/>
+								{/* Drag handle at the end of the name */}
+								<div
+									{...attributes}
+									{...listeners}
+									className="flex h-8 w-8 cursor-grab items-center justify-center"
+								>
+									<GripVertical size={16} className="text-gray-400" />
+								</div>
+							</div>
 
-							<div className="flex w-full items-center gap-1 sm:w-auto sm:gap-2">
+							<div className="flex min-w-[80px] items-center gap-2">
+								{/* Make it obvious this is for sets */}
 								<NumberInput
 									value={item.loops}
 									onChange={(v) => onUpdate(item.id, "loops", v)}
 									min={1}
 									step={1}
-									className="w-full min-w-[80px] sm:w-24"
+									className="w-full"
+									placeholder="Sets"
 								/>
-							</div>
-
-							<div className="flex w-full flex-wrap gap-1 sm:w-auto sm:flex-nowrap sm:gap-2">
-								<Button
-									variant="outline"
-									size="sm"
-									onClick={() => onAddToLoop?.(item.id)}
-									className="min-w-[60px] gap-1 px-2 sm:min-w-[80px] sm:px-3"
-								>
-									<Plus size={12} />{" "}
-									<span className="hidden sm:inline">Add</span>
-								</Button>
-
+								<span className="text-xs text-muted-foreground">sets</span>
+								{/* Settings button at the end of set count */}
 								<Button
 									variant="ghost"
 									size="icon"
 									onClick={() => setShowSettings(true)}
-									className="h-8 w-8 sm:h-9 sm:w-9"
+									className="h-8 w-8"
 								>
 									<Settings size={14} />
 								</Button>
+							</div>
 
-								<div
-									{...attributes}
-									{...listeners}
-									className="flex h-8 w-8 cursor-grab items-center justify-center sm:h-9 sm:w-9"
-								>
-									<GripVertical size={16} className="text-gray-400" />
-								</div>
+							<Button
+								variant="outline"
+								size="sm"
+								onClick={() => onAddToLoop?.(item.id)}
+								className="min-w-[60px] gap-1 px-2"
+							>
+								<Plus size={12} />
+								<span className="hidden sm:inline">Add</span>
+							</Button>
+							{/* Show loop length at the bottom right */}
+							<div className="flex justify-end">
+								<span className="text-xs text-muted-foreground">
+									Total: {loopLength}
+								</span>
 							</div>
 						</div>
 					</div>
@@ -189,57 +204,64 @@ export function SortableItem(props: Props) {
 
 							<div className="ml-12 mr-4 space-y-2">
 								{item.items.length ? (
-									<DroppableZone
-										id={`drop-${item.id}`}
-										isOver={Boolean(isActiveDropTarget)}
-										className="space-y-2"
-									>
-										<SortableContext
-											items={item.items.map((s) => s.id)}
-											strategy={verticalListSortingStrategy}
+									<>
+										<DroppableZone
+											id={`drop-${item.id}`}
+											isOver={Boolean(isActiveDropTarget)}
+											className="space-y-2"
 										>
-											{item.items.map((subItem, idx) => (
-												<div key={subItem.id} className="relative">
-													{activeId && idx === 0 && (
+											<SortableContext
+												items={item.items.map((s) => s.id)}
+												strategy={verticalListSortingStrategy}
+											>
+												{item.items.map((subItem, idx) => (
+													<div key={subItem.id} className="relative">
+														{activeId && idx === 0 && (
+															<DroppableZone
+																id={`drop-before-${subItem.id}`}
+																className="-my-3 h-6 bg-transparent"
+																style={{ minHeight: 24 }}
+															>
+																<span className="sr-only">before-drop</span>
+															</DroppableZone>
+														)}
+														<SortableItem
+															item={subItem}
+															onUpdate={onUpdate}
+															onRemove={onRemove}
+															onToggleCollapse={onToggleCollapse}
+															onAddToLoop={onAddToLoop}
+															onDuplicate={onDuplicate}
+															onMoveToTop={onMoveToTop}
+															onMoveToBottom={onMoveToBottom}
+															activeId={activeId}
+															isNested
+															colors={colors}
+														/>
 														<DroppableZone
-															id={`drop-before-${subItem.id}`}
+															id={`drop-after-${subItem.id}`}
 															className="-my-3 h-6 bg-transparent"
 															style={{ minHeight: 24 }}
 														>
-															<span className="sr-only">before-drop</span>
+															<span className="sr-only">after-drop</span>
 														</DroppableZone>
-													)}
-													<SortableItem
-														item={subItem}
-														onUpdate={onUpdate}
-														onRemove={onRemove}
-														onToggleCollapse={onToggleCollapse}
-														onAddToLoop={onAddToLoop}
-														onDuplicate={onDuplicate}
-														onMoveToTop={onMoveToTop}
-														onMoveToBottom={onMoveToBottom}
-														activeId={activeId}
-														isNested
-														colors={colors}
-													/>
-													<DroppableZone
-														id={`drop-after-${subItem.id}`}
-														className="-my-3 h-6 bg-transparent"
-														style={{ minHeight: 24 }}
-													>
-														<span className="sr-only">after-drop</span>
-													</DroppableZone>
-												</div>
-											))}
-										</SortableContext>
-									</DroppableZone>
+													</div>
+												))}
+											</SortableContext>
+										</DroppableZone>
+									</>
 								) : (
-									<DroppableZone
-										id={`empty-${item.id}`}
-										className="rounded-lg border-2 border-dashed border-gray-300 bg-gray-50 p-4 text-center text-muted-foreground dark:border-gray-600 dark:bg-gray-800"
-									>
-										Drop intervals here
-									</DroppableZone>
+									<div className="flex items-center justify-between">
+										<DroppableZone
+											id={`empty-${item.id}`}
+											className="flex-1 rounded-lg border-2 border-dashed border-gray-300 bg-gray-50 p-4 text-center text-muted-foreground dark:border-gray-600 dark:bg-gray-800"
+										>
+											Drop intervals here
+										</DroppableZone>
+										<span className="ml-2 text-xs text-muted-foreground">
+											Total: {loopLength}
+										</span>
+									</div>
 								)}
 							</div>
 						</div>
@@ -276,41 +298,41 @@ export function SortableItem(props: Props) {
 					isNested ? "border-opacity-60" : ""
 				} ${isOver && activeId ? "border-blue-400 bg-blue-100 shadow-lg" : ""}`}
 			>
-				{/* <span className="absolute right-0 top-0 z-10 m-1 select-all rounded bg-muted px-1 text-xs text-muted-foreground">
-					{interval.id}
-				</span> */}
-				<Input
-					value={interval.name}
-					onChange={(e) => onUpdate(interval.id, "name", e.target.value)}
-					className="w-full min-w-[100px] flex-1 sm:w-auto"
-					placeholder="Exercise name"
-				/>
+				<div className="flex min-w-[100px] flex-1 items-center gap-2">
+					<Input
+						value={interval.name}
+						onChange={(e) => onUpdate(interval.id, "name", e.target.value)}
+						className="w-full"
+						placeholder="Exercise name"
+					/>
+					{/* Drag handle at the end of the name */}
+					<div
+						{...attributes}
+						{...listeners}
+						className="flex h-8 w-8 cursor-grab items-center justify-center"
+					>
+						<GripVertical size={16} className="text-gray-400" />
+					</div>
+				</div>
 
-				<NumberInput
-					value={interval.duration}
-					onChange={(v) => onUpdate(interval.id, "duration", v)}
-					min={1}
-					step={5}
-					className="w-full min-w-[90px] sm:w-32"
-				/>
-
-				<div className="flex w-full flex-wrap gap-1 sm:w-auto sm:flex-nowrap">
+				{/* mm:ss input for duration */}
+				<div className="flex min-w-[90px] items-center gap-2">
+					<TimeInput
+						value={interval.duration}
+						onChange={(v: number) => onUpdate(interval.id, "duration", v)}
+						className="w-full"
+						placeholder="mm:ss"
+					/>
+					{/* <span className="text-xs text-muted-foreground">duration</span> */}
+					{/* Settings button at the end of duration */}
 					<Button
 						variant="ghost"
 						size="icon"
 						onClick={() => setShowSettings(true)}
-						className="h-8 w-8 sm:h-9 sm:w-9"
+						className="h-8 w-8"
 					>
 						<Settings size={14} />
 					</Button>
-				</div>
-
-				<div
-					{...attributes}
-					{...listeners}
-					className="flex h-8 w-8 cursor-grab items-center justify-center sm:h-9 sm:w-9"
-				>
-					<GripVertical size={16} className="text-gray-400" />
 				</div>
 			</div>
 
