@@ -179,7 +179,7 @@ export function SortableItem(props: Props) {
 								<span className="hidden sm:inline">Add</span>
 							</Button>
 							{/* Show loop length at the bottom right */}
-							<div className="flex justify-end">
+							<div className="ml-auto flex items-center">
 								<span className="text-xs text-muted-foreground">
 									Total: {loopLength}
 								</span>
@@ -251,10 +251,10 @@ export function SortableItem(props: Props) {
 										</DroppableZone>
 									</>
 								) : (
-									<div className="flex items-center justify-between">
+									<div className="flex w-full items-center justify-between">
 										<DroppableZone
 											id={`empty-${item.id}`}
-											className="flex-1 rounded-lg border-2 border-dashed border-gray-300 bg-gray-50 p-4 text-center text-muted-foreground dark:border-gray-600 dark:bg-gray-800"
+											className="flex-1 rounded-lg border-2 border-dashed border-gray-300 bg-gray-50 p-4 text-left text-muted-foreground dark:border-gray-600 dark:bg-gray-800"
 										>
 											Drop intervals here
 										</DroppableZone>
@@ -294,7 +294,7 @@ export function SortableItem(props: Props) {
 					borderColor: isOver && activeId ? "#3b82f6" : borderColor,
 					backgroundColor: isOver && activeId ? "#dbeafe" : bgColor,
 				}}
-				className={`relative flex flex-wrap items-start gap-2 rounded-lg border-2 p-2 transition-all duration-200 sm:flex-nowrap sm:items-center sm:gap-3 sm:p-3 ${
+				className={`relative flex items-center gap-2 rounded-lg border-2 p-2 transition-all duration-200 sm:p-3 ${
 					isNested ? "border-opacity-60" : ""
 				} ${isOver && activeId ? "border-blue-400 bg-blue-100 shadow-lg" : ""}`}
 			>
@@ -314,26 +314,22 @@ export function SortableItem(props: Props) {
 						<GripVertical size={16} className="text-gray-400" />
 					</div>
 				</div>
-
-				{/* mm:ss input for duration */}
 				<div className="flex min-w-[90px] items-center gap-2">
 					<TimeInput
 						value={interval.duration}
 						onChange={(v: number) => onUpdate(interval.id, "duration", v)}
 						className="w-full"
-						placeholder="mm:ss"
+						placeholder="__:__"
 					/>
-					{/* <span className="text-xs text-muted-foreground">duration</span> */}
-					{/* Settings button at the end of duration */}
-					<Button
-						variant="ghost"
-						size="icon"
-						onClick={() => setShowSettings(true)}
-						className="h-8 w-8"
-					>
-						<Settings size={14} />
-					</Button>
 				</div>
+				<Button
+					variant="ghost"
+					size="icon"
+					onClick={() => setShowSettings(true)}
+					className="ml-auto h-8 w-8"
+				>
+					<Settings size={14} />
+				</Button>
 			</div>
 
 			<IntervalSettingsDialog

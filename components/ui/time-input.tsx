@@ -39,7 +39,7 @@ export function TimeInput({
 	};
 
 	return (
-		<div className={`flex items-center gap-2 ${className}`}>
+		<div className={`flex items-center gap-[1px] ${className}`}>
 			<Button
 				variant="outline"
 				size="icon"
@@ -54,8 +54,8 @@ export function TimeInput({
 				type="text"
 				value={formatTimeInput(value)}
 				onChange={handleInputChange}
-				className="text-center"
-				placeholder={placeholder}
+				className="w-16 text-center font-mono"
+				placeholder={placeholder ?? "__:__"}
 				disabled={disabled}
 			/>
 			<Button
