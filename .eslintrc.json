@@ -1,7 +1,7 @@
 {
 	"extends": ["next/core-web-vitals", "prettier"],
 	"rules": {
-		"indent": ["error", "tab"],
+		"indent": ["error", "tab", { "SwitchCase": 1 }],
 		"no-tabs": "off"
 	}
 }

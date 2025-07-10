@@ -12,8 +12,6 @@ const nextConfig = {
 	},
 	// Improve hydration handling
 	reactStrictMode: true,
-	// Ensure consistent rendering between server and client
-	swcMinify: true,
 	// Add headers to prevent caching issues that could cause hydration mismatches
 	async headers() {
 		return [

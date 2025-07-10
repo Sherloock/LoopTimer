@@ -77,7 +77,7 @@ function TimerRow({ timer, onLoad }: { timer: any; onLoad: (t: any) => void }) {
 			</div>
 			<Dialog open={open} onOpenChange={setOpen}>
 				<DialogContent title="Delete Timer?">
-					<p>Are you sure you want to delete '{timer.name}'?</p>
+					<p>Are you sure you want to delete &quot;{timer.name}&quot;?</p>
 					<div className="flex justify-end gap-2 pt-4">
 						<Button variant="outline" onClick={() => setOpen(false)}>
 							Cancel
