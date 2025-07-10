@@ -92,9 +92,9 @@ export function SortableItem(props: Props) {
 		return (
 			<>
 				<div ref={setNodeRef} style={style} className="relative space-y-2">
-					<span className="absolute right-0 top-0 z-10 m-1 select-all rounded bg-muted px-1 text-xs text-muted-foreground">
+					{/* <span className="absolute right-0 top-0 z-10 m-1 select-all rounded bg-muted px-1 text-xs text-muted-foreground">
 						{item.id}
-					</span>
+					</span> */}
 					<div
 						className={`rounded-lg border-2 border-dashed p-3 ${
 							isActiveDropTarget ? "border-blue-400 bg-blue-100" : ""
@@ -104,7 +104,7 @@ export function SortableItem(props: Props) {
 							backgroundColor: isActiveDropTarget ? "#dbeafe" : bgColor,
 						}}
 					>
-						<div className="flex items-center gap-2 sm:gap-3">
+						<div className="flex flex-wrap items-center gap-2 sm:flex-nowrap sm:gap-3">
 							<Button
 								variant="ghost"
 								size="sm"
@@ -127,22 +127,21 @@ export function SortableItem(props: Props) {
 							<Input
 								value={item.name}
 								onChange={(e) => onUpdate(item.id, "name", e.target.value)}
-								className="min-w-[120px] flex-1"
+								className="w-full min-w-[120px] flex-1 sm:w-auto"
 								placeholder="Loop name"
 							/>
 
-							<div className="flex shrink-0 items-center gap-1 sm:gap-2">
-								<span className="text-sm text-muted-foreground">×</span>
+							<div className="flex w-full items-center gap-1 sm:w-auto sm:gap-2">
 								<NumberInput
 									value={item.loops}
 									onChange={(v) => onUpdate(item.id, "loops", v)}
 									min={1}
 									step={1}
-									className="w-20 min-w-[80px] sm:w-24"
+									className="w-full min-w-[80px] sm:w-24"
 								/>
 							</div>
 
-							<div className="flex shrink-0 gap-1 sm:gap-2">
+							<div className="flex w-full flex-wrap gap-1 sm:w-auto sm:flex-nowrap sm:gap-2">
 								<Button
 									variant="outline"
 									size="sm"
@@ -273,17 +272,17 @@ export function SortableItem(props: Props) {
 					borderColor: isOver && activeId ? "#3b82f6" : borderColor,
 					backgroundColor: isOver && activeId ? "#dbeafe" : bgColor,
 				}}
-				className={`relative flex items-center gap-2 rounded-lg border-2 p-2 transition-all duration-200 sm:gap-3 sm:p-3 ${
+				className={`relative flex flex-wrap items-start gap-2 rounded-lg border-2 p-2 transition-all duration-200 sm:flex-nowrap sm:items-center sm:gap-3 sm:p-3 ${
 					isNested ? "border-opacity-60" : ""
 				} ${isOver && activeId ? "border-blue-400 bg-blue-100 shadow-lg" : ""}`}
 			>
-				<span className="absolute right-0 top-0 z-10 m-1 select-all rounded bg-muted px-1 text-xs text-muted-foreground">
+				{/* <span className="absolute right-0 top-0 z-10 m-1 select-all rounded bg-muted px-1 text-xs text-muted-foreground">
 					{interval.id}
-				</span>
+				</span> */}
 				<Input
 					value={interval.name}
 					onChange={(e) => onUpdate(interval.id, "name", e.target.value)}
-					className="min-w-[100px] flex-1"
+					className="w-full min-w-[100px] flex-1 sm:w-auto"
 					placeholder="Exercise name"
 				/>
 
@@ -292,10 +291,10 @@ export function SortableItem(props: Props) {
 					onChange={(v) => onUpdate(interval.id, "duration", v)}
 					min={1}
 					step={5}
-					className="w-24 min-w-[90px] sm:w-32"
+					className="w-full min-w-[90px] sm:w-32"
 				/>
 
-				<div className="flex shrink-0 gap-1">
+				<div className="flex w-full flex-wrap gap-1 sm:w-auto sm:flex-nowrap">
 					<Button
 						variant="ghost"
 						size="icon"

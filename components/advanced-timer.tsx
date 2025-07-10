@@ -1533,24 +1533,20 @@ export function AdvancedTimer({
 					</div>
 
 					<CardContent className="space-y-6 pt-6">
-						<div className="space-y-4">
-							<div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-start">
-								{/* Timer Name Input - Top Left */}
-								<div className="space-y-2">
-									<div className="flex gap-2">
-										<Input
-											id="timer-name"
-											className="flex-1"
-											value={timerName}
-											onChange={(e) => handleTimerNameChange(e.target.value)}
-											placeholder="Enter timer name..."
-										/>
-										{/* Save button moved to sticky top bar */}
-									</div>
+						{/* Timer Name, Stats, and Actions - Responsive Row/Column */}
+						<div className="flex flex-col gap-4">
+							{/* Row 1: Name + Stats (side by side on md+) */}
+							<div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between md:gap-4">
+								<div className="w-full md:w-auto">
+									<Input
+										id="timer-name"
+										className="w-full"
+										value={timerName}
+										onChange={(e) => handleTimerNameChange(e.target.value)}
+										placeholder="Enter timer name..."
+									/>
 								</div>
-
-								{/* Stats - Top Right */}
-								<div className="flex flex-wrap items-center justify-end gap-4">
+								<div className="flex w-full flex-wrap items-center justify-center gap-4 md:w-auto md:justify-center">
 									<StatCard
 										label="Total Session Time"
 										value={formatTime(totalSessionTime)}
@@ -1562,33 +1558,30 @@ export function AdvancedTimer({
 									/>
 								</div>
 							</div>
+							{/* Row 2: Buttons (50% width each on mobile, right-aligned on sm+) */}
+							<div className="flex w-full flex-row gap-2 sm:justify-end">
+								<Button
+									onClick={() => setShowSettings(true)}
+									variant="outline"
+									size="sm"
+									className="w-1/2 gap-2 sm:w-auto"
+								>
+									<Settings size={16} />
+									Settings
+								</Button>
+								<Button
+									onClick={addLoop}
+									variant="outline"
+									size="sm"
+									className="w-1/2 gap-2 sm:w-auto"
+								>
+									<Repeat size={16} />
+									Add Loop
+								</Button>
+							</div>
 						</div>
 
 						<div className="space-y-4">
-							<div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
-								<h3 className="text-lg font-semibold">Workout Sequence</h3>
-								<div className="flex flex-wrap gap-2">
-									<Button
-										onClick={addLoop}
-										variant="outline"
-										size="sm"
-										className="gap-2"
-									>
-										<Repeat size={16} />
-										Add Loop
-									</Button>
-									<Button
-										onClick={() => setShowSettings(true)}
-										variant="outline"
-										size="sm"
-										className="gap-2"
-									>
-										<Settings size={16} />
-										Settings
-									</Button>
-								</div>
-							</div>
-
 							<DndContext
 								sensors={sensors}
 								collisionDetection={closestCenter}
