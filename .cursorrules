@@ -53,6 +53,7 @@ The system will allow users to create custom timers with loops etc
 - Use TailwindCSS classes for styling
 - On ICONS use Lucide Icons and SIZE them with size={20} or size={16} or size={12} DONT USE OTHER SIZES OR className='w-4 h-4'
 - When in className and writing classes only recommend 1 class at a time and don't use multiple classes at a time
+- Always merge classes with the cn function
 
 
 always check version in package.json, and include the exact version in your answer

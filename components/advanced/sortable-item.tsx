@@ -148,42 +148,46 @@ export function SortableItem(props: Props) {
 								/>
 							</div>
 
-							<div className="flex min-w-[80px] items-center gap-2">
-								{/* Make it obvious this is for sets */}
-								<NumberInput
-									value={item.loops}
-									onChange={(v) => onUpdate(item.id, "loops", v)}
-									min={1}
-									step={1}
-									className="w-full"
-									placeholder="Sets"
-								/>
-								<span className="text-xs text-muted-foreground">sets</span>
-								{/* Settings button at the end of set count */}
-								<Button
-									variant="ghost"
-									size="icon"
-									onClick={() => setShowSettings(true)}
-									className="h-8 w-8"
-								>
-									<Settings size={14} />
-								</Button>
-							</div>
-
-							<Button
-								variant="outline"
-								size="sm"
-								onClick={() => onAddToLoop?.(item.id)}
-								className="min-w-[60px] gap-1 px-2"
-							>
-								<Plus size={12} />
-								<span className="hidden sm:inline">Add</span>
-							</Button>
-							{/* Show loop length at the bottom right */}
-							<div className="ml-auto flex items-center">
-								<span className="text-xs text-muted-foreground">
-									Total: {loopLength}
-								</span>
+							<div className="flex w-full flex-col gap-1 sm:flex-row sm:items-center sm:gap-2">
+								{/* Top row: input, sets, settings (always a row on desktop) */}
+								<div className="flex w-full items-center gap-2 sm:w-auto">
+									<NumberInput
+										value={item.loops}
+										onChange={(v) => onUpdate(item.id, "loops", v)}
+										min={1}
+										step={1}
+										className="w-[50px] min-w-0 flex-shrink"
+										placeholder="Sets"
+									/>
+									<span className="ml-1 text-xs text-muted-foreground sm:ml-2">
+										sets
+									</span>
+									<Button
+										variant="ghost"
+										size="icon"
+										onClick={() => setShowSettings(true)}
+										className="ml-1 h-8 w-8 sm:ml-2"
+									>
+										<Settings size={14} />
+									</Button>
+								</div>
+								{/* Bottom row: + button and total (only a new line on mobile) */}
+								<div className="mt-2 flex w-full items-center sm:ml-2 sm:mt-0">
+									<Button
+										variant="outline"
+										size="sm"
+										onClick={() => onAddToLoop?.(item.id)}
+										className="min-w-[60px] gap-1 px-2"
+									>
+										<Plus size={12} />
+										<span className="hidden sm:inline">Add</span>
+									</Button>
+									<div className="ml-auto flex items-center">
+										<span className="text-xs text-muted-foreground">
+											Total: {loopLength}
+										</span>
+									</div>
+								</div>
 							</div>
 						</div>
 					</div>

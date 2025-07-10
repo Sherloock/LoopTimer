@@ -1,5 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { cn } from "@/lib/utils";
 import { Minus, Plus } from "lucide-react";
 
 interface NumberInputProps {
@@ -40,8 +41,13 @@ export function NumberInput({
 		onChange(Math.max(min, Math.min(max, newValue)));
 	};
 
+	const wrapperClassName = cn("flex items-center gap-2");
+	const inputClassName = cn(
+		"text-center [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none",
+		className,
+	);
 	return (
-		<div className={`flex items-center gap-2 ${className}`}>
+		<div className={wrapperClassName}>
 			<Button
 				variant="outline"
 				size="icon"
@@ -56,7 +62,7 @@ export function NumberInput({
 				type="number"
 				value={value}
 				onChange={handleInputChange}
-				className="text-center [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
+				className={inputClassName}
 				placeholder={placeholder}
 				disabled={disabled}
 				min={min}
