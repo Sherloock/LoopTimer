@@ -15,6 +15,7 @@ import {
 } from "@/types/advanced-timer";
 import { computeTotalTime } from "@/utils/compute-total-time";
 import { formatTimeInput } from "@/utils/timer-shared";
+import { useDndContext } from "@dnd-kit/core";
 import {
 	SortableContext,
 	useSortable,
@@ -72,13 +73,17 @@ export function SortableItem(props: Props) {
 		isOver,
 	} = useSortable({ id: item.id });
 
+	// Detect if a drag operation is currently active
+	const { active } = useDndContext();
+
 	const style = {
 		transform: CSS.Transform.toString(transform),
 		transition,
 		opacity: isDragging ? 0.5 : 1,
 	};
 
-	const isActiveDropTarget = activeId && activeId !== item.id && isLoop(item);
+	const isActiveDropTarget =
+		!!active && activeId && activeId !== item.id && isLoop(item);
 
 	// Resolve colors
 	const { borderColor, bgColor } = (() => {

@@ -1,6 +1,6 @@
 "use client";
 
-import { useDroppable } from "@dnd-kit/core";
+import { useDndContext, useDroppable } from "@dnd-kit/core";
 import React from "react";
 
 interface DroppableZoneProps {
@@ -20,11 +20,17 @@ export function DroppableZone({
 }: DroppableZoneProps) {
 	const { setNodeRef, isOver: isDndOver } = useDroppable({ id });
 
+	// Only show the highlight while a drag operation is active
+	const { active } = useDndContext();
+
+	// Determine if the zone should be highlighted
+	const shouldHighlight = (isDndOver || isOver) && !!active;
+
 	return (
 		<div
 			ref={setNodeRef}
 			className={`${className} transition-all duration-200 ${
-				isDndOver || isOver
+				shouldHighlight
 					? "border-dashed border-blue-400 bg-blue-50 shadow-inner"
 					: ""
 			}`}

@@ -30,6 +30,7 @@ import {
 	DragStartEvent,
 	KeyboardSensor,
 	PointerSensor,
+	TouchSensor,
 	useDndMonitor,
 	useSensor,
 	useSensors,
@@ -318,7 +319,20 @@ export function AdvancedTimer({
 
 	// Drag and drop sensors
 	const sensors = useSensors(
-		useSensor(PointerSensor),
+		// Pointer sensor for mouse / stylus
+		useSensor(PointerSensor, {
+			activationConstraint: {
+				distance: 4, // small move before drag starts to avoid accidental drags while scrolling
+			},
+		}),
+		// Touch sensor for real mobile devices & Chrome dev-tools emulation
+		useSensor(TouchSensor, {
+			activationConstraint: {
+				delay: 150,
+				tolerance: 8,
+			},
+		}),
+		// Keyboard sensor for accessibility
 		useSensor(KeyboardSensor, {
 			coordinateGetter: sortableKeyboardCoordinates,
 		}),
