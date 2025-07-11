@@ -62,7 +62,7 @@ export const clerkProviderProps: ClerkConfig = {
  * authentication. Everything else will be gated by Clerk.
  */
 export const publicRoutes: string[] = [
-	"/", // landing page
+	// Removed "/" since it contains user-specific timer data
 	"/sign-in(.*)",
 	"/sign-up(.*)",
 	"/api/health",
