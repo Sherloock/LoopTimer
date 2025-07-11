@@ -110,5 +110,8 @@
 	},
 	"prisma": {
 		"seed": "tsx prisma/seed.ts"
+	},
+	"vercel": {
+		"buildCommand": "prisma generate && next build"
 	}
 }

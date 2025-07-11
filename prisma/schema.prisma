@@ -17,4 +17,5 @@ model Timer {
   updatedAt DateTime @updatedAt
 
   @@index([userId])
+  @@map("timer") // database table name
 }
