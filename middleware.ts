@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 
 // Define public routes that don't require authentication
 const isPublicRoute = createRouteMatcher([
+	"/", // Make root landing page public
 	"/sign-in(.*)",
 	"/sign-up(.*)",
 	"/api/health",

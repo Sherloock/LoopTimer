@@ -19,7 +19,7 @@ function PlayTimerContent() {
 	}, [timerId, timers]);
 
 	const handleExit = () => {
-		router.push("/");
+		router.push("/app");
 	};
 
 	const handleComplete = (timerName: string) => {

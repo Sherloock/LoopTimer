@@ -32,7 +32,7 @@ export function TimersList() {
 				<Button
 					variant="default"
 					className="gap-2"
-					onClick={() => router.push("/edit")}
+					onClick={() => router.push("/app/edit")}
 				>
 					<Plus size={16} /> New Timer
 				</Button>
@@ -66,7 +66,7 @@ export function TimersList() {
 								</DropdownMenuTrigger>
 								<DropdownMenuContent align="end">
 									<DropdownMenuItem
-										onSelect={() => router.push(`/edit?id=${timer.id}`)}
+										onSelect={() => router.push(`/app/edit?id=${timer.id}`)}
 									>
 										<Edit size={16} /> Edit
 									</DropdownMenuItem>
@@ -94,7 +94,7 @@ export function TimersList() {
 								variant="default"
 								size="sm"
 								className="gap-2"
-								onClick={() => router.push(`/play?id=${timer.id}`)}
+								onClick={() => router.push(`/app/play?id=${timer.id}`)}
 							>
 								<Play size={16} />
 								Start

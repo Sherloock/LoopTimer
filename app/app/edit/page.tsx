@@ -17,11 +17,11 @@ function EditTimerContent() {
 	}, [timerId, timers]);
 
 	const handleSaveComplete = () => {
-		router.push("/");
+		router.push("/app");
 	};
 
 	const handleBack = () => {
-		router.push("/");
+		router.push("/app");
 	};
 
 	return (
