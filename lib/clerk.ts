@@ -47,7 +47,10 @@ const clerkAppearance: ComponentProps<typeof ClerkProvider>["appearance"] = {
 /**
  * Re-usable props passed to <ClerkProvider> inside the root layout.
  * Having a central object allows us to keep Clerk configuration
- * in a single place and import it both in the provider and the middleware.
+ * in a single place and import it in the provider.
+ *
+ * Authentication is now handled by middleware which redirects
+ * unauthenticated users to the sign-in page automatically.
  */
 export const clerkProviderProps: ClerkConfig = {
 	appearance: clerkAppearance,
@@ -56,14 +59,3 @@ export const clerkProviderProps: ClerkConfig = {
 	afterSignInUrl: "/",
 	afterSignUpUrl: "/",
 };
-
-/**
- * Routes that should stay publicly accessible without requiring
- * authentication. Everything else will be gated by Clerk.
- */
-export const publicRoutes: string[] = [
-	// Removed "/" since it contains user-specific timer data
-	"/sign-in(.*)",
-	"/sign-up(.*)",
-	"/api/health",
-];

@@ -355,17 +355,134 @@ export const playSound = (soundKey?: string) => {
 };
 
 // ====================== Speech Utils ======================
-export const speakText = (text?: string) => {
+
+// Track if we've had user interaction (required for mobile speech)
+let hasUserInteracted = false;
+
+// Initialize user interaction tracking on first load
+if (typeof window !== "undefined") {
+	const initUserInteraction = () => {
+		hasUserInteracted = true;
+		// Remove listeners after first interaction
+		document.removeEventListener("touchstart", initUserInteraction);
+		document.removeEventListener("click", initUserInteraction);
+		document.removeEventListener("keydown", initUserInteraction);
+	};
+
+	document.addEventListener("touchstart", initUserInteraction, { once: true });
+	document.addEventListener("click", initUserInteraction, { once: true });
+	document.addEventListener("keydown", initUserInteraction, { once: true });
+}
+
+// Wait for voices to be loaded (especially important on mobile)
+const waitForVoices = (): Promise<SpeechSynthesisVoice[]> => {
+	return new Promise((resolve) => {
+		const voices = window.speechSynthesis.getVoices();
+		if (voices.length > 0) {
+			resolve(voices);
+			return;
+		}
+
+		// Wait for voices to load
+		const onVoicesChanged = () => {
+			const loadedVoices = window.speechSynthesis.getVoices();
+			if (loadedVoices.length > 0) {
+				window.speechSynthesis.removeEventListener(
+					"voiceschanged",
+					onVoicesChanged,
+				);
+				resolve(loadedVoices);
+			}
+		};
+
+		window.speechSynthesis.addEventListener("voiceschanged", onVoicesChanged);
+
+		// Fallback timeout
+		setTimeout(() => {
+			window.speechSynthesis.removeEventListener(
+				"voiceschanged",
+				onVoicesChanged,
+			);
+			resolve(window.speechSynthesis.getVoices());
+		}, 2000);
+	});
+};
+
+export const speakText = async (text?: string) => {
 	if (!text || isMuted) return;
 
 	try {
-		if (typeof window === "undefined" || !("speechSynthesis" in window)) return;
-		const utter = new SpeechSynthesisUtterance(text);
+		// Check if speech synthesis is available
+		if (typeof window === "undefined" || !("speechSynthesis" in window)) {
+			console.warn("Speech synthesis not available");
+			return;
+		}
 
-		window.speechSynthesis.cancel(); // stop previous utterances
-		window.speechSynthesis.speak(utter);
+		// Check for user interaction (required on mobile)
+		if (!hasUserInteracted) {
+			console.warn("Speech requires user interaction on mobile devices");
+			return;
+		}
+
+		// Cancel any ongoing speech
+		window.speechSynthesis.cancel();
+
+		// Wait a bit for the cancel to take effect
+		await new Promise((resolve) => setTimeout(resolve, 100));
+
+		// Wait for voices to be available (important on mobile)
+		await waitForVoices();
+
+		const utterance = new SpeechSynthesisUtterance(text);
+
+		// Configure utterance for better mobile compatibility
+		utterance.rate = 1.0;
+		utterance.pitch = 1.0;
+		utterance.volume = 1.0;
+
+		// Try to use a native voice if available
+		const voices = window.speechSynthesis.getVoices();
+		const nativeVoice = voices.find(
+			(voice) =>
+				voice.default || voice.localService || voice.lang.startsWith("en"),
+		);
+
+		if (nativeVoice) {
+			utterance.voice = nativeVoice;
+		}
+
+		// Add error handling for utterance
+		utterance.onerror = (event) => {
+			console.warn("Speech synthesis error:", event.error);
+		};
+
+		// For iOS Safari: ensure speech starts immediately
+		const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+		if (isIOS) {
+			// iOS requires immediate speech start
+			window.speechSynthesis.speak(utterance);
+		} else {
+			// For other browsers, use a small delay to ensure proper initialization
+			setTimeout(() => {
+				window.speechSynthesis.speak(utterance);
+			}, 50);
+		}
 	} catch (err) {
 		// eslint-disable-next-line no-console
 		console.warn("Speech synthesis failed", err);
 	}
+};
+
+// Helper function to test if speech is available and ready
+export const isSpeechAvailable = (): boolean => {
+	if (typeof window === "undefined" || !("speechSynthesis" in window)) {
+		return false;
+	}
+
+	return hasUserInteracted;
+};
+
+// Helper function to manually trigger user interaction (can be called from components)
+export const triggerSpeechInteraction = () => {
+	hasUserInteracted = true;
 };

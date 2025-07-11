@@ -4,7 +4,15 @@ import { toast } from "sonner";
 
 async function fetchTimers() {
 	const res = await fetch("/api/timers");
-	if (!res.ok) throw new Error("Failed to load timers");
+
+	if (res.status === 401) {
+		throw new Error("Please sign in to view your timers");
+	}
+
+	if (!res.ok) {
+		throw new Error("Failed to load timers");
+	}
+
 	return res.json();
 }
 
@@ -14,12 +22,30 @@ async function postTimer(data: TimerInput) {
 		headers: { "Content-Type": "application/json" },
 		body: JSON.stringify(data),
 	});
-	if (!res.ok) throw new Error("Failed to save timer");
+
+	if (res.status === 401) {
+		throw new Error("Please sign in to save timers");
+	}
+
+	if (!res.ok) {
+		throw new Error("Failed to save timer");
+	}
+
 	return res.json();
 }
 
 export function useTimers() {
-	return useQuery({ queryKey: ["timers"], queryFn: fetchTimers });
+	return useQuery({
+		queryKey: ["timers"],
+		queryFn: fetchTimers,
+		retry: (failureCount, error) => {
+			// Don't retry on authentication errors
+			if (error.message.includes("sign in")) {
+				return false;
+			}
+			return failureCount < 3;
+		},
+	});
 }
 
 export function useSaveTimer() {
