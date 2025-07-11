@@ -10,6 +10,30 @@ interface ClerkConfig {
 	afterSignUpUrl?: string;
 }
 
+// Validate environment variables
+const validateClerkEnv = () => {
+	if (typeof window === "undefined") {
+		// Server-side only
+		const publishableKey = process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY;
+		const secretKey = process.env.CLERK_SECRET_KEY;
+
+		if (!publishableKey) {
+			console.warn(
+				"⚠️ NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY is missing. Get it from https://dashboard.clerk.com/last-active?path=api-keys",
+			);
+		}
+
+		if (!secretKey) {
+			console.warn(
+				"⚠️ CLERK_SECRET_KEY is missing. Get it from https://dashboard.clerk.com/last-active?path=api-keys",
+			);
+		}
+	}
+};
+
+// Run validation
+validateClerkEnv();
+
 // Define shared appearance tweaks for Clerk components to keep UI consistent with shadcn/tailwind design system.
 const clerkAppearance: ComponentProps<typeof ClerkProvider>["appearance"] = {
 	elements: {
