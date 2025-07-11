@@ -3,6 +3,7 @@ import { HydrationErrorBoundary } from "@/components/hydration-error-boundary";
 import { QueryProvider } from "@/components/query-provider";
 import { ThemeProvider } from "@/components/theme-provider";
 import { Toaster } from "@/components/ui/sonner";
+import { clerkProviderProps } from "@/lib/clerk";
 import { ClerkProvider } from "@clerk/nextjs";
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
@@ -26,7 +27,7 @@ export default function RootLayout({
 		<html lang="en" suppressHydrationWarning>
 			<body className={inter.className} suppressHydrationWarning>
 				<HydrationErrorBoundary>
-					<ClerkProvider>
+					<ClerkProvider {...clerkProviderProps}>
 						<ClientOnly>
 							<NextTopLoader
 								color="#2563eb"

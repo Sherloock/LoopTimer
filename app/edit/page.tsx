@@ -3,9 +3,9 @@
 import { EditTimer } from "@/components/edit-timer";
 import { useTimers } from "@/hooks/use-timers";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useMemo } from "react";
+import { Suspense, useMemo } from "react";
 
-export default function EditTimerPage() {
+function EditTimerContent() {
 	const searchParams = useSearchParams();
 	const timerId = searchParams.get("id");
 	const { data: timers } = useTimers();
@@ -25,14 +25,28 @@ export default function EditTimerPage() {
 	};
 
 	return (
+		<div className="container mx-auto max-w-4xl px-1">
+			<EditTimer
+				loadedTimer={loadedTimer}
+				onSaveComplete={handleSaveComplete}
+				onExit={handleBack}
+			/>
+		</div>
+	);
+}
+
+export default function EditTimerPage() {
+	return (
 		<div className="min-h-screen bg-gradient-to-br from-background via-background to-muted py-1">
-			<div className="container mx-auto max-w-4xl px-1">
-				<EditTimer
-					loadedTimer={loadedTimer}
-					onSaveComplete={handleSaveComplete}
-					onExit={handleBack}
-				/>
-			</div>
+			<Suspense
+				fallback={
+					<div className="container mx-auto max-w-4xl px-1">
+						Loading editor...
+					</div>
+				}
+			>
+				<EditTimerContent />
+			</Suspense>
 		</div>
 	);
 }

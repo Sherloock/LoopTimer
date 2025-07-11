@@ -37,6 +37,7 @@ The system will allow users to create custom timers with loops etc
 - Always use import @/ for all imports (e.g. import { Button } from '@/components/ui/button'), Don't use relative paths
 - Always add id to toast messages like toast.success('Timer saved!',{ id: 'save-timer'})
 - Use boolean casting like !!x instead of Boolean(x)
+- ALWAYS wrap useSearchParams() in Suspense boundary: create separate component for useSearchParams logic, wrap in <Suspense fallback={...}> to prevent build errors
 - Use @/components/ui/... for all import if possible so prefer SHADCN UI COMPONENTS instead of Radix UI components
 - Use @/actions/... for all actions
 - Use @/lib/... for all libraries
@@ -57,3 +58,6 @@ The system will allow users to create custom timers with loops etc
 
 
 always check version in package.json, and include the exact version in your answer
+
+
+AFTER YOU FINISH A TASK MAKE SURE TO SUGGESTING RULES FOR .cursorrule ADDITION.

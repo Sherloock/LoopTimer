@@ -3,6 +3,7 @@
 	"version": "0.1.0",
 	"private": true,
 	"scripts": {
+		"postinstall": "prisma generate",
 		"nvm-use": " nvm use 20",
 		"npmi:clean": "rimraf node_modules package-lock.json && npm i",
 		"dev": "npm run nvm-use && next dev --turbopack",
