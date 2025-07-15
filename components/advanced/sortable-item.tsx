@@ -97,9 +97,7 @@ export function SortableItem(props: Props) {
 
 	// ============ LOOP RENDER ============
 	if (isLoop(item)) {
-		const loopLength = formatTimeInput(
-			computeTotalTime(item.items) * item.loops,
-		);
+		const loopLength = formatTimeInput(computeTotalTime([item]));
 		return (
 			<>
 				<div ref={setNodeRef} style={style} className="relative space-y-2">
@@ -214,51 +212,53 @@ export function SortableItem(props: Props) {
 								style={{ borderColor: borderColor }}
 							/>
 
-							<div className="ml-12 mr-4 space-y-2">
+							<div className="ml-12 mr-4">
 								{item.items.length ? (
 									<>
 										<DroppableZone
 											id={`drop-${item.id}`}
 											isOver={Boolean(isActiveDropTarget)}
-											className="space-y-2"
+											className=""
 										>
 											<SortableContext
 												items={item.items.map((s) => s.id)}
 												strategy={verticalListSortingStrategy}
 											>
-												{item.items.map((subItem, idx) => (
-													<div key={subItem.id} className="relative">
-														{activeId && idx === 0 && (
+												<div className="space-y-3">
+													{item.items.map((subItem, idx) => (
+														<div key={subItem.id} className="relative">
+															{activeId && idx === 0 && (
+																<DroppableZone
+																	id={`drop-before-${subItem.id}`}
+																	className="-my-3 h-6 bg-transparent"
+																	style={{ minHeight: 24 }}
+																>
+																	<span className="sr-only">before-drop</span>
+																</DroppableZone>
+															)}
+															<SortableItem
+																item={subItem}
+																onUpdate={onUpdate}
+																onRemove={onRemove}
+																onToggleCollapse={onToggleCollapse}
+																onAddToLoop={onAddToLoop}
+																onDuplicate={onDuplicate}
+																onMoveToTop={onMoveToTop}
+																onMoveToBottom={onMoveToBottom}
+																activeId={activeId}
+																isNested
+																colors={colors}
+															/>
 															<DroppableZone
-																id={`drop-before-${subItem.id}`}
+																id={`drop-after-${subItem.id}`}
 																className="-my-3 h-6 bg-transparent"
 																style={{ minHeight: 24 }}
 															>
-																<span className="sr-only">before-drop</span>
+																<span className="sr-only">after-drop</span>
 															</DroppableZone>
-														)}
-														<SortableItem
-															item={subItem}
-															onUpdate={onUpdate}
-															onRemove={onRemove}
-															onToggleCollapse={onToggleCollapse}
-															onAddToLoop={onAddToLoop}
-															onDuplicate={onDuplicate}
-															onMoveToTop={onMoveToTop}
-															onMoveToBottom={onMoveToBottom}
-															activeId={activeId}
-															isNested
-															colors={colors}
-														/>
-														<DroppableZone
-															id={`drop-after-${subItem.id}`}
-															className="-my-3 h-6 bg-transparent"
-															style={{ minHeight: 24 }}
-														>
-															<span className="sr-only">after-drop</span>
-														</DroppableZone>
-													</div>
-												))}
+														</div>
+													))}
+												</div>
 											</SortableContext>
 										</DroppableZone>
 									</>

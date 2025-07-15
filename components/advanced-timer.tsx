@@ -120,32 +120,22 @@ export function AdvancedTimer({
 	// Update config when a saved timer is loaded
 	useEffect(() => {
 		if (loadedTimer?.data) {
-			// Sanitize incoming data so that only loops exist at root and loops contain ONLY intervals
-
+			// Sanitize incoming data to ensure loops contain only intervals
 			const sanitizeConfig = (data: AdvancedConfig): AdvancedConfig => {
-				const loops: LoopGroup[] = [];
-				const rootIntervals: IntervalStep[] = [];
+				const sanitizedItems: WorkoutItem[] = [];
 
 				data.items.forEach((itm) => {
 					if (isLoop(itm)) {
-						const sanitizedItems = itm.items.filter(isInterval);
-						loops.push({ ...itm, items: sanitizedItems });
-					} else {
-						rootIntervals.push(itm);
+						// Keep loops but ensure they only contain intervals
+						const sanitizedLoopItems = itm.items.filter(isInterval);
+						sanitizedItems.push({ ...itm, items: sanitizedLoopItems });
+					} else if (isInterval(itm)) {
+						// Keep root-level intervals as they are
+						sanitizedItems.push(itm);
 					}
 				});
 
-				if (rootIntervals.length) {
-					loops.unshift({
-						id: Date.now().toString(),
-						name: "LOOP",
-						loops: 1,
-						items: rootIntervals,
-						collapsed: false,
-					});
-				}
-
-				return { ...data, items: loops };
+				return { ...data, items: sanitizedItems };
 			};
 
 			const normalized = sanitizeConfig(loadedTimer.data as AdvancedConfig);
@@ -1609,10 +1599,10 @@ export function AdvancedTimer({
 								>
 									<DroppableZone
 										id="main-container"
-										className="space-y-3"
+										className=""
 										style={{ touchAction: "manipulation" }}
 									>
-										<div data-dnd-sortable="true">
+										<div data-dnd-sortable="true" className="space-y-4">
 											{config.items.map((item, idx) => (
 												<div key={item.id} className="relative">
 													{/* Drop indicator before the first root item */}
