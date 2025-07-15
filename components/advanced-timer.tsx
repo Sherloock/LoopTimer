@@ -97,7 +97,6 @@ export function AdvancedTimer({
 			},
 			{
 				id: "2",
-				name: "MAIN WORKOUT",
 				loops: 3,
 				items: [
 					{ id: "3", name: "WORK", duration: 30, type: "work" },
@@ -226,7 +225,6 @@ export function AdvancedTimer({
 			IntervalStep & {
 				originalIndex: number;
 				loopInfo?: {
-					loopName: string;
 					iteration: number;
 					intervalIndex: number;
 					parentLoop?: any;
@@ -243,7 +241,6 @@ export function AdvancedTimer({
 				IntervalStep & {
 					originalIndex: number;
 					loopInfo?: {
-						loopName: string;
 						iteration: number;
 						intervalIndex: number;
 						parentLoop?: any;
@@ -270,7 +267,6 @@ export function AdvancedTimer({
 						const subItems = getFlattenedIntervals(
 							item.items,
 							{
-								loopName: item.name,
 								iteration: loop,
 								parentLoop: parentLoopInfo,
 							},
@@ -288,7 +284,6 @@ export function AdvancedTimer({
 										...subItem,
 										originalIndex: index,
 										loopInfo: {
-											loopName: item.name,
 											iteration: loop,
 											intervalIndex: subIndex,
 											parentLoop: parentLoopInfo,
@@ -456,6 +451,60 @@ export function AdvancedTimer({
 			}
 
 			return prev;
+		});
+	}, []);
+
+	const moveUp = useCallback((id: string) => {
+		setConfig((prev) => {
+			const moveItemUp = (items: WorkoutItem[]): WorkoutItem[] => {
+				const itemIndex = items.findIndex((item) => item.id === id);
+				if (itemIndex > 0) {
+					// Move the item one position up
+					const newItems = [...items];
+					[newItems[itemIndex - 1], newItems[itemIndex]] = [
+						newItems[itemIndex],
+						newItems[itemIndex - 1],
+					];
+					return newItems;
+				}
+
+				// If item not found at this level, check nested loops
+				return items.map((item) => {
+					if (isLoop(item)) {
+						return { ...item, items: moveItemUp(item.items) };
+					}
+					return item;
+				});
+			};
+
+			return { ...prev, items: moveItemUp(prev.items) };
+		});
+	}, []);
+
+	const moveDown = useCallback((id: string) => {
+		setConfig((prev) => {
+			const moveItemDown = (items: WorkoutItem[]): WorkoutItem[] => {
+				const itemIndex = items.findIndex((item) => item.id === id);
+				if (itemIndex >= 0 && itemIndex < items.length - 1) {
+					// Move the item one position down
+					const newItems = [...items];
+					[newItems[itemIndex], newItems[itemIndex + 1]] = [
+						newItems[itemIndex + 1],
+						newItems[itemIndex],
+					];
+					return newItems;
+				}
+
+				// If item not found at this level, check nested loops
+				return items.map((item) => {
+					if (isLoop(item)) {
+						return { ...item, items: moveItemDown(item.items) };
+					}
+					return item;
+				});
+			};
+
+			return { ...prev, items: moveItemDown(prev.items) };
 		});
 	}, []);
 
@@ -968,7 +1017,7 @@ export function AdvancedTimer({
 			setTimeLeft(nextInterval.duration);
 
 			const intervalName = nextInterval.loopInfo
-				? `${nextInterval.loopInfo.loopName} (${nextInterval.loopInfo.iteration}) - ${nextInterval.name}`
+				? `${nextInterval.loopInfo.iteration} - ${nextInterval.name}`
 				: nextInterval.name;
 
 			timerToasts.nextInterval(intervalName);
@@ -1090,7 +1139,6 @@ export function AdvancedTimer({
 	const addLoop = useCallback(() => {
 		const newLoop: LoopGroup = {
 			id: generateId(),
-			name: "NEW LOOP",
 			loops: 3,
 			items: [],
 			collapsed: false,
@@ -1197,7 +1245,7 @@ export function AdvancedTimer({
 								return {
 									...loop,
 									id: newLoopId,
-									name: `${loop.name} (Copy)`,
+									loops: loop.loops,
 									items: loop.items.map((child) => {
 										if (isLoop(child)) {
 											return deepCloneLoop(child);
@@ -1246,7 +1294,7 @@ export function AdvancedTimer({
 		if (!currentInterval) return "PREPARE";
 
 		return currentInterval.loopInfo
-			? `${currentInterval.loopInfo.loopName} (${currentInterval.loopInfo.iteration}) - ${currentInterval.name}`
+			? `${currentInterval.loopInfo.iteration} - ${currentInterval.name}`
 			: currentInterval.name;
 	}, [currentInterval]);
 
@@ -1625,6 +1673,8 @@ export function AdvancedTimer({
 														onDuplicate={duplicateItem}
 														onMoveToTop={moveToTop}
 														onMoveToBottom={moveToBottom}
+														onMoveUp={moveUp}
+														onMoveDown={moveDown}
 														activeId={activeId}
 														colors={config.colors}
 													/>
@@ -1647,7 +1697,11 @@ export function AdvancedTimer({
 									{activeId ? (
 										<div className="rounded-lg border bg-white p-3 shadow-lg">
 											<div className="text-sm font-medium">
-												{findItemById(config.items, activeId)?.name || "Item"}
+												{(() => {
+													const item = findItemById(config.items, activeId);
+													if (!item) return "Item";
+													return isInterval(item) ? item.name : "Loop";
+												})()}
 											</div>
 										</div>
 									) : null}

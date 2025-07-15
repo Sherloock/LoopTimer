@@ -25,10 +25,12 @@ import { CSS } from "@dnd-kit/utilities";
 import {
 	ChevronDown,
 	ChevronRight,
+	Copy,
 	GripVertical,
 	Plus,
 	Repeat,
 	Settings,
+	Trash2,
 } from "lucide-react";
 import { useState } from "react";
 
@@ -39,6 +41,8 @@ interface Props {
 	onToggleCollapse?: (id: string) => void;
 	onAddToLoop?: (loopId: string) => void;
 	onDuplicate?: (id: string) => void;
+	onMoveUp?: (id: string) => void;
+	onMoveDown?: (id: string) => void;
 	onMoveToTop?: (id: string) => void;
 	onMoveToBottom?: (id: string) => void;
 	activeId: string | null | undefined;
@@ -54,6 +58,8 @@ export function SortableItem(props: Props) {
 		onToggleCollapse,
 		onAddToLoop,
 		onDuplicate,
+		onMoveUp,
+		onMoveDown,
 		onMoveToTop,
 		onMoveToBottom,
 		activeId,
@@ -144,18 +150,10 @@ export function SortableItem(props: Props) {
 								className="shrink-0"
 							/>
 
-							<div className="flex min-w-[120px] flex-1 items-center gap-2">
-								<Input
-									value={item.name}
-									onChange={(e) => onUpdate(item.id, "name", e.target.value)}
-									className="w-full"
-									placeholder="Loop name"
-								/>
-							</div>
-
 							<div className="flex w-full flex-col gap-1 sm:flex-row sm:items-center sm:gap-2">
 								{/* Top row: input, sets, settings (always a row on desktop) */}
 								<div className="flex w-full items-center gap-2 sm:w-auto">
+									<span className="text-sm font-medium">Loop</span>
 									<NumberInput
 										value={item.loops}
 										onChange={(v) => onUpdate(item.id, "loops", v)}
@@ -167,14 +165,35 @@ export function SortableItem(props: Props) {
 									<span className="ml-1 text-xs text-muted-foreground sm:ml-2">
 										sets
 									</span>
-									<Button
-										variant="ghost"
-										size="icon"
-										onClick={() => setShowSettings(true)}
-										className="ml-1 h-8 w-8 sm:ml-2"
-									>
-										<Settings size={14} />
-									</Button>
+									<div className="flex gap-1">
+										<Button
+											variant="ghost"
+											size="icon"
+											onClick={() => onDuplicate?.(item.id)}
+											className="h-8 w-8"
+											title="Duplicate loop"
+										>
+											<Copy size={14} />
+										</Button>
+										<Button
+											variant="ghost"
+											size="icon"
+											onClick={() => onRemove(item.id)}
+											className="h-8 w-8 text-destructive hover:text-destructive"
+											title="Delete loop"
+										>
+											<Trash2 size={14} />
+										</Button>
+										<Button
+											variant="ghost"
+											size="icon"
+											onClick={() => setShowSettings(true)}
+											className="h-8 w-8"
+											title="Loop settings"
+										>
+											<Settings size={14} />
+										</Button>
+									</div>
 								</div>
 								{/* Bottom row: + button and total (only a new line on mobile) */}
 								<div className="mt-2 flex w-full items-center sm:ml-2 sm:mt-0">
@@ -243,6 +262,8 @@ export function SortableItem(props: Props) {
 																onToggleCollapse={onToggleCollapse}
 																onAddToLoop={onAddToLoop}
 																onDuplicate={onDuplicate}
+																onMoveUp={onMoveUp}
+																onMoveDown={onMoveDown}
 																onMoveToTop={onMoveToTop}
 																onMoveToBottom={onMoveToBottom}
 																activeId={activeId}
@@ -285,8 +306,8 @@ export function SortableItem(props: Props) {
 					onClose={() => setShowSettings(false)}
 					item={item}
 					onUpdate={onUpdate}
-					onDuplicate={() => onDuplicate?.(item.id)}
-					onDelete={() => onRemove(item.id)}
+					onMoveUp={() => onMoveUp?.(item.id)}
+					onMoveDown={() => onMoveDown?.(item.id)}
 					onMoveToTop={() => onMoveToTop?.(item.id)}
 					onMoveToBottom={() => onMoveToBottom?.(item.id)}
 					colors={colors}
@@ -336,14 +357,35 @@ export function SortableItem(props: Props) {
 						placeholder="__:__"
 					/>
 				</div>
-				<Button
-					variant="ghost"
-					size="icon"
-					onClick={() => setShowSettings(true)}
-					className="ml-auto h-8 w-8"
-				>
-					<Settings size={14} />
-				</Button>
+				<div className="flex gap-1">
+					<Button
+						variant="ghost"
+						size="icon"
+						onClick={() => onDuplicate?.(interval.id)}
+						className="h-8 w-8"
+						title="Duplicate interval"
+					>
+						<Copy size={14} />
+					</Button>
+					<Button
+						variant="ghost"
+						size="icon"
+						onClick={() => onRemove(interval.id)}
+						className="h-8 w-8 text-destructive hover:text-destructive"
+						title="Delete interval"
+					>
+						<Trash2 size={14} />
+					</Button>
+					<Button
+						variant="ghost"
+						size="icon"
+						onClick={() => setShowSettings(true)}
+						className="h-8 w-8"
+						title="Interval settings"
+					>
+						<Settings size={14} />
+					</Button>
+				</div>
 			</div>
 
 			<IntervalSettingsDialog
@@ -351,8 +393,8 @@ export function SortableItem(props: Props) {
 				onClose={() => setShowSettings(false)}
 				item={interval}
 				onUpdate={onUpdate}
-				onDuplicate={() => onDuplicate?.(interval.id)}
-				onDelete={() => onRemove(interval.id)}
+				onMoveUp={() => onMoveUp?.(interval.id)}
+				onMoveDown={() => onMoveDown?.(interval.id)}
 				onMoveToTop={() => onMoveToTop?.(interval.id)}
 				onMoveToBottom={() => onMoveToBottom?.(interval.id)}
 				colors={colors}

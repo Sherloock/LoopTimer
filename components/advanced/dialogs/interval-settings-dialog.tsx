@@ -13,15 +13,15 @@ import {
 	IntervalStep,
 	getDefaultNameForType,
 } from "@/types/advanced-timer";
-import { Copy, Trash2 } from "lucide-react";
+import { ChevronDown, ChevronUp } from "lucide-react";
 
 interface Props {
 	isOpen: boolean;
 	onClose: () => void;
 	item: IntervalStep;
 	onUpdate: (id: string, field: string, value: any) => void;
-	onDuplicate: (id: string) => void;
-	onDelete: (id: string) => void;
+	onMoveUp: (id: string) => void;
+	onMoveDown: (id: string) => void;
 	onMoveToTop: (id: string) => void;
 	onMoveToBottom: (id: string) => void;
 	colors: ColorSettings;
@@ -32,8 +32,8 @@ export default function IntervalSettingsDialog({
 	onClose,
 	item,
 	onUpdate,
-	onDuplicate,
-	onDelete,
+	onMoveUp,
+	onMoveDown,
 	onMoveToTop,
 	onMoveToBottom,
 	colors,
@@ -135,50 +135,52 @@ export default function IntervalSettingsDialog({
 						</Label>
 					</div>
 
-					<div className="flex gap-2">
-						<Button
-							onClick={() => {
-								onMoveToTop(item.id);
-								onClose();
-							}}
-							variant="outline"
-							className="flex-1 gap-2"
-						>
-							↑ Top
-						</Button>
-						<Button
-							onClick={() => {
-								onMoveToBottom(item.id);
-								onClose();
-							}}
-							variant="outline"
-							className="flex-1 gap-2"
-						>
-							↓ Bottom
-						</Button>
-					</div>
-
-					<div className="flex gap-2 pt-4">
-						<Button
-							onClick={() => {
-								onDuplicate(item.id);
-								onClose();
-							}}
-							variant="outline"
-							className="flex-1 gap-2"
-						>
-							<Copy size={16} /> Duplicate
-						</Button>
-						<Button
-							onClick={() => {
-								onDelete(item.id);
-								onClose();
-							}}
-							variant="destructive"
-							className="flex-1 gap-2"
-						>
-							<Trash2 size={16} /> Delete
-						</Button>
+					<div className="space-y-2">
+						<Label>Position</Label>
+						<div className="grid grid-cols-2 gap-2">
+							<Button
+								onClick={() => {
+									onMoveUp(item.id);
+									onClose();
+								}}
+								variant="outline"
+								className="gap-2"
+							>
+								<ChevronUp size={16} /> Move Up
+							</Button>
+							<Button
+								onClick={() => {
+									onMoveDown(item.id);
+									onClose();
+								}}
+								variant="outline"
+								className="gap-2"
+							>
+								<ChevronDown size={16} /> Move Down
+							</Button>
+						</div>
+						<div className="grid grid-cols-2 gap-2">
+							<Button
+								onClick={() => {
+									onMoveToTop(item.id);
+									onClose();
+								}}
+								variant="outline"
+								className="gap-2"
+							>
+								↑ To Top
+							</Button>
+							<Button
+								onClick={() => {
+									onMoveToBottom(item.id);
+									onClose();
+								}}
+								variant="outline"
+								className="gap-2"
+							>
+								↓ To Bottom
+							</Button>
+						</div>
 					</div>
 				</div>
 			</DialogContent>

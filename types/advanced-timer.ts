@@ -11,7 +11,6 @@ export interface IntervalStep {
 
 export interface LoopGroup {
 	id: string;
-	name: string;
 	loops: number;
 	items: WorkoutItem[];
 	collapsed?: boolean;
