@@ -120,7 +120,9 @@ export function SortableItem(props: Props) {
 							<div
 								{...attributes}
 								{...listeners}
-								className="flex h-8 w-8 cursor-grab items-center justify-center"
+								className="flex h-10 w-10 cursor-grab touch-manipulation items-center justify-center sm:h-8 sm:w-8"
+								data-dnd-draggable="true"
+								style={{ touchAction: "none" }}
 							>
 								<GripVertical size={16} className="text-gray-400" />
 							</div>
@@ -313,7 +315,9 @@ export function SortableItem(props: Props) {
 					<div
 						{...attributes}
 						{...listeners}
-						className="flex h-8 w-8 cursor-grab items-center justify-center"
+						className="flex h-10 w-10 cursor-grab touch-manipulation items-center justify-center sm:h-8 sm:w-8"
+						data-dnd-draggable="true"
+						style={{ touchAction: "none" }}
 					>
 						<GripVertical size={16} className="text-gray-400" />
 					</div>

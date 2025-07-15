@@ -317,19 +317,19 @@ export function AdvancedTimer({
 		return getFlattenedIntervals(config.items);
 	}, [config.items]);
 
-	// Drag and drop sensors
+	// Drag and drop sensors - optimized for mobile
 	const sensors = useSensors(
-		// Pointer sensor for mouse / stylus
+		// Pointer sensor for mouse interactions (desktop)
 		useSensor(PointerSensor, {
 			activationConstraint: {
-				distance: 4, // small move before drag starts to avoid accidental drags while scrolling
+				distance: 8, // Increased for better touch compatibility
 			},
 		}),
-		// Touch sensor for real mobile devices & Chrome dev-tools emulation
+		// Touch sensor for mobile devices - optimized settings
 		useSensor(TouchSensor, {
 			activationConstraint: {
-				delay: 150,
-				tolerance: 8,
+				delay: 50, // Reduced delay for better responsiveness
+				tolerance: 12, // Increased tolerance for touch imprecision
 			},
 		}),
 		// Keyboard sensor for accessibility
@@ -1607,43 +1607,49 @@ export function AdvancedTimer({
 									items={config.items.map((item) => item.id)}
 									strategy={verticalListSortingStrategy}
 								>
-									<DroppableZone id="main-container" className="space-y-3">
-										{config.items.map((item, idx) => (
-											<div key={item.id} className="relative">
-												{/* Drop indicator before the first root item */}
-												{activeId && idx === 0 && (
+									<DroppableZone
+										id="main-container"
+										className="space-y-3"
+										style={{ touchAction: "manipulation" }}
+									>
+										<div data-dnd-sortable="true">
+											{config.items.map((item, idx) => (
+												<div key={item.id} className="relative">
+													{/* Drop indicator before the first root item */}
+													{activeId && idx === 0 && (
+														<DroppableZone
+															id={`drop-before-${item.id}`}
+															className="-my-3 h-6 bg-transparent"
+															style={{ minHeight: 24 }}
+														>
+															<span className="sr-only">before-drop</span>
+														</DroppableZone>
+													)}
+
+													<SortableItem
+														item={item}
+														onUpdate={updateItem}
+														onRemove={removeItem}
+														onToggleCollapse={toggleLoopCollapse}
+														onAddToLoop={addToLoop}
+														onDuplicate={duplicateItem}
+														onMoveToTop={moveToTop}
+														onMoveToBottom={moveToBottom}
+														activeId={activeId}
+														colors={config.colors}
+													/>
+
+													{/* Drop indicator after each root item */}
 													<DroppableZone
-														id={`drop-before-${item.id}`}
+														id={`drop-after-${item.id}`}
 														className="-my-3 h-6 bg-transparent"
 														style={{ minHeight: 24 }}
 													>
-														<span className="sr-only">before-drop</span>
+														<span className="sr-only">after-drop</span>
 													</DroppableZone>
-												)}
-
-												<SortableItem
-													item={item}
-													onUpdate={updateItem}
-													onRemove={removeItem}
-													onToggleCollapse={toggleLoopCollapse}
-													onAddToLoop={addToLoop}
-													onDuplicate={duplicateItem}
-													onMoveToTop={moveToTop}
-													onMoveToBottom={moveToBottom}
-													activeId={activeId}
-													colors={config.colors}
-												/>
-
-												{/* Drop indicator after each root item */}
-												<DroppableZone
-													id={`drop-after-${item.id}`}
-													className="-my-3 h-6 bg-transparent"
-													style={{ minHeight: 24 }}
-												>
-													<span className="sr-only">after-drop</span>
-												</DroppableZone>
-											</div>
-										))}
+												</div>
+											))}
+										</div>
 									</DroppableZone>
 								</SortableContext>
 

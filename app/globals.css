@@ -89,3 +89,27 @@
 		opacity: 1;
 	}
 }
+
+/* Mobile drag and drop optimizations */
+[data-dnd-sortable] {
+	touch-action: manipulation;
+}
+
+[data-dnd-draggable] {
+	touch-action: none;
+}
+
+/* Improve touch target size for mobile drag handles */
+@media (max-width: 768px) {
+	[role="button"][aria-roledescription*="sortable"] {
+		min-height: 44px;
+		padding: 8px;
+	}
+
+	/* Prevent text selection during drag on mobile */
+	[data-dnd-sortable] * {
+		user-select: none;
+		-webkit-user-select: none;
+		-webkit-touch-callout: none;
+	}
+}
