@@ -151,9 +151,13 @@ export function SortableItem(props: Props) {
 							/>
 
 							<div className="flex w-full flex-col gap-2">
-								{/* Line 1: Loop controls */}
-								<div className="flex w-full items-center gap-2">
-									{/* <span className="text-sm font-medium">Loop</span> */}
+								{/* Line 1: Loop title area (mobile) */}
+								<div className="flex w-full items-center gap-2 sm:hidden">
+									<span className="text-sm font-medium">Loop</span>
+								</div>
+
+								{/* Line 2: Controls - desktop layout */}
+								<div className="hidden w-full items-center gap-2 sm:flex">
 									<NumberInput
 										value={item.loops}
 										onChange={(v) => onUpdate(item.id, "loops", v)}
@@ -165,8 +169,73 @@ export function SortableItem(props: Props) {
 									<span className="text-xs text-muted-foreground">sets</span>
 								</div>
 
-								{/* Line 2: Actions and total */}
-								<div className="flex w-full items-center justify-between gap-2">
+								{/* Line 2/3: Mobile layout - sets + actions */}
+								<div className="flex w-full flex-col gap-2 sm:hidden">
+									<div className="flex w-full items-center justify-between gap-2">
+										<div className="flex items-center gap-2">
+											<NumberInput
+												value={item.loops}
+												onChange={(v) => onUpdate(item.id, "loops", v)}
+												min={1}
+												step={1}
+												className="w-[50px] min-w-0 flex-shrink"
+												placeholder="Sets"
+											/>
+											<span className="text-xs text-muted-foreground">
+												sets
+											</span>
+										</div>
+
+										<div className="flex items-center gap-1">
+											<Button
+												variant="ghost"
+												size="icon"
+												onClick={() => onDuplicate?.(item.id)}
+												className="h-7 w-7"
+												title="Duplicate loop"
+											>
+												<Copy size={12} />
+											</Button>
+											<Button
+												variant="ghost"
+												size="icon"
+												onClick={() => onRemove(item.id)}
+												className="h-7 w-7 text-destructive hover:text-destructive"
+												title="Delete loop"
+											>
+												<Trash2 size={12} />
+											</Button>
+											<Button
+												variant="ghost"
+												size="icon"
+												onClick={() => setShowSettings(true)}
+												className="h-7 w-7"
+												title="Loop settings"
+											>
+												<Settings size={12} />
+											</Button>
+										</div>
+									</div>
+
+									<div className="flex w-full items-center justify-between gap-2">
+										<Button
+											variant="outline"
+											size="sm"
+											onClick={() => onAddToLoop?.(item.id)}
+											className="gap-1 px-2"
+										>
+											<Plus size={12} />
+											<span className="">Add Interval</span>
+										</Button>
+
+										<span className="text-xs text-muted-foreground">
+											Total: {loopLength}
+										</span>
+									</div>
+								</div>
+
+								{/* Desktop layout - actions and total */}
+								<div className="hidden w-full items-center justify-between gap-2 sm:flex">
 									<Button
 										variant="outline"
 										size="sm"
@@ -350,18 +419,49 @@ export function SortableItem(props: Props) {
 						/>
 					</div>
 
-					{/* Line 2: TIME setter */}
-					<div className="flex justify-center sm:min-w-[90px]">
+					{/* Line 2: TIME setter + action buttons (mobile) / TIME setter (desktop) */}
+					<div className="flex items-center justify-between gap-2 sm:min-w-[90px] sm:justify-center">
 						<TimeInput
 							value={interval.duration}
 							onChange={(v: number) => onUpdate(interval.id, "duration", v)}
 							className="w-full max-w-[120px] sm:w-full"
 							placeholder="__:__"
 						/>
+
+						{/* Mobile action buttons */}
+						<div className="flex justify-center gap-1 sm:hidden">
+							<Button
+								variant="ghost"
+								size="icon"
+								onClick={() => onDuplicate?.(interval.id)}
+								className="h-8 w-8"
+								title="Duplicate interval"
+							>
+								<Copy size={14} />
+							</Button>
+							<Button
+								variant="ghost"
+								size="icon"
+								onClick={() => onRemove(interval.id)}
+								className="h-8 w-8 text-destructive hover:text-destructive"
+								title="Delete interval"
+							>
+								<Trash2 size={14} />
+							</Button>
+							<Button
+								variant="ghost"
+								size="icon"
+								onClick={() => setShowSettings(true)}
+								className="h-8 w-8"
+								title="Interval settings"
+							>
+								<Settings size={14} />
+							</Button>
+						</div>
 					</div>
 
-					{/* Line 3: duplicate, trash, settings buttons */}
-					<div className="flex justify-center gap-1">
+					{/* Desktop action buttons */}
+					<div className="hidden justify-center gap-1 sm:flex">
 						<Button
 							variant="ghost"
 							size="icon"
