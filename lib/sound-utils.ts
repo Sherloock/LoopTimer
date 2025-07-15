@@ -408,8 +408,124 @@ const waitForVoices = (): Promise<SpeechSynthesisVoice[]> => {
 	});
 };
 
+// Helper function to find the best English voice
+const findBestEnglishVoice = (
+	voices: SpeechSynthesisVoice[],
+): SpeechSynthesisVoice | null => {
+	// Detect if we're on Android
+	const isAndroid = /Android/.test(navigator.userAgent);
+
+	// Blacklist of known terrible voices (especially on Android)
+	const terribleVoices = [
+		"Google UK English Female",
+		"Google UK English Male",
+		"Google US English Female",
+		"Google US English Male",
+		"eSpeak",
+		"Microsoft David",
+		"Microsoft Zira",
+		"SpeechSynthesis",
+	];
+
+	// Filter out terrible voices
+	const decentVoices = voices.filter(
+		(voice) =>
+			!terribleVoices.some((terrible) => voice.name.includes(terrible)),
+	);
+
+	// Android-specific voice preferences (prioritize Samsung, LG, system voices)
+	if (isAndroid) {
+		const androidPreferences = [
+			// Samsung voices (usually much better quality)
+			(v: SpeechSynthesisVoice) =>
+				v.name.includes("Samsung") && v.lang.startsWith("en"),
+
+			// LG voices
+			(v: SpeechSynthesisVoice) =>
+				v.name.includes("LG") && v.lang.startsWith("en"),
+
+			// Any manufacturer-specific voices
+			(v: SpeechSynthesisVoice) =>
+				(v.name.includes("HTC") ||
+					v.name.includes("Sony") ||
+					v.name.includes("Huawei")) &&
+				v.lang.startsWith("en"),
+
+			// Local service voices that aren't Google
+			(v: SpeechSynthesisVoice) =>
+				v.localService && v.lang.startsWith("en") && !v.name.includes("Google"),
+
+			// Pico TTS (better than Google on some devices)
+			(v: SpeechSynthesisVoice) =>
+				v.name.includes("Pico") && v.lang.startsWith("en"),
+
+			// Any remaining English voices as last resort
+			(v: SpeechSynthesisVoice) => v.lang.startsWith("en"),
+		];
+
+		for (const preference of androidPreferences) {
+			const voice = decentVoices.find(preference);
+			if (voice) {
+				return voice;
+			}
+		}
+	}
+
+	// Desktop/iOS preferences (original logic)
+	const voicePreferences = [
+		// High quality system voices (usually best quality)
+		(v: SpeechSynthesisVoice) =>
+			v.localService &&
+			v.lang === "en-US" &&
+			(v.name.includes("Enhanced") || v.name.includes("Premium")),
+		(v: SpeechSynthesisVoice) =>
+			v.localService &&
+			v.lang === "en-GB" &&
+			(v.name.includes("Enhanced") || v.name.includes("Premium")),
+
+		// System voices with specific quality indicators
+		(v: SpeechSynthesisVoice) =>
+			v.localService &&
+			v.lang === "en-US" &&
+			(v.name.includes("Siri") ||
+				v.name.includes("Alex") ||
+				v.name.includes("Samantha")),
+		(v: SpeechSynthesisVoice) =>
+			v.localService &&
+			v.lang === "en-GB" &&
+			(v.name.includes("Daniel") || v.name.includes("Kate")),
+
+		// Any high-quality local English voices
+		(v: SpeechSynthesisVoice) =>
+			v.localService && v.lang.startsWith("en-") && !v.name.includes("Google"),
+
+		// Default system voices
+		(v: SpeechSynthesisVoice) => v.default && v.lang.startsWith("en-"),
+
+		// Any local English voice
+		(v: SpeechSynthesisVoice) => v.localService && v.lang.startsWith("en"),
+
+		// Fallback to any English voice
+		(v: SpeechSynthesisVoice) => v.lang.startsWith("en-"),
+	];
+
+	for (const preference of voicePreferences) {
+		const voice = decentVoices.find(preference);
+		if (voice) {
+			return voice;
+		}
+	}
+
+	// Ultimate fallback (but still avoid terrible voices if possible)
+	return decentVoices.find((v) => v.lang.includes("en")) || voices[0] || null;
+};
+
 export const speakText = async (text?: string) => {
 	if (!text || isMuted) return;
+
+	// Device detection (declare once at the top)
+	const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+	const isAndroid = /Android/.test(navigator.userAgent);
 
 	try {
 		// Check if speech synthesis is available
@@ -431,24 +547,28 @@ export const speakText = async (text?: string) => {
 		await new Promise((resolve) => setTimeout(resolve, 100));
 
 		// Wait for voices to be available (important on mobile)
-		await waitForVoices();
+		const voices = await waitForVoices();
 
 		const utterance = new SpeechSynthesisUtterance(text);
 
-		// Configure utterance for better mobile compatibility
-		utterance.rate = 1.0;
+		// Configure utterance for clear speech
+		utterance.rate = 0.9; // Slightly slower for better clarity
 		utterance.pitch = 1.0;
 		utterance.volume = 1.0;
+		utterance.lang = "en-US"; // Explicitly set language
 
-		// Try to use a native voice if available
-		const voices = window.speechSynthesis.getVoices();
-		const nativeVoice = voices.find(
-			(voice) =>
-				voice.default || voice.localService || voice.lang.startsWith("en"),
-		);
+		// Find the best English voice
+		const bestVoice = findBestEnglishVoice(voices);
+		if (bestVoice) {
+			utterance.voice = bestVoice;
+			utterance.lang = bestVoice.lang; // Use the voice's specific language
+		}
 
-		if (nativeVoice) {
-			utterance.voice = nativeVoice;
+		// Android-specific adjustments to make it sound less terrible
+		if (isAndroid) {
+			utterance.rate = 0.75; // Much slower on Android - helps reduce robotic sound
+			utterance.pitch = 0.85; // Lower pitch - less shrill/whiny
+			utterance.volume = 0.9; // Slightly quieter to reduce harshness
 		}
 
 		// Add error handling for utterance
@@ -456,13 +576,17 @@ export const speakText = async (text?: string) => {
 			console.warn("Speech synthesis error:", event.error);
 		};
 
-		// For iOS Safari: ensure speech starts immediately
-		const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+		// Enhanced mobile compatibility
 		if (isIOS) {
 			// iOS requires immediate speech start
 			window.speechSynthesis.speak(utterance);
+		} else if (isAndroid) {
+			// Android sometimes needs a small delay
+			setTimeout(() => {
+				window.speechSynthesis.speak(utterance);
+			}, 100);
 		} else {
-			// For other browsers, use a small delay to ensure proper initialization
+			// Desktop browsers
 			setTimeout(() => {
 				window.speechSynthesis.speak(utterance);
 			}, 50);

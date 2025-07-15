@@ -1,0 +1,37 @@
+{
+	"name": "Workout Timer",
+	"short_name": "Timer",
+	"description": "A modern workout timer application for fitness enthusiasts",
+	"start_url": "/",
+	"display": "standalone",
+	"background_color": "#ffffff",
+	"theme_color": "#667eea",
+	"orientation": "portrait-primary",
+	"categories": ["fitness", "health", "sports"],
+	"icons": [
+		{
+			"src": "/icon?<generated>",
+			"sizes": "32x32",
+			"type": "image/png",
+			"purpose": "favicon"
+		},
+		{
+			"src": "/apple-icon?<generated>",
+			"sizes": "180x180",
+			"type": "image/png",
+			"purpose": "apple touch icon"
+		},
+		{
+			"src": "/icon?<generated>",
+			"sizes": "192x192",
+			"type": "image/png",
+			"purpose": "any maskable"
+		},
+		{
+			"src": "/icon?<generated>",
+			"sizes": "512x512",
+			"type": "image/png",
+			"purpose": "any maskable"
+		}
+	]
+}

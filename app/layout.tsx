@@ -16,6 +16,26 @@ export const metadata: Metadata = {
 	title: "Workout Timer",
 	description: "A modern workout timer application for fitness enthusiasts",
 	keywords: ["workout", "timer", "fitness", "exercise", "training"],
+	manifest: "/manifest.json",
+	icons: {
+		icon: [{ url: "/icon?<generated>", type: "image/png", sizes: "32x32" }],
+		apple: [
+			{ url: "/apple-icon?<generated>", type: "image/png", sizes: "180x180" },
+		],
+	},
+	appleWebApp: {
+		title: "Workout Timer",
+		statusBarStyle: "default",
+		capable: true,
+	},
+	formatDetection: {
+		telephone: false,
+	},
+	other: {
+		"mobile-web-app-capable": "yes",
+		"apple-mobile-web-app-capable": "yes",
+		"apple-mobile-web-app-status-bar-style": "default",
+	},
 };
 
 export default function RootLayout({
