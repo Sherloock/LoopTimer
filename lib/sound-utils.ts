@@ -552,7 +552,7 @@ export const speakText = async (text?: string) => {
 		const utterance = new SpeechSynthesisUtterance(text);
 
 		// Configure utterance for clear speech
-		utterance.rate = 0.9; // Slightly slower for better clarity
+		utterance.rate = 1; // Slightly slower for better clarity
 		utterance.pitch = 1.0;
 		utterance.volume = 1.0;
 		utterance.lang = "en-US"; // Explicitly set language
@@ -565,11 +565,11 @@ export const speakText = async (text?: string) => {
 		}
 
 		// Android-specific adjustments to make it sound less terrible
-		if (isAndroid) {
-			utterance.rate = 0.75; // Much slower on Android - helps reduce robotic sound
-			utterance.pitch = 0.85; // Lower pitch - less shrill/whiny
-			utterance.volume = 0.9; // Slightly quieter to reduce harshness
-		}
+		// if (isAndroid) {
+		// 	utterance.rate = 1; // Much slower on Android - helps reduce robotic sound
+		// 	utterance.pitch = 1; // Lower pitch - less shrill/whiny
+		// 	utterance.volume = 1; // Slightly quieter to reduce harshness
+		// }
 
 		// Add error handling for utterance
 		utterance.onerror = (event) => {
