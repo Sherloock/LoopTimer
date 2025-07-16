@@ -149,12 +149,12 @@ export function SortableItem(props: Props) {
 
 							<div className="flex w-full flex-col gap-2">
 								{/* Line 1: Loop title area (mobile) */}
-								<div className="flex w-full items-center gap-2 sm:hidden">
+								{/* <div className="flex w-full items-center gap-2 sm:hidden">
 									<span className="text-sm font-medium">Loop</span>
-								</div>
+								</div> */}
 
 								{/* Line 2: Controls - desktop layout */}
-								<div className="hidden w-full items-center gap-2 sm:flex">
+								<div className="hidden w-full items-center gap-1 sm:flex">
 									<NumberInput
 										value={item.loops}
 										onChange={(v) => onUpdate(item.id, "loops", v)}
@@ -163,7 +163,7 @@ export function SortableItem(props: Props) {
 										className="w-[50px] min-w-0 flex-shrink"
 										placeholder="Sets"
 									/>
-									<span className="text-xs text-muted-foreground">sets</span>
+									{/* <span className="text-xs text-muted-foreground">sets</span> */}
 								</div>
 
 								{/* Line 2/3: Mobile layout - sets + actions */}
@@ -178,9 +178,9 @@ export function SortableItem(props: Props) {
 												className="w-[50px] min-w-0 flex-shrink"
 												placeholder="Sets"
 											/>
-											<span className="text-xs text-muted-foreground">
+											{/* <span className="text-xs text-muted-foreground">
 												sets
-											</span>
+											</span> */}
 										</div>
 
 										<div className="flex items-center gap-1">
@@ -279,79 +279,80 @@ export function SortableItem(props: Props) {
 								</div>
 							</div>
 						</div>
-					</div>
 
-					{!item.collapsed && (
-						<div className="relative">
-							{/* Removed indicator lines and ml-12 margin. Children are flush with the box border. */}
-							<div className="mr-4">
-								{item.items.length ? (
-									<>
-										<DroppableZone
-											id={`drop-${item.id}`}
-											isOver={Boolean(isActiveDropTarget)}
-											className=""
-										>
-											<SortableContext
-												items={item.items.map((s) => s.id)}
-												strategy={verticalListSortingStrategy}
+						{/* NESTED ITEMS INSIDE THE PURPLE BORDER */}
+						{!item.collapsed && (
+							<div className="relative mt-4">
+								{/* Items inside the loop with proper padding from the edges */}
+								<div className="px-2 pb-2">
+									{item.items.length ? (
+										<>
+											<DroppableZone
+												id={`drop-${item.id}`}
+												isOver={Boolean(isActiveDropTarget)}
+												className=""
 											>
-												<div className="space-y-3">
-													{item.items.map((subItem, idx) => (
-														<div key={subItem.id} className="relative">
-															{activeId && idx === 0 && (
+												<SortableContext
+													items={item.items.map((s) => s.id)}
+													strategy={verticalListSortingStrategy}
+												>
+													<div className="space-y-3">
+														{item.items.map((subItem, idx) => (
+															<div key={subItem.id} className="relative">
+																{activeId && idx === 0 && (
+																	<DroppableZone
+																		id={`drop-before-${subItem.id}`}
+																		className="-my-3 h-6 bg-transparent"
+																		style={{ minHeight: 24 }}
+																	>
+																		<span className="sr-only">before-drop</span>
+																	</DroppableZone>
+																)}
+																<SortableItem
+																	item={subItem}
+																	onUpdate={onUpdate}
+																	onRemove={onRemove}
+																	onToggleCollapse={onToggleCollapse}
+																	onAddToLoop={onAddToLoop}
+																	onDuplicate={onDuplicate}
+																	onMoveUp={onMoveUp}
+																	onMoveDown={onMoveDown}
+																	onMoveToTop={onMoveToTop}
+																	onMoveToBottom={onMoveToBottom}
+																	activeId={activeId}
+																	isNested
+																	colors={colors}
+																/>
 																<DroppableZone
-																	id={`drop-before-${subItem.id}`}
+																	id={`drop-after-${subItem.id}`}
 																	className="-my-3 h-6 bg-transparent"
 																	style={{ minHeight: 24 }}
 																>
-																	<span className="sr-only">before-drop</span>
+																	<span className="sr-only">after-drop</span>
 																</DroppableZone>
-															)}
-															<SortableItem
-																item={subItem}
-																onUpdate={onUpdate}
-																onRemove={onRemove}
-																onToggleCollapse={onToggleCollapse}
-																onAddToLoop={onAddToLoop}
-																onDuplicate={onDuplicate}
-																onMoveUp={onMoveUp}
-																onMoveDown={onMoveDown}
-																onMoveToTop={onMoveToTop}
-																onMoveToBottom={onMoveToBottom}
-																activeId={activeId}
-																isNested
-																colors={colors}
-															/>
-															<DroppableZone
-																id={`drop-after-${subItem.id}`}
-																className="-my-3 h-6 bg-transparent"
-																style={{ minHeight: 24 }}
-															>
-																<span className="sr-only">after-drop</span>
-															</DroppableZone>
-														</div>
-													))}
-												</div>
-											</SortableContext>
-										</DroppableZone>
-									</>
-								) : (
-									<div className="flex w-full items-center justify-between">
-										<DroppableZone
-											id={`empty-${item.id}`}
-											className="flex-1 rounded-lg border-2 border-dashed border-gray-300 bg-gray-50 p-4 text-left text-muted-foreground dark:border-gray-600 dark:bg-gray-800"
-										>
-											Drop intervals here
-										</DroppableZone>
-										<span className="ml-2 text-xs text-muted-foreground">
-											Total: {loopLength}
-										</span>
-									</div>
-								)}
+															</div>
+														))}
+													</div>
+												</SortableContext>
+											</DroppableZone>
+										</>
+									) : (
+										<div className="flex w-full items-center justify-between">
+											<DroppableZone
+												id={`empty-${item.id}`}
+												className="flex-1 rounded-lg border-2 border-dashed border-gray-300 bg-gray-50 p-4 text-left text-muted-foreground dark:border-gray-600 dark:bg-gray-800"
+											>
+												Drop intervals here
+											</DroppableZone>
+											<span className="ml-2 text-xs text-muted-foreground">
+												Total: {loopLength}
+											</span>
+										</div>
+									)}
+								</div>
 							</div>
-						</div>
-					)}
+						)}
+					</div>
 				</div>
 
 				<LoopSettingsDialog

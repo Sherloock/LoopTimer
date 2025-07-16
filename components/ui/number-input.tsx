@@ -41,7 +41,7 @@ export function NumberInput({
 		onChange(Math.max(min, Math.min(max, newValue)));
 	};
 
-	const wrapperClassName = cn("flex items-center gap-2");
+	const wrapperClassName = cn("flex items-center gap-[1px]");
 	const inputClassName = cn(
 		"text-center [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none",
 		className,
