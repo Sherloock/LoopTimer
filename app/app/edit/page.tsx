@@ -25,7 +25,7 @@ function EditTimerContent() {
 	};
 
 	return (
-		<div className="container mx-auto max-w-4xl px-1">
+		<div className="container mx-auto max-w-4xl px-0">
 			<EditTimer
 				loadedTimer={loadedTimer}
 				onSaveComplete={handleSaveComplete}
@@ -40,7 +40,7 @@ export default function EditTimerPage() {
 		<div className="min-h-screen bg-gradient-to-br from-background via-background to-muted py-1">
 			<Suspense
 				fallback={
-					<div className="container mx-auto max-w-4xl px-1">
+					<div className="container mx-auto max-w-4xl px-0">
 						Loading editor...
 					</div>
 				}

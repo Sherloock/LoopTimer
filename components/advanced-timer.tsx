@@ -1584,7 +1584,7 @@ export function AdvancedTimer({
 						</Button>
 					</div>
 
-					<CardContent className="space-y-6 pt-6">
+					<CardContent className="space-y-6 p-1 pt-6 md:p-6">
 						{/* Timer Name, Stats, and Actions - Responsive Row/Column */}
 						<div className="flex flex-col gap-4">
 							{/* Row 1: Name + Stats (side by side on md+) */}
