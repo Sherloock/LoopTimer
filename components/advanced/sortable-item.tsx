@@ -107,9 +107,6 @@ export function SortableItem(props: Props) {
 		return (
 			<>
 				<div ref={setNodeRef} style={style} className="relative space-y-2">
-					{/* <span className="absolute right-0 top-0 z-10 m-1 select-all rounded bg-muted px-1 text-xs text-muted-foreground">
-						{item.id}
-					</span> */}
 					<div
 						className={`rounded-lg border-2 border-dashed p-3 ${
 							isActiveDropTarget ? "border-blue-400 bg-blue-100" : ""
@@ -286,20 +283,8 @@ export function SortableItem(props: Props) {
 
 					{!item.collapsed && (
 						<div className="relative">
-							<div
-								className="absolute bottom-2 left-6 top-2 w-0 border-l-2 border-dashed"
-								style={{ borderColor: borderColor }}
-							/>
-							<div
-								className="absolute left-4 top-2 h-0 w-4 border-t-2 border-dashed"
-								style={{ borderColor: borderColor }}
-							/>
-							<div
-								className="absolute bottom-2 left-4 h-0 w-4 border-b-2 border-dashed"
-								style={{ borderColor: borderColor }}
-							/>
-
-							<div className="ml-12 mr-4">
+							{/* Removed indicator lines and ml-12 margin. Children are flush with the box border. */}
+							<div className="mr-4">
 								{item.items.length ? (
 									<>
 										<DroppableZone
