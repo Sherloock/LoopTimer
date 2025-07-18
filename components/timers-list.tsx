@@ -117,7 +117,7 @@ export function TimersList() {
 			{/* Floating Action Button - New Timer */}
 			<Button
 				variant="default"
-				className="fixed bottom-6 right-6 z-50 gap-2 rounded-full bg-gradient-to-r from-primary to-blue-500 px-6 py-2 text-base text-white shadow-lg transition-colors duration-200 hover:from-blue-500 hover:to-primary md:text-lg"
+				className="fixed bottom-6 right-6 z-50 gap-2 rounded-full bg-gradient-to-r from-primary to-blue-500 px-6 py-2 text-base text-white shadow-lg transition-colors duration-200 hover:from-blue-500 hover:to-primary md:bottom-8 md:right-8 md:text-lg lg:bottom-12 lg:right-12 xl:right-1/4 2xl:right-1/3"
 				onClick={() => router.push("/app/edit")}
 			>
 				<Plus size={16} /> New Timer
