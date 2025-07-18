@@ -83,17 +83,17 @@ export function TimerDisplay({
 
 	return (
 		<>
-			{/* Mobile: 3-line layout */}
-			<div className="space-y-8 text-center md:hidden">
+			{/* Primary layout: Centered vertical design for all screen sizes */}
+			<div className="space-y-8 text-center">
 				{/* Line 1: SET 1/1 */}
-				<div className="text-2xl font-semibold text-muted-foreground">
+				<div className="text-2xl font-semibold text-muted-foreground sm:text-3xl">
 					SET {currentRound}/{totalRounds}
 				</div>
 
 				{/* Line 2: TIMER */}
 				<div
 					className={cn(
-						"timer-display font-mono text-9xl font-bold",
+						"timer-display font-mono text-8xl font-bold sm:text-9xl lg:text-[12rem]",
 						getTimerDisplayColor(),
 						state === "running" && timeLeft <= 5 && "pulse-animation",
 					)}
@@ -101,62 +101,77 @@ export function TimerDisplay({
 					{formatTime(timeLeft)}
 				</div>
 
+				{/* Progress bar */}
+				<div className="mx-auto h-3 w-full max-w-md overflow-hidden rounded-full bg-secondary lg:h-4 lg:max-w-lg">
+					<div
+						className={cn(
+							"h-full transition-all duration-300",
+							getProgressColor(),
+						)}
+						style={{ width: `${progress}%` }}
+					/>
+				</div>
+
 				{/* Line 3: EXERCISE NAME */}
 				<div
 					className={cn(
-						"text-3xl font-semibold uppercase",
+						"text-2xl font-semibold uppercase sm:text-3xl lg:text-4xl",
 						getExerciseTextColor(),
 					)}
 				>
 					{currentIntervalName}
 				</div>
 
-				{/* Progress bar */}
-				<div className="h-3 w-full overflow-hidden rounded-full bg-secondary">
-					<div
-						className={cn(
-							"h-full transition-all duration-300",
-							getProgressColor(),
-						)}
-						style={{ width: `${progress}%` }}
-					/>
-				</div>
-			</div>
-
-			{/* Desktop: Original horizontal layout */}
-			<div className="hidden space-y-4 text-center md:block">
-				<div className="flex items-center justify-center gap-4">
-					<Badge className={cn("px-4 py-2 text-lg", getIntervalBadgeColor())}>
-						{currentIntervalName}
-					</Badge>
-					<Badge variant="outline" className="px-4 py-2 text-lg">
-						Set {currentRound}/{totalRounds}
-					</Badge>
-					{showStepCounter && currentStep && totalSteps && (
-						<Badge variant="outline" className="px-3 py-1 text-sm">
+				{/* Step counter for larger screens */}
+				{showStepCounter && currentStep && totalSteps && (
+					<div className="flex justify-center">
+						<Badge
+							variant="outline"
+							className="px-3 py-2 text-sm lg:px-4 lg:py-2 lg:text-base"
+						>
 							Step {currentStep}/{totalSteps}
 						</Badge>
-					)}
-				</div>
+					</div>
+				)}
+			</div>
 
-				<div
-					className={cn(
-						"timer-display font-mono text-8xl font-bold",
-						getTimerDisplayColor(),
-						state === "running" && timeLeft <= 5 && "pulse-animation",
-					)}
-				>
-					{formatTime(timeLeft)}
-				</div>
+			{/* Hidden: Old desktop layout */}
+			<div className="hidden">
+				{/* Desktop: Original horizontal layout */}
+				<div className="hidden space-y-4 text-center md:block">
+					<div className="flex items-center justify-center gap-4">
+						<Badge className={cn("px-4 py-2 text-lg", getIntervalBadgeColor())}>
+							{currentIntervalName}
+						</Badge>
+						<Badge variant="outline" className="px-4 py-2 text-lg">
+							Set {currentRound}/{totalRounds}
+						</Badge>
+						{showStepCounter && currentStep && totalSteps && (
+							<Badge variant="outline" className="px-3 py-1 text-sm">
+								Step {currentStep}/{totalSteps}
+							</Badge>
+						)}
+					</div>
 
-				<div className="h-3 w-full overflow-hidden rounded-full bg-secondary">
 					<div
 						className={cn(
-							"h-full transition-all duration-300",
-							getProgressColor(),
+							"timer-display font-mono text-8xl font-bold",
+							getTimerDisplayColor(),
+							state === "running" && timeLeft <= 5 && "pulse-animation",
 						)}
-						style={{ width: `${progress}%` }}
-					/>
+					>
+						{formatTime(timeLeft)}
+					</div>
+
+					<div className="h-3 w-full overflow-hidden rounded-full bg-secondary">
+						<div
+							className={cn(
+								"h-full transition-all duration-300",
+								getProgressColor(),
+							)}
+							style={{ width: `${progress}%` }}
+						/>
+					</div>
 				</div>
 			</div>
 		</>

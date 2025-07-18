@@ -42,7 +42,7 @@ export function TimerControls({
 	const iconSize = compact ? 16 : 20;
 
 	return (
-		<div className="flex flex-wrap justify-center gap-2 sm:gap-3">
+		<div className="relative z-[1500] flex flex-wrap justify-center gap-2 sm:gap-3">
 			{(state === "running" || state === "paused") && onFastBackward && (
 				<Button
 					onClick={onFastBackward}
