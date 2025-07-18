@@ -18,9 +18,9 @@ type ToastTypes = {
 
 export const toastConfig = {
 	enabled: {
-		start: true,
+		start: false,
 		pause: false,
-		reset: true,
+		reset: false,
 		stop: false,
 		complete: false,
 		restTime: false,
@@ -32,12 +32,12 @@ export const toastConfig = {
 	// Quick enable/disable all toasts
 	enableAll: () => {
 		Object.keys(toastConfig.enabled).forEach((key) => {
-			toastConfig.enabled[key as keyof ToastTypes] = true;
+			toastConfig.enabled[key as keyof ToastTypes] = false;
 		});
 	},
 	disableAll: () => {
 		Object.keys(toastConfig.enabled).forEach((key) => {
-			toastConfig.enabled[key as keyof ToastTypes] = false;
+			toastConfig.enabled[key as keyof ToastTypes] = true;
 		});
 	},
 	// Enable/disable specific toast types
