@@ -84,14 +84,14 @@ export function TimerDisplay({
 	return (
 		<>
 			{/* Primary layout: Centered vertical design for all screen sizes */}
-			<div className="space-y-12 text-center">
+			<div className="space-y-4 text-center">
 				{/* Line 1: SET 1/1 */}
 				<div className="text-2xl font-semibold text-muted-foreground sm:text-3xl">
 					SET {currentRound}/{totalRounds}
 				</div>
 
-				{/* Line 2: TIMER - with extra spacing */}
-				<div className="space-y-8">
+				<div>
+					{/* Line 2: TIMER - with extra spacing */}
 					<div
 						className={cn(
 							"timer-display font-mono text-8xl font-bold sm:text-9xl lg:text-[12rem]",
@@ -102,7 +102,7 @@ export function TimerDisplay({
 						{formatTime(timeLeft)}
 					</div>
 
-					{/* Progress bar */}
+					{/* line 3: Progress bar */}
 					<div className="mx-auto h-3 w-full max-w-md overflow-hidden rounded-full bg-secondary lg:h-4 lg:max-w-lg">
 						<div
 							className={cn(
@@ -114,10 +114,10 @@ export function TimerDisplay({
 					</div>
 				</div>
 
-				{/* Line 3: EXERCISE NAME - with extra spacing */}
+				{/* Line 4: EXERCISE NAME - with extra spacing */}
 				<div
 					className={cn(
-						"text-2xl font-semibold uppercase sm:text-3xl lg:text-4xl",
+						"pt-8 text-2xl font-semibold uppercase sm:text-3xl lg:text-4xl",
 						getExerciseTextColor(),
 					)}
 				>

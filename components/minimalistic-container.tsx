@@ -20,7 +20,7 @@ export function MinimalisticContainer({
 			{/* Desktop: Keep card layout with padding */}
 			<div className="!mt-0 hidden h-screen p-4 md:block">
 				<Card className="relative h-full flex-col">
-					<CardContent className="relative flex flex-1 flex-col justify-center overflow-hidden p-4">
+					<CardContent className="relative flex h-full flex-1 flex-col justify-center overflow-hidden p-4">
 						{children}
 					</CardContent>
 				</Card>

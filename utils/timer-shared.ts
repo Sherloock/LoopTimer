@@ -20,7 +20,7 @@ export function formatTimeInput(seconds: number): string {
 }
 
 export function getIntervalTypeForDisplay(
-	currentType: TimerType,
+	currentType: TimerType | null,
 ): "workout" | "rest" | "prepare" {
 	if (currentType === "workout") return "workout";
 	if (currentType === "rest") return "rest";
