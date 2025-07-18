@@ -6,12 +6,36 @@ import { useTimers } from "@/hooks/use-timers";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useMemo, useState } from "react";
 
-function PlayTimerContent() {
+export default function PlayTimerPage() {
+	const [isMinimalisticView, setIsMinimalisticView] = useState(false);
+
+	return (
+		<div className="min-h-screen bg-gradient-to-br from-background via-background to-muted">
+			{!isMinimalisticView && <Header />}
+			<Suspense
+				fallback={
+					<div className="container mx-auto max-w-4xl px-4 py-8">
+						Loading timer...
+					</div>
+				}
+			>
+				<PlayTimerContent onMinimalisticViewChange={setIsMinimalisticView} />
+			</Suspense>
+		</div>
+	);
+}
+
+function PlayTimerContent({
+	onMinimalisticViewChange,
+}: {
+	onMinimalisticViewChange: (isMinimalistic: boolean) => void;
+}) {
 	const searchParams = useSearchParams();
 	const timerId = searchParams.get("id");
 	const { data: timers } = useTimers();
 	const router = useRouter();
 	const [showCompletion, setShowCompletion] = useState(false);
+	const [isMinimalisticView, setIsMinimalisticView] = useState(false);
 
 	const loadedTimer = useMemo(() => {
 		if (!timerId || !timers) return undefined;
@@ -26,31 +50,24 @@ function PlayTimerContent() {
 		setShowCompletion(true);
 	};
 
+	const handleMinimalisticViewChange = (isMinimalistic: boolean) => {
+		setIsMinimalisticView(isMinimalistic);
+		onMinimalisticViewChange(isMinimalistic);
+	};
+
 	return (
-		<main className="container mx-auto max-w-4xl px-4 py-8">
+		<main
+			className={
+				isMinimalisticView ? "" : "container mx-auto max-w-4xl px-4 py-8"
+			}
+		>
 			<AdvancedTimer
 				loadedTimer={loadedTimer}
 				autoStart
 				onExit={handleExit}
 				onComplete={handleComplete}
+				onMinimalisticViewChange={handleMinimalisticViewChange}
 			/>
 		</main>
-	);
-}
-
-export default function PlayTimerPage() {
-	return (
-		<div className="min-h-screen bg-gradient-to-br from-background via-background to-muted">
-			<Header />
-			<Suspense
-				fallback={
-					<div className="container mx-auto max-w-4xl px-4 py-8">
-						Loading timer...
-					</div>
-				}
-			>
-				<PlayTimerContent />
-			</Suspense>
-		</div>
 	);
 }

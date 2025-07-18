@@ -9,10 +9,20 @@ export function MinimalisticContainer({
 	children,
 }: MinimalisticContainerProps) {
 	return (
-		<Card className="relative flex min-h-[80vh] flex-col">
-			<CardContent className="relative flex flex-1 flex-col justify-center overflow-hidden pt-4">
-				{children}
-			</CardContent>
-		</Card>
+		<>
+			{/* Mobile: No card, full screen layout */}
+			<div className="relative flex min-h-screen flex-col md:hidden">
+				<div className="relative flex flex-1 flex-col justify-center overflow-hidden px-4">
+					{children}
+				</div>
+			</div>
+
+			{/* Desktop: Keep card layout */}
+			<Card className="relative hidden min-h-[80vh] flex-col md:flex">
+				<CardContent className="relative flex flex-1 flex-col justify-center overflow-hidden pt-4">
+					{children}
+				</CardContent>
+			</Card>
+		</>
 	);
 }

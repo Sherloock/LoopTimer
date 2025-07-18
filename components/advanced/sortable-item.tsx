@@ -28,7 +28,6 @@ import {
 	Copy,
 	GripVertical,
 	Plus,
-	Repeat,
 	Settings,
 	Trash2,
 } from "lucide-react";
@@ -117,43 +116,75 @@ export function SortableItem(props: Props) {
 						}}
 					>
 						<div className="flex flex-wrap items-center gap-2 sm:flex-nowrap sm:gap-3">
-							{/* Drag handle at the end of the name */}
-							<div
-								{...attributes}
-								{...listeners}
-								className="flex h-10 w-10 cursor-grab touch-manipulation items-center justify-center sm:h-8 sm:w-8"
-								data-dnd-draggable="true"
-								style={{ touchAction: "none" }}
-							>
-								<GripVertical size={16} className="text-gray-400" />
+							{/* Mobile layout - Line 1: Grip + Set count + Collapse */}
+							<div className="flex w-full items-center justify-between gap-2 sm:hidden">
+								<div
+									{...attributes}
+									{...listeners}
+									className="flex h-10 w-10 cursor-grab touch-manipulation items-center justify-center sm:h-8 sm:w-8"
+									data-dnd-draggable="true"
+									style={{ touchAction: "none" }}
+								>
+									<GripVertical size={16} className="text-gray-400" />
+								</div>
+
+								<NumberInput
+									value={item.loops}
+									onChange={(v) => onUpdate(item.id, "loops", v)}
+									min={1}
+									step={1}
+									className="w-[50px] min-w-0 flex-shrink"
+									placeholder="Sets"
+								/>
+
+								<Button
+									variant="ghost"
+									size="sm"
+									onClick={() => onToggleCollapse?.(item.id)}
+									className="h-8 w-8 shrink-0 p-0"
+								>
+									{item.collapsed ? (
+										<ChevronRight size={16} />
+									) : (
+										<ChevronDown size={16} />
+									)}
+								</Button>
 							</div>
 
-							<Button
-								variant="ghost"
-								size="sm"
-								onClick={() => onToggleCollapse?.(item.id)}
-								className="h-8 w-8 shrink-0 p-0"
-							>
-								{item.collapsed ? (
-									<ChevronRight size={16} />
-								) : (
-									<ChevronDown size={16} />
-								)}
-							</Button>
+							{/* Desktop layout - Grip + Collapse */}
+							<div className="hidden items-center gap-2 sm:flex">
+								<div
+									{...attributes}
+									{...listeners}
+									className="flex h-10 w-10 cursor-grab touch-manipulation items-center justify-center sm:h-8 sm:w-8"
+									data-dnd-draggable="true"
+									style={{ touchAction: "none" }}
+								>
+									<GripVertical size={16} className="text-gray-400" />
+								</div>
 
-							<Repeat
+								<Button
+									variant="ghost"
+									size="sm"
+									onClick={() => onToggleCollapse?.(item.id)}
+									className="h-8 w-8 shrink-0 p-0"
+								>
+									{item.collapsed ? (
+										<ChevronRight size={16} />
+									) : (
+										<ChevronDown size={16} />
+									)}
+								</Button>
+							</div>
+
+							{/* <Repeat
 								size={16}
 								style={{ color: borderColor }}
 								className="shrink-0"
-							/>
+							/> */}
 
 							<div className="flex w-full flex-col gap-2">
-								{/* Line 1: Loop title area (mobile) */}
-								{/* <div className="flex w-full items-center gap-2 sm:hidden">
-									<span className="text-sm font-medium">Loop</span>
-								</div> */}
-
-								{/* Line 2: Controls - desktop layout */}
+								{/* Desktop layout - Sets */}
 								<div className="hidden w-full items-center gap-1 sm:flex">
 									<NumberInput
 										value={item.loops}
@@ -166,68 +197,46 @@ export function SortableItem(props: Props) {
 									{/* <span className="text-xs text-muted-foreground">sets</span> */}
 								</div>
 
-								{/* Line 2/3: Mobile layout - sets + actions */}
-								<div className="flex w-full flex-col gap-2 sm:hidden">
-									<div className="flex w-full items-center justify-between gap-2">
-										<div className="flex items-center gap-2">
-											<NumberInput
-												value={item.loops}
-												onChange={(v) => onUpdate(item.id, "loops", v)}
-												min={1}
-												step={1}
-												className="w-[50px] min-w-0 flex-shrink"
-												placeholder="Sets"
-											/>
-											{/* <span className="text-xs text-muted-foreground">
-												sets
-											</span> */}
-										</div>
+								{/* Mobile layout - Line 2: Add Interval + Feature buttons */}
+								<div className="flex w-full items-center justify-between gap-2 sm:hidden">
+									<Button
+										variant="outline"
+										size="sm"
+										onClick={() => onAddToLoop?.(item.id)}
+										className="gap-1 px-2"
+									>
+										<Plus size={12} />
+										<span className="">Add Interval</span>
+									</Button>
 
-										<div className="flex items-center gap-1">
-											<Button
-												variant="ghost"
-												size="icon"
-												onClick={() => onDuplicate?.(item.id)}
-												className="h-7 w-7"
-												title="Duplicate loop"
-											>
-												<Copy size={12} />
-											</Button>
-											<Button
-												variant="ghost"
-												size="icon"
-												onClick={() => onRemove(item.id)}
-												className="h-7 w-7 text-destructive hover:text-destructive"
-												title="Delete loop"
-											>
-												<Trash2 size={12} />
-											</Button>
-											<Button
-												variant="ghost"
-												size="icon"
-												onClick={() => setShowSettings(true)}
-												className="h-7 w-7"
-												title="Loop settings"
-											>
-												<Settings size={12} />
-											</Button>
-										</div>
-									</div>
-
-									<div className="flex w-full items-center justify-between gap-2">
+									<div className="flex items-center gap-1">
 										<Button
-											variant="outline"
-											size="sm"
-											onClick={() => onAddToLoop?.(item.id)}
-											className="gap-1 px-2"
+											variant="ghost"
+											size="icon"
+											onClick={() => onDuplicate?.(item.id)}
+											className="h-7 w-7"
+											title="Duplicate loop"
 										>
-											<Plus size={12} />
-											<span className="">Add Interval</span>
+											<Copy size={12} />
 										</Button>
-
-										<span className="text-xs text-muted-foreground">
-											Total: {loopLength}
-										</span>
+										<Button
+											variant="ghost"
+											size="icon"
+											onClick={() => onRemove(item.id)}
+											className="h-7 w-7 text-destructive hover:text-destructive"
+											title="Delete loop"
+										>
+											<Trash2 size={12} />
+										</Button>
+										<Button
+											variant="ghost"
+											size="icon"
+											onClick={() => setShowSettings(true)}
+											className="h-7 w-7"
+											title="Loop settings"
+										>
+											<Settings size={12} />
+										</Button>
 									</div>
 								</div>
 
@@ -335,6 +344,13 @@ export function SortableItem(props: Props) {
 													</div>
 												</SortableContext>
 											</DroppableZone>
+
+											{/* Mobile total time display after intervals */}
+											<div className="flex justify-end pt-2 sm:hidden">
+												<span className="text-xs text-muted-foreground">
+													Total: {loopLength}
+												</span>
+											</div>
 										</>
 									) : (
 										<div className="flex w-full items-center justify-between">

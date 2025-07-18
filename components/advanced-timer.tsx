@@ -58,6 +58,18 @@ import {
 	WorkoutItem,
 } from "@/types/advanced-timer";
 
+interface AdvancedTimerProps {
+	loadedTimer?: LoadedTimer;
+	onSaved?: (t: any) => void;
+	onTimerNameChange?: (name: string) => void;
+	editMode?: boolean;
+	autoStart?: boolean;
+	onExit?: () => void;
+	onSaveComplete?: () => void;
+	onComplete?: (timerName: string) => void;
+	onMinimalisticViewChange?: (isMinimalistic: boolean) => void;
+}
+
 export function AdvancedTimer({
 	loadedTimer,
 	onSaved,
@@ -67,16 +79,8 @@ export function AdvancedTimer({
 	onExit,
 	onSaveComplete,
 	onComplete,
-}: {
-	loadedTimer?: LoadedTimer;
-	onSaved?: (t: any) => void;
-	onTimerNameChange?: (name: string) => void;
-	editMode?: boolean;
-	autoStart?: boolean;
-	onExit?: () => void;
-	onSaveComplete?: () => void;
-	onComplete?: (timerName: string) => void;
-} = {}) {
+	onMinimalisticViewChange,
+}: AdvancedTimerProps) {
 	const [nextId, setNextId] = useState(6); // Start from 6 since default items now use IDs 1-5
 
 	// Keep a ref in sync with nextId state to guarantee synchronous, unique ID generation
@@ -1517,6 +1521,11 @@ export function AdvancedTimer({
 			return () => clearTimeout(timer);
 		}
 	}, [autoStart, loadedTimer, state, flattenedIntervals, baseStartTimer]);
+
+	// Notify parent when minimalistic view changes
+	useEffect(() => {
+		onMinimalisticViewChange?.(isMinimalisticView);
+	}, [isMinimalisticView, onMinimalisticViewChange]);
 
 	return (
 		<div className="relative space-y-6">
