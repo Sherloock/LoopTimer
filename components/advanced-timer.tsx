@@ -1297,9 +1297,7 @@ export function AdvancedTimer({
 	const getCurrentIntervalName = useCallback(() => {
 		if (!currentInterval) return "PREPARE";
 
-		return currentInterval.loopInfo
-			? `${currentInterval.loopInfo.iteration} - ${currentInterval.name}`
-			: currentInterval.name;
+		return currentInterval.name;
 	}, [currentInterval]);
 
 	const getTimerProgress = useCallback(() => {
