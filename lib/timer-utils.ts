@@ -2,6 +2,64 @@ import { toast } from "sonner";
 
 export type TimerState = "idle" | "running" | "paused" | "completed";
 
+// Toast configuration for developer control
+type ToastTypes = {
+	start: boolean;
+	pause: boolean;
+	reset: boolean;
+	stop: boolean;
+	complete: boolean;
+	restTime: boolean;
+	nextRound: boolean;
+	nextInterval: boolean;
+	fastForward: boolean;
+	fastBackward: boolean;
+};
+
+export const toastConfig = {
+	enabled: {
+		start: true,
+		pause: false,
+		reset: true,
+		stop: false,
+		complete: false,
+		restTime: false,
+		nextRound: false,
+		nextInterval: false,
+		fastForward: false,
+		fastBackward: false,
+	} as ToastTypes,
+	// Quick enable/disable all toasts
+	enableAll: () => {
+		Object.keys(toastConfig.enabled).forEach((key) => {
+			toastConfig.enabled[key as keyof ToastTypes] = true;
+		});
+	},
+	disableAll: () => {
+		Object.keys(toastConfig.enabled).forEach((key) => {
+			toastConfig.enabled[key as keyof ToastTypes] = false;
+		});
+	},
+	// Enable/disable specific toast types
+	enable: (...types: (keyof ToastTypes)[]) => {
+		types.forEach((type) => {
+			toastConfig.enabled[type] = true;
+		});
+	},
+	disable: (...types: (keyof ToastTypes)[]) => {
+		types.forEach((type) => {
+			toastConfig.enabled[type] = false;
+		});
+	},
+};
+
+// Helper function to conditionally show toasts
+const showToast = (type: keyof ToastTypes, toastFn: () => void) => {
+	if (toastConfig.enabled[type]) {
+		toastFn();
+	}
+};
+
 export const formatTime = (seconds: number): string => {
 	const mins = Math.floor(seconds / 60);
 	const secs = seconds % 60;
@@ -14,30 +72,44 @@ export const getProgress = (totalTime: number, timeLeft: number): number => {
 
 export const timerToasts = {
 	start: (message: string = "Timer started!") =>
-		toast.info(message, { id: "timer-start" }),
+		showToast("start", () => toast.info(message, { id: "timer-start" })),
 
-	pause: () => toast.info("Timer paused", { id: "timer-pause" }),
+	pause: () =>
+		showToast("pause", () => toast.info("Timer paused", { id: "timer-pause" })),
 
-	reset: () => toast.info("Timer reset", { id: "timer-reset" }),
+	reset: () =>
+		showToast("reset", () => toast.info("Timer reset", { id: "timer-reset" })),
 
-	stop: () => toast.info("Timer stopped", { id: "timer-stop" }),
+	stop: () =>
+		showToast("stop", () => toast.info("Timer stopped", { id: "timer-stop" })),
 
 	complete: (message: string) =>
-		toast.success(message, { id: "workout-complete" }),
+		showToast("complete", () =>
+			toast.success(message, { id: "workout-complete" }),
+		),
 
 	restTime: () =>
-		toast.success("Rest time! Take a breather.", { id: "rest-time" }),
+		showToast("restTime", () =>
+			toast.success("Rest time! Take a breather.", { id: "rest-time" }),
+		),
 
 	nextRound: (round: number) =>
-		toast.success(`Round ${round} - Let's go!`, { id: "next-round" }),
+		showToast("nextRound", () =>
+			toast.success(`Round ${round} - Let's go!`, { id: "next-round" }),
+		),
 
 	nextInterval: (name: string) =>
-		toast.success(`${name}!`, { id: "next-interval" }),
+		showToast("nextInterval", () =>
+			toast.success(`${name}!`, { id: "next-interval" }),
+		),
 
-	fastForward: (message: string) => toast.info(message, { id: "fast-forward" }),
+	fastForward: (message: string) =>
+		showToast("fastForward", () => toast.info(message, { id: "fast-forward" })),
 
 	fastBackward: (message: string) =>
-		toast.info(message, { id: "fast-backward" }),
+		showToast("fastBackward", () =>
+			toast.info(message, { id: "fast-backward" }),
+		),
 };
 
 export const timerControls = {
