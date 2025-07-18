@@ -7,10 +7,17 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useMemo, useState } from "react";
 
 export default function PlayTimerPage() {
-	const [isMinimalisticView, setIsMinimalisticView] = useState(false);
+	// Initialize as minimalistic if autoStart is true to prevent flicker
+	const [isMinimalisticView, setIsMinimalisticView] = useState(true);
 
 	return (
-		<div className="min-h-screen bg-gradient-to-br from-background via-background to-muted">
+		<div
+			className={
+				isMinimalisticView
+					? "h-screen overflow-hidden"
+					: "min-h-screen bg-gradient-to-br from-background via-background to-muted"
+			}
+		>
 			{!isMinimalisticView && <Header />}
 			<Suspense
 				fallback={
@@ -35,7 +42,8 @@ function PlayTimerContent({
 	const { data: timers } = useTimers();
 	const router = useRouter();
 	const [showCompletion, setShowCompletion] = useState(false);
-	const [isMinimalisticView, setIsMinimalisticView] = useState(false);
+	// Initialize as minimalistic since we have autoStart
+	const [isMinimalisticView, setIsMinimalisticView] = useState(true);
 
 	const loadedTimer = useMemo(() => {
 		if (!timerId || !timers) return undefined;
@@ -58,7 +66,7 @@ function PlayTimerContent({
 	return (
 		<main
 			className={
-				isMinimalisticView ? "" : "container mx-auto max-w-4xl px-4 py-8"
+				isMinimalisticView ? "" : "container mx-auto max-w-4xl px-4 pb-8"
 			}
 		>
 			<AdvancedTimer

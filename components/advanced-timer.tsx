@@ -1529,14 +1529,16 @@ export function AdvancedTimer({
 		<div className="relative space-y-6">
 			{/* Completion screen when timer is finished */}
 			{isCompletionView && (
-				<TimerCompletionScreen
-					onBack={() => onExit?.()}
-					onAgain={() => {
-						resetTimer();
-						startTimer();
-					}}
-					timerName={timerName}
-				/>
+				<div className="fixed inset-0 flex items-center justify-center bg-background">
+					<TimerCompletionScreen
+						onBack={() => onExit?.()}
+						onAgain={() => {
+							resetTimer();
+							startTimer();
+						}}
+						timerName={timerName}
+					/>
+				</div>
 			)}
 
 			{/* Minimalistic view when timer is running */}
