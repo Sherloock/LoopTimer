@@ -48,16 +48,6 @@ export function TimersList() {
 
 	return (
 		<div className="space-y-4">
-			<div className="flex justify-end">
-				<Button
-					variant="default"
-					className="gap-2"
-					onClick={() => router.push("/app/edit")}
-				>
-					<Plus size={16} /> New Timer
-				</Button>
-			</div>
-
 			{(!timers || timers.length === 0) && (
 				<p className="text-center">No timers yet. Create one!</p>
 			)}
@@ -123,6 +113,15 @@ export function TimersList() {
 					</div>
 				);
 			})}
+
+			{/* Floating Action Button - New Timer */}
+			<Button
+				variant="default"
+				className="fixed bottom-6 right-6 z-50 gap-2 rounded-full bg-gradient-to-r from-primary to-blue-500 px-6 py-2 text-base text-white shadow-lg transition-colors duration-200 hover:from-blue-500 hover:to-primary md:text-lg"
+				onClick={() => router.push("/app/edit")}
+			>
+				<Plus size={16} /> New Timer
+			</Button>
 
 			{/* Delete confirmation dialog */}
 			{confirmId && (

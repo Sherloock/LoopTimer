@@ -57,6 +57,6 @@ The system will allow users to create custom timers with loops etc
 Prefer container-based visual grouping (border/background) for logical groupings, avoid indicators that consume layout space unless necessary for clarity.
 
 always check version in package.json, and include the exact version in your answer
-
+Always design and test for phones, tablets, and all screen sizes (responsive design).
 
 AFTER YOU FINISH A TASK MAKE SURE TO SUGGESTING RULES FOR .cursorrule ADDITION.
