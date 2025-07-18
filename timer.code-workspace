@@ -26,6 +26,10 @@
 		"WillLuke.nextjs.hasPrompted": true,
 	},
 	"folders": [
+		// {
+		// 	"name": "TEMP",
+		// 	"path": "f:/temp/.",
+		// },
 		{
 			"name": "timer",
 			"path": ".",

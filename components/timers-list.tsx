@@ -8,6 +8,7 @@ import {
 	DropdownMenuItem,
 	DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { Skeleton } from "@/components/ui/skeleton";
 import { useDeleteTimer, useSaveTimer, useTimers } from "@/hooks/use-timers";
 import { formatTime } from "@/lib/timer-utils";
 import { computeTotalTime } from "@/utils/compute-total-time";
@@ -22,7 +23,26 @@ export function TimersList() {
 	const { mutate: duplicateTimer } = useSaveTimer();
 	const [confirmId, setConfirmId] = useState<string | null>(null);
 
-	if (isLoading) return <p className="text-center">Loading timers...</p>;
+	if (isLoading)
+		return (
+			<div className="space-y-4">
+				{Array.from({ length: 3 }).map((_, i) => (
+					<div
+						key={i}
+						className="flex items-center justify-between rounded-md border p-4"
+					>
+						<div className="space-y-2">
+							<Skeleton className="h-4 w-32" />
+							<Skeleton className="h-3 w-16" />
+						</div>
+						<div className="flex items-center gap-2">
+							<Skeleton className="h-8 w-8 rounded-full" />
+							<Skeleton className="h-8 w-16 rounded-md" />
+						</div>
+					</div>
+				))}
+			</div>
+		);
 	if (isError)
 		return <p className="text-center text-destructive">Error loading timers</p>;
 
