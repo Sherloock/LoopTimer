@@ -38,11 +38,13 @@ interface RunningTimerViewProps {
 	isHolding: boolean;
 	holdProgress: number;
 
-	nextInterval: {
-		name: string;
-		type: "workout" | "rest" | "prepare";
-		duration: number;
-	};
+	nextInterval:
+		| {
+				name: string;
+				type: "workout" | "rest" | "prepare";
+				duration: number;
+		  }
+		| undefined;
 
 	// Callbacks
 	onFastBackward: () => void;
