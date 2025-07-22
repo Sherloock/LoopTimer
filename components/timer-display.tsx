@@ -85,10 +85,12 @@ export function TimerDisplay({
 		<>
 			{/* Primary layout: Centered vertical design for all screen sizes */}
 			<div className="space-y-4 text-center">
-				{/* Line 1: SET 1/1 */}
-				<div className="text-2xl font-semibold text-muted-foreground sm:text-3xl">
-					SET {currentRound}/{totalRounds}
-				</div>
+				{/* Line 1: SET X/Y - only show if there are multiple sets */}
+				{totalRounds > 1 && (
+					<div className="text-2xl font-semibold text-muted-foreground sm:text-3xl">
+						SET {currentRound}/{totalRounds}
+					</div>
+				)}
 
 				<div>
 					{/* Line 2: TIMER - with extra spacing */}

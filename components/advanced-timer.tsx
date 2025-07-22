@@ -123,22 +123,10 @@ export function AdvancedTimer({
 	// Update config when a saved timer is loaded
 	useEffect(() => {
 		if (loadedTimer?.data) {
-			// Sanitize incoming data to ensure loops contain only intervals
+			// Allow nested loops - remove sanitization that prevented loop nesting
 			const sanitizeConfig = (data: AdvancedConfig): AdvancedConfig => {
-				const sanitizedItems: WorkoutItem[] = [];
-
-				data.items.forEach((itm) => {
-					if (isLoop(itm)) {
-						// Keep loops but ensure they only contain intervals
-						const sanitizedLoopItems = itm.items.filter(isInterval);
-						sanitizedItems.push({ ...itm, items: sanitizedLoopItems });
-					} else if (isInterval(itm)) {
-						// Keep root-level intervals as they are
-						sanitizedItems.push(itm);
-					}
-				});
-
-				return { ...data, items: sanitizedItems };
+				// Simply return the data as-is to allow full nesting capability
+				return data;
 			};
 
 			const normalized = sanitizeConfig(loadedTimer.data as AdvancedConfig);
@@ -306,6 +294,29 @@ export function AdvancedTimer({
 		return getFlattenedIntervals(config.items);
 	}, [config.items]);
 
+	// Enhanced validation function to check for nested loops - REMOVED to allow nesting
+	// const validateTimerStructure = useCallback(
+	// 	(items: WorkoutItem[]): boolean => {
+	// 		const checkNestedLoops = (items: WorkoutItem[], depth = 0): boolean => {
+	// 			for (const item of items) {
+	// 				if (isLoop(item)) {
+	// 					// If we're already inside a loop (depth > 0), nested loops are not allowed
+	// 					if (depth > 0) {
+	// 						return false;
+	// 					}
+	// 					// Recursively check the loop's items
+	// 					if (!checkNestedLoops(item.items, depth + 1)) {
+	// 						return false;
+	// 					}
+	// 				}
+	// 			}
+	// 			return true;
+	// 		};
+	// 		return checkNestedLoops(items);
+	// 	},
+	// 	[],
+	// );
+
 	// Drag and drop sensors - optimized for mobile
 	const sensors = useSensors(
 		// Pointer sensor for mouse interactions (desktop)
@@ -364,10 +375,7 @@ export function AdvancedTimer({
 		): WorkoutItem[] => {
 			return items.map((item) => {
 				if (item.id === loopId && isLoop(item)) {
-					// Disallow adding loops inside loops
-					if (isLoop(newItem)) {
-						return item;
-					}
+					// Allow adding any type of item (including loops) inside loops
 					return { ...item, items: [...item.items, newItem] };
 				}
 				if (isLoop(item)) {
@@ -582,47 +590,16 @@ export function AdvancedTimer({
 			const overItemObj = findItemById(config.items, overIdStr);
 
 			// ------------------------------------------------------------------
-			// GUARD 1 – A *loop* cannot be dropped **inside** another loop, nor onto
-			//           any of its inner drop-zones.  Loops are always root-level.
+			// GUARD 1 – Allow loops to be nested inside other loops
+			//           (Validation removed to enable full nesting capability)
 			// ------------------------------------------------------------------
-			// 1. Prevent dragging a loop into another loop (loops must stay at root)
-			if (activeItemObj && isLoop(activeItemObj)) {
-				const droppingIntoLoopZone =
-					(overIdStr.startsWith("drop-") &&
-						!overIdStr.startsWith("drop-before-") &&
-						!overIdStr.startsWith("drop-after-")) ||
-					overIdStr.startsWith("empty-");
-
-				const droppingOntoLoopHeader =
-					overItemObj && isLoop(overItemObj) && overItemObj.id !== activeIdStr;
-
-				const droppingInsideLoopItem = Boolean(overLocation?.loopId);
-
-				if (
-					droppingIntoLoopZone ||
-					droppingOntoLoopHeader ||
-					droppingInsideLoopItem
-				) {
-					return; // Block the operation entirely
-				}
-			}
+			// Note: Loop nesting is now fully supported
 
 			// ------------------------------------------------------------------
-			// GUARD 2 – An *interval* cannot be placed at the root level. Intervals
-			//           must live inside a loop.
+			// GUARD 2 – Allow intervals at any level for full flexibility
+			//           (Constraint removed to enable flexible timer structures)
 			// ------------------------------------------------------------------
-			// 2. Prevent placing an interval at the root level. We still allow
-			//    dropping intervals onto loop headers or dedicated loop drop-zones.
-			const isRootDrop = !(
-				overIdStr.startsWith("drop-") ||
-				overIdStr.startsWith("empty-") ||
-				(overItemObj && isLoop(overItemObj)) ||
-				overLocation?.loopId
-			);
-
-			if (activeItemObj && isInterval(activeItemObj) && isRootDrop) {
-				return;
-			}
+			// Note: Intervals can now be placed anywhere - at root level or inside loops
 
 			// Find and remove the dragged item from anywhere in the structure
 			const findAndRemoveItem = (
@@ -1125,6 +1102,60 @@ export function AdvancedTimer({
 		return remaining;
 	}, [state, timeLeft, currentItemIndex, flattenedIntervals]);
 
+	// Current interval info
+	const currentInterval = useMemo(() => {
+		if (
+			flattenedIntervals.length === 0 ||
+			currentItemIndex >= flattenedIntervals.length
+		) {
+			return null;
+		}
+		return flattenedIntervals[currentItemIndex];
+	}, [flattenedIntervals, currentItemIndex]);
+
+	// Calculate current set and total sets for display
+	const { currentLoopSet, totalLoopSets } = useMemo(() => {
+		if (!currentInterval || !currentInterval.loopInfo) {
+			// No loop info means no loops, so show 1/1 or hide sets
+			return { currentLoopSet: 1, totalLoopSets: 1 };
+		}
+
+		// Find the root-level loop info (outermost loop)
+		let rootLoopInfo = currentInterval.loopInfo;
+		while (rootLoopInfo.parentLoop) {
+			rootLoopInfo = rootLoopInfo.parentLoop;
+		}
+
+		// Find the corresponding loop item to get total iterations
+		const findLoopItem = (
+			items: WorkoutItem[],
+			targetInfo: any,
+		): LoopGroup | null => {
+			for (const item of items) {
+				if (isLoop(item)) {
+					// This is a bit tricky - we need to match the loop that generated this loopInfo
+					// For now, let's use the first loop we find at the current nesting level
+					if (!targetInfo.parentLoop) {
+						// This is a root-level loop
+						return item;
+					}
+				}
+				if (isLoop(item)) {
+					const found = findLoopItem(item.items, targetInfo);
+					if (found) return found;
+				}
+			}
+			return null;
+		};
+
+		const loopItem = findLoopItem(config.items, rootLoopInfo);
+
+		return {
+			currentLoopSet: rootLoopInfo.iteration,
+			totalLoopSets: loopItem?.loops || 1,
+		};
+	}, [currentInterval, config.items]);
+
 	// Item management functions with useCallback for performance
 	const addInterval = useCallback(() => {
 		const newInterval: IntervalStep = {
@@ -1284,16 +1315,6 @@ export function AdvancedTimer({
 	);
 
 	// Current interval info
-	const currentInterval = useMemo(() => {
-		if (
-			flattenedIntervals.length === 0 ||
-			currentItemIndex >= flattenedIntervals.length
-		) {
-			return null;
-		}
-		return flattenedIntervals[currentItemIndex];
-	}, [flattenedIntervals, currentItemIndex]);
-
 	const getCurrentIntervalName = useCallback(() => {
 		if (!currentInterval) return "PREPARE";
 
@@ -1457,6 +1478,17 @@ export function AdvancedTimer({
 			return;
 		}
 
+		// Validate timer structure to prevent nested loops
+		// if (!validateTimerStructure(config.items)) {
+		// 	toast.error(
+		// 		"Invalid timer structure: Loops cannot be nested inside other loops",
+		// 		{
+		// 			id: "structure-validation",
+		// 		},
+		// 	);
+		// 	return;
+		// }
+
 		// If editing an existing timer
 		if (loadedTimer) {
 			const duplicate = existingTimers?.find(
@@ -1547,8 +1579,8 @@ export function AdvancedTimer({
 					<RunningTimerView
 						timeLeft={timeLeft}
 						state={state}
-						currentSet={1}
-						totalSets={1}
+						currentSet={currentLoopSet}
+						totalSets={totalLoopSets}
 						intervalType={getIntervalTypeForDisplay(currentType)}
 						currentIntervalName={getCurrentIntervalName()}
 						progress={getTimerProgress()}
