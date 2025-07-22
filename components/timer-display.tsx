@@ -1,8 +1,8 @@
 "use client";
 
-import { Badge } from "@/components/ui/badge";
 import { formatTime, TimerState } from "@/lib/timer-utils";
 import { cn } from "@/lib/utils";
+import { AlarmClock, ArrowDownCircle, Coffee, Dumbbell } from "lucide-react";
 
 interface TimerDisplayProps {
 	timeLeft: number;
@@ -15,6 +15,11 @@ interface TimerDisplayProps {
 	showStepCounter?: boolean;
 	currentStep?: number;
 	totalSteps?: number;
+	nextInterval?: {
+		name: string;
+		type: "workout" | "rest" | "prepare";
+		duration: number;
+	};
 }
 
 export function TimerDisplay({
@@ -28,6 +33,7 @@ export function TimerDisplay({
 	showStepCounter = false,
 	currentStep,
 	totalSteps,
+	nextInterval,
 }: TimerDisplayProps) {
 	const getIntervalBadgeColor = () => {
 		switch (intervalType) {
@@ -126,58 +132,73 @@ export function TimerDisplay({
 					{currentIntervalName}
 				</div>
 
-				{/* Step counter for larger screens */}
-				{showStepCounter && currentStep && totalSteps && (
-					<div className="flex justify-center">
-						<Badge
-							variant="outline"
-							className="px-3 py-2 text-sm lg:px-4 lg:py-2 lg:text-base"
-						>
-							Step {currentStep}/{totalSteps}
-						</Badge>
+				{/* Next Up section directly under exercise name */}
+				{nextInterval && (
+					<div className="pt-20">
+						<NextUp nextInterval={nextInterval} />
 					</div>
 				)}
 			</div>
-
-			{/* Hidden: Old desktop layout */}
-			<div className="hidden">
-				{/* Desktop: Original horizontal layout */}
-				<div className="hidden space-y-4 text-center md:block">
-					<div className="flex items-center justify-center gap-4">
-						<Badge className={cn("px-4 py-2 text-lg", getIntervalBadgeColor())}>
-							{currentIntervalName}
-						</Badge>
-						<Badge variant="outline" className="px-4 py-2 text-lg">
-							Set {currentRound}/{totalRounds}
-						</Badge>
-						{showStepCounter && currentStep && totalSteps && (
-							<Badge variant="outline" className="px-3 py-1 text-sm">
-								Step {currentStep}/{totalSteps}
-							</Badge>
-						)}
-					</div>
-
-					<div
-						className={cn(
-							"timer-display font-mono text-8xl font-bold",
-							getTimerDisplayColor(),
-							state === "running" && timeLeft <= 5 && "pulse-animation",
-						)}
-					>
-						{formatTime(timeLeft)}
-					</div>
-
-					<div className="h-3 w-full overflow-hidden rounded-full bg-secondary">
-						<div
-							className={cn(
-								"h-full transition-all duration-300",
-								getProgressColor(),
-							)}
-							style={{ width: `${progress}%` }}
-						/>
-					</div>
-				</div>
-			</div>
 		</>
+	);
+}
+
+function NextUp({
+	nextInterval,
+}: {
+	nextInterval: {
+		name: string;
+		type: "workout" | "rest" | "prepare";
+		duration: number;
+	};
+}) {
+	const getIcon = () => {
+		switch (nextInterval.type) {
+			case "workout":
+				return <Dumbbell size={16} className="text-green-500" />;
+			case "rest":
+				return <Coffee size={16} className="text-blue-500" />;
+			case "prepare":
+				return <AlarmClock size={16} className="text-orange-500" />;
+			default:
+				return <ArrowDownCircle size={16} className="text-muted-foreground" />;
+		}
+	};
+
+	const getBackground = () => {
+		switch (nextInterval.type) {
+			case "workout":
+				return "bg-green-100/80 border-green-200";
+			case "rest":
+				return "bg-blue-100/80 border-blue-200";
+			case "prepare":
+				return "bg-orange-100/80 border-orange-200";
+			default:
+				return "bg-secondary border-muted";
+		}
+	};
+
+	return (
+		<div
+			className={cn(
+				"mx-auto mt-4 flex w-full max-w-md items-center justify-start gap-4 rounded-2xl border p-4 shadow-lg backdrop-blur-md transition-all duration-300 sm:max-w-lg lg:max-w-xl",
+			)}
+		>
+			{/* Icon with minimal space */}
+			<span className="flex size-10 flex-shrink-0 items-center justify-center">
+				{getIcon()}
+			</span>
+			<div className="flex flex-col items-start">
+				<span className="text-xs font-medium uppercase tracking-widest text-muted-foreground">
+					Next Up
+				</span>
+				<span className="text-lg font-semibold text-foreground">
+					{nextInterval.name}
+				</span>
+				<span className="flex items-center gap-1 text-sm text-muted-foreground">
+					{formatTime(nextInterval.duration)}
+				</span>
+			</div>
+		</div>
 	);
 }

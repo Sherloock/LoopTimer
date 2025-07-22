@@ -1113,6 +1113,19 @@ export function AdvancedTimer({
 		return flattenedIntervals[currentItemIndex];
 	}, [flattenedIntervals, currentItemIndex]);
 
+	// Compute nextInterval for preview
+	const nextInterval =
+		flattenedIntervals.length > 0 &&
+		currentItemIndex + 1 < flattenedIntervals.length
+			? {
+					name: flattenedIntervals[currentItemIndex + 1].name,
+					type: mapIntervalTypeToTimerType(
+						flattenedIntervals[currentItemIndex + 1].type,
+					),
+					duration: flattenedIntervals[currentItemIndex + 1].duration,
+				}
+			: undefined;
+
 	// Calculate current set and total sets for display
 	const { currentLoopSet, totalLoopSets } = useMemo(() => {
 		if (!currentInterval || !currentInterval.loopInfo) {
@@ -1596,6 +1609,7 @@ export function AdvancedTimer({
 						onHoldEnd={handleHoldEnd}
 						onPlay={startTimer}
 						onPause={pauseTimer}
+						nextInterval={nextInterval}
 					/>
 				</MinimalisticContainer>
 			)}

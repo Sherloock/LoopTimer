@@ -38,6 +38,12 @@ interface RunningTimerViewProps {
 	isHolding: boolean;
 	holdProgress: number;
 
+	nextInterval: {
+		name: string;
+		type: "workout" | "rest" | "prepare";
+		duration: number;
+	};
+
 	// Callbacks
 	onFastBackward: () => void;
 	onFastForward: () => void;
@@ -68,6 +74,7 @@ export function RunningTimerView({
 	onHoldEnd,
 	onPlay,
 	onPause,
+	nextInterval,
 }: RunningTimerViewProps) {
 	const [isMuted, setIsMuted] = useState(false);
 
@@ -174,6 +181,7 @@ export function RunningTimerView({
 					showStepCounter={showStepCounter}
 					currentStep={currentStep}
 					totalSteps={totalSteps}
+					nextInterval={nextInterval}
 				/>
 			</div>
 
