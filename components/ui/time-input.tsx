@@ -3,6 +3,7 @@ import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import { formatTimeInput, parseTimeInput } from "@/utils/timer-shared";
 import { Minus, Plus } from "lucide-react";
+import React, { useState } from "react";
 
 interface TimeInputProps {
 	value: number; // seconds
@@ -25,6 +26,18 @@ export function TimeInput({
 	disabled = false,
 	id,
 }: TimeInputProps) {
+	const [inputValue, setInputValue] = useState<string>(() =>
+		formatTimeInput(value),
+	);
+	const [isEditing, setIsEditing] = useState(false);
+
+	// Sync inputValue with value prop when not editing
+	React.useEffect(() => {
+		if (!isEditing) {
+			setInputValue(formatTimeInput(value));
+		}
+	}, [value, isEditing]);
+
 	const handleDecrement = () => {
 		const newValue = Math.max(min, value - step);
 		onChange(newValue);
@@ -35,8 +48,25 @@ export function TimeInput({
 	};
 
 	const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-		const newValue = parseTimeInput(e.target.value);
+		setInputValue(e.target.value);
+		setIsEditing(true);
+	};
+
+	const commitInput = () => {
+		const newValue = parseTimeInput(inputValue);
+		setIsEditing(false);
+		setInputValue(formatTimeInput(Math.max(min, newValue)));
 		onChange(Math.max(min, newValue));
+	};
+
+	const handleBlur = () => {
+		commitInput();
+	};
+
+	const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+		if (e.key === "Enter") {
+			commitInput();
+		}
 	};
 
 	return (
@@ -54,16 +84,18 @@ export function TimeInput({
 			<Input
 				id={id}
 				type="text"
-				value={formatTimeInput(value)}
+				value={isEditing ? inputValue : formatTimeInput(value)}
 				onChange={handleInputChange}
 				className={cn(
 					"w-24 px-4 py-3 text-center font-mono text-lg sm:w-16 sm:px-3 sm:py-2",
 					className,
 				)}
-				placeholder={placeholder ?? "__:__"}
+				placeholder={placeholder ?? "__ : __"}
 				disabled={disabled}
 				inputMode="numeric" // mobile: show numeric keyboard
 				pattern="[0-9:]*" // mobile: allow only numbers and colon
+				onBlur={handleBlur}
+				onKeyDown={handleKeyDown}
 			/>
 			<Button
 				variant="outline"
