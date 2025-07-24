@@ -58,5 +58,7 @@ Prefer container-based visual grouping (border/background) for logical groupings
 
 always check version in package.json, and include the exact version in your answer
 Always design and test for phones, tablets, and all screen sizes (responsive design).
+Always use Lucide icons in all buttons, especially in dialogs and action bars, to improve clarity and user experience.
+
 
 AFTER YOU FINISH A TASK MAKE SURE TO SUGGESTING RULES FOR .cursorrule ADDITION.

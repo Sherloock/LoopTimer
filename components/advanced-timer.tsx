@@ -41,7 +41,14 @@ import {
 	sortableKeyboardCoordinates,
 	verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
-import { ArrowLeft, Repeat, Save as SaveIcon, Settings } from "lucide-react";
+import {
+	ArrowLeft,
+	Repeat,
+	Save as SaveIcon,
+	Settings,
+	Undo,
+	X,
+} from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 
@@ -1570,8 +1577,136 @@ export function AdvancedTimer({
 		onMinimalisticViewChange?.(isMinimalisticView);
 	}, [isMinimalisticView, onMinimalisticViewChange]);
 
+	// --- Dirty state tracking for unsaved changes ---
+	const initialConfigRef = useRef<AdvancedConfig | null>(null);
+	const initialNameRef = useRef<string>("");
+
+	// Set initial config and name on mount or when loadedTimer changes
+	useEffect(() => {
+		if (loadedTimer?.data) {
+			initialConfigRef.current = loadedTimer.data as AdvancedConfig;
+			initialNameRef.current = loadedTimer.name || "";
+		} else {
+			initialConfigRef.current = config;
+			initialNameRef.current = timerName;
+		}
+	}, [loadedTimer]);
+
+	// Helper to compare config and name for dirty state
+	const isDirty = useMemo(() => {
+		const initialConfig = initialConfigRef.current;
+		const initialName = initialNameRef.current;
+		if (!initialConfig) return false;
+		const configChanged =
+			JSON.stringify(config) !== JSON.stringify(initialConfig);
+		const nameChanged = timerName !== initialName;
+		return configChanged || nameChanged;
+	}, [config, timerName]);
+
+	// --- Confirmation dialog state ---
+	const [showConfirmExit, setShowConfirmExit] = useState(false);
+	const [pendingExit, setPendingExit] = useState(false);
+
+	// Intercept exit: if dirty, show dialog, else call onExit
+	const handleBack = useCallback(() => {
+		if (isDirty) {
+			setShowConfirmExit(true);
+		} else {
+			onExit?.();
+		}
+	}, [isDirty, onExit]);
+
+	// Save and exit logic
+	const handleSaveAndExit = useCallback(() => {
+		if (!timerName.trim()) {
+			toast.error("Please provide a name", { id: "save-exit-no-name" });
+			return;
+		}
+		setPendingExit(true);
+		const onSuccess = () => {
+			setPendingExit(false);
+			setShowConfirmExit(false);
+			onExit?.();
+		};
+		// If editing an existing timer
+		if (loadedTimer) {
+			const duplicate = existingTimers?.find(
+				(t: any) => t.name === timerName.trim() && t.id !== loadedTimer.id,
+			);
+			if (duplicate) {
+				toast.error("Timer name already exists", { id: "save-exit-duplicate" });
+				setPendingExit(false);
+				return;
+			}
+			overwriteTimer(
+				{
+					id: loadedTimer.id,
+					data: { name: timerName.trim(), data: config },
+				},
+				{ onSuccess },
+			);
+			return;
+		}
+		// Creating a brand-new timer
+		const duplicate = existingTimers?.find(
+			(t: any) => t.name === timerName.trim(),
+		);
+		if (duplicate) {
+			toast.error("Timer name already exists", { id: "save-exit-duplicate" });
+			setPendingExit(false);
+			return;
+		}
+		saveTimer({ name: timerName.trim(), data: config }, { onSuccess });
+	}, [
+		timerName,
+		config,
+		loadedTimer,
+		existingTimers,
+		overwriteTimer,
+		saveTimer,
+		onExit,
+	]);
+
 	return (
 		<div className="relative space-y-6">
+			{/* Confirmation dialog for unsaved changes */}
+			<Dialog open={showConfirmExit} onOpenChange={setShowConfirmExit}>
+				<DialogContent className="max-w-sm">
+					<div className="mb-4 flex items-center justify-between">
+						<h2 className="text-lg font-semibold">Unsaved changes</h2>
+					</div>
+					<div className="py-2 text-sm text-muted-foreground">
+						You have unsaved changes. What would you like to do?
+					</div>
+					<div className="flex flex-col gap-2 pt-2 sm:flex-row sm:justify-end">
+						<Button
+							variant="outline"
+							onClick={() => setShowConfirmExit(false)}
+							className="flex-1"
+						>
+							<X size={16} className="mr-2" /> Cancel
+						</Button>
+						<Button
+							variant="destructive"
+							onClick={() => {
+								setShowConfirmExit(false);
+								onExit?.();
+							}}
+							className="flex-1"
+						>
+							<Undo size={16} className="mr-2" /> Back without saving
+						</Button>
+						<Button
+							disabled={pendingExit}
+							onClick={handleSaveAndExit}
+							className="flex-1"
+						>
+							<SaveIcon size={16} className="mr-2" />
+							{pendingExit ? "Saving..." : "Save and back"}
+						</Button>
+					</div>
+				</DialogContent>
+			</Dialog>
 			{/* Completion screen when timer is finished */}
 			{isCompletionView && (
 				<div className="fixed inset-0 flex items-center justify-center bg-background">
@@ -1618,7 +1753,7 @@ export function AdvancedTimer({
 				<Card>
 					{/* Sticky top bar with Back & Save */}
 					<div className="sticky top-0 z-10 flex items-center justify-between gap-2 border-b bg-background/80 px-4 py-2 backdrop-blur">
-						<Button variant="ghost" size="icon" onClick={() => onExit?.()}>
+						<Button variant="ghost" size="icon" onClick={handleBack}>
 							<ArrowLeft size={16} />
 						</Button>
 
