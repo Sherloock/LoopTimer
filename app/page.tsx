@@ -6,6 +6,7 @@ import {
 	CardTitle,
 } from "@/components/ui/card";
 import { SignInButton, SignUpButton, SignedIn, SignedOut } from "@clerk/nextjs";
+import { auth } from "@clerk/nextjs/server";
 import {
 	ArrowRight,
 	BarChart3,
@@ -17,8 +18,13 @@ import {
 	Zap,
 } from "lucide-react";
 import Link from "next/link";
+import { redirect } from "next/navigation";
 
-export default function LandingPage() {
+export default async function LandingPage() {
+	const { userId } = await auth();
+	if (!!userId) {
+		redirect("/app");
+	}
 	return (
 		<div className="min-h-screen bg-gradient-to-br from-background via-background to-muted">
 			{/* Navigation */}
