@@ -62,6 +62,8 @@ Always use Lucide icons in all buttons, especially in dialogs and action bars, t
 Always use inputMode="numeric" and pattern="[0-9:]*" for time/number inputs to improve mobile UX.
 For mobile usability, prefer wider input fields (w-24 or more) and larger touch targets.
 Add comments when overriding default component sizing for UX reasons.
+Do not ask for confirmation before making changes that the user has explicitly requested.
+
 
 
 AFTER YOU FINISH A TASK MAKE SURE TO SUGGESTING RULES FOR .cursorrule ADDITION.

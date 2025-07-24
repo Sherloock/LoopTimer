@@ -131,7 +131,7 @@ export function SortableItem(props: Props) {
 								<NumberInput
 									value={item.loops}
 									onChange={(v) => onUpdate(item.id, "loops", v)}
-									min={1}
+									min={0}
 									step={1}
 									className="w-[50px] min-w-0 flex-shrink"
 									placeholder="Sets"
@@ -189,7 +189,7 @@ export function SortableItem(props: Props) {
 									<NumberInput
 										value={item.loops}
 										onChange={(v) => onUpdate(item.id, "loops", v)}
-										min={1}
+										min={0}
 										step={1}
 										className="w-[50px] min-w-0 flex-shrink"
 										placeholder="Sets"

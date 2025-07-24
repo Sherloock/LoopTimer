@@ -44,7 +44,7 @@ export default function LoopSettingsDialog({
 						<NumberInput
 							value={item.loops}
 							onChange={(value) => onUpdate(item.id, "loops", value)}
-							min={1}
+							min={0}
 							step={1}
 						/>
 					</div>

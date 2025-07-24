@@ -65,7 +65,7 @@ export default function IntervalSettingsDialog({
 						<NumberInput
 							value={item.duration}
 							onChange={(value) => onUpdate(item.id, "duration", value)}
-							min={1}
+							min={0}
 							step={5}
 						/>
 					</div>
