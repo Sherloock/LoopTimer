@@ -59,6 +59,9 @@ Prefer container-based visual grouping (border/background) for logical groupings
 always check version in package.json, and include the exact version in your answer
 Always design and test for phones, tablets, and all screen sizes (responsive design).
 Always use Lucide icons in all buttons, especially in dialogs and action bars, to improve clarity and user experience.
+Always use inputMode="numeric" and pattern="[0-9:]*" for time/number inputs to improve mobile UX.
+For mobile usability, prefer wider input fields (w-24 or more) and larger touch targets.
+Add comments when overriding default component sizing for UX reasons.
 
 
 AFTER YOU FINISH A TASK MAKE SURE TO SUGGESTING RULES FOR .cursorrule ADDITION.

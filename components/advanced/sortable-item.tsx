@@ -426,7 +426,8 @@ export function SortableItem(props: Props) {
 						<TimeInput
 							value={interval.duration}
 							onChange={(v: number) => onUpdate(interval.id, "duration", v)}
-							className="w-full max-w-[120px] sm:w-full"
+							// Increased width for mobile usability
+							className="w-28 max-w-[140px] sm:w-full"
 							placeholder="__:__"
 						/>
 

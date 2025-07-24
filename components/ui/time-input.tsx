@@ -1,5 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { cn } from "@/lib/utils";
 import { formatTimeInput, parseTimeInput } from "@/utils/timer-shared";
 import { Minus, Plus } from "lucide-react";
 
@@ -54,9 +55,14 @@ export function TimeInput({
 				type="text"
 				value={formatTimeInput(value)}
 				onChange={handleInputChange}
-				className="w-16 text-center font-mono"
+				className={cn(
+					"w-24 px-4 py-3 text-center font-mono text-lg sm:w-16 sm:px-3 sm:py-2",
+					className,
+				)}
 				placeholder={placeholder ?? "__:__"}
 				disabled={disabled}
+				inputMode="numeric" // mobile: show numeric keyboard
+				pattern="[0-9:]*" // mobile: allow only numbers and colon
 			/>
 			<Button
 				variant="outline"
