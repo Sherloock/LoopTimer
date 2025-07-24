@@ -2,6 +2,7 @@
 
 import { TimerDisplay } from "@/components/timer-display";
 import { Button } from "@/components/ui/button";
+import { useWakeLock } from "@/hooks/use-wake-lock";
 import { getMute, setMute } from "@/lib/sound-utils";
 import { formatTime, TimerState } from "@/lib/timer-utils";
 import {
@@ -79,6 +80,9 @@ export function RunningTimerView({
 	nextInterval,
 }: RunningTimerViewProps) {
 	const [isMuted, setIsMuted] = useState(false);
+
+	// Keep the screen awake while the timer is running (mobile support)
+	useWakeLock(state === "running");
 
 	useEffect(() => {
 		setIsMuted(getMute());
