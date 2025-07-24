@@ -112,7 +112,7 @@ export function RunningTimerView({
 			</div>
 
 			{/* Timer controls header */}
-			<div className="pb-2">
+			<div className="pb-2 pt-2">
 				<div className="flex items-center justify-between">
 					<Button
 						onClick={onFastBackward}
