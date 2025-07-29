@@ -222,24 +222,32 @@ export function RunningTimerView({
 
 	return (
 		<>
-			{/* Progress bar with total remaining */}
-			<div className="space-y-2">
-				<div className="h-2 w-full overflow-hidden rounded-full bg-secondary">
-					<div
-						className="h-full bg-primary transition-all duration-300"
-						style={{ width: `${overallProgress}%` }}
-					/>
-				</div>
-				<div className="flex justify-end">
+			{/* Progress bar with total remaining and fullscreen button */}
+			<div className="flex items-center gap-4">
+				<div className="flex-1 space-y-1">
+					<div className="h-2 w-full overflow-hidden rounded-lg bg-secondary">
+						<div
+							className="h-full bg-primary transition-all duration-300"
+							style={{ width: `${overallProgress}%` }}
+						/>
+					</div>
 					<div className="text-xs text-muted-foreground">
 						Total remaining: {formatTime(totalTimeRemaining)}
 					</div>
 				</div>
+				<Button
+					onClick={toggleFullscreen}
+					variant="ghost"
+					size="icon"
+					className="h-10 w-10 flex-shrink-0 transition-all duration-200 hover:bg-muted/80"
+				>
+					{isFullscreen ? <Minimize2 size={20} /> : <Maximize2 size={20} />}
+				</Button>
 			</div>
 
 			{/* Timer controls header */}
 			<div className="pb-2 pt-2">
-				<div className="flex items-center justify-between">
+				<div className="flex items-center justify-center gap-4 md:gap-8 lg:gap-12">
 					<Button
 						onClick={onFastBackward}
 						variant="ghost"
@@ -297,14 +305,6 @@ export function RunningTimerView({
 					>
 						{isMuted ? <VolumeX size={20} /> : <Volume2 size={20} />}
 					</Button>
-					<Button
-						onClick={toggleFullscreen}
-						variant="ghost"
-						size="icon"
-						className="h-10 w-10 transition-all duration-200 hover:bg-muted/80"
-					>
-						{isFullscreen ? <Minimize2 size={20} /> : <Maximize2 size={20} />}
-					</Button>
 				</div>
 			</div>
 
@@ -326,24 +326,24 @@ export function RunningTimerView({
 			</div>
 
 			{/* Play/Pause button in bottom right corner */}
-			<div className="absolute bottom-6 right-6">
+			<div className="absolute bottom-6 right-6 md:bottom-8 md:left-1/2 md:right-auto md:-translate-x-1/2">
 				{state === "running" ? (
 					<Button
 						onClick={onPause}
 						variant="ghost"
-						size="icon"
-						className="h-12 w-12 rounded-full transition-all duration-200 hover:bg-muted/80"
+						className="flex items-center gap-2 rounded-lg px-4 py-3 transition-all duration-200 hover:bg-muted/80 md:px-6"
 					>
-						<Pause size={30} />
+						<Pause size={24} />
+						<span className="hidden text-sm font-medium md:inline">PAUSE</span>
 					</Button>
 				) : (
 					<Button
 						onClick={onPlay}
 						variant="ghost"
-						size="icon"
-						className="h-12 w-12 rounded-full transition-all duration-200 hover:bg-muted/80"
+						className="flex items-center gap-2 rounded-lg px-4 py-3 transition-all duration-200 hover:bg-muted/80 md:px-6"
 					>
-						<Play size={30} />
+						<Play size={24} />
+						<span className="hidden text-sm font-medium md:inline">PLAY</span>
 					</Button>
 				)}
 			</div>

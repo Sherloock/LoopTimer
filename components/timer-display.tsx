@@ -111,7 +111,7 @@ export function TimerDisplay({
 					</div>
 
 					{/* line 3: Progress bar */}
-					<div className="mx-auto h-3 w-full max-w-md overflow-hidden rounded-full bg-secondary lg:h-4 lg:max-w-lg">
+					<div className="mx-auto h-3 w-full max-w-md overflow-hidden rounded-sm bg-secondary lg:h-4 lg:max-w-lg">
 						<div
 							className={cn(
 								"h-full transition-all duration-300",

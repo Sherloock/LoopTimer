@@ -36,7 +36,7 @@ export function TimersList() {
 							<Skeleton className="h-3 w-16" />
 						</div>
 						<div className="flex items-center gap-2">
-							<Skeleton className="h-8 w-8 rounded-full" />
+							<Skeleton className="h-8 w-8 rounded-lg" />
 							<Skeleton className="h-8 w-16 rounded-md" />
 						</div>
 					</div>
