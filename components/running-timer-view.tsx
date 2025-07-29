@@ -91,24 +91,58 @@ export function RunningTimerView({
 	// Handle fullscreen changes
 	useEffect(() => {
 		const handleFullscreenChange = () => {
-			setIsFullscreen(!!document.fullscreenElement);
+			setIsFullscreen(
+				!!document.fullscreenElement ||
+					!!document.webkitFullscreenElement ||
+					!!document.mozFullScreenElement,
+			);
 		};
 
 		document.addEventListener("fullscreenchange", handleFullscreenChange);
+		document.addEventListener("webkitfullscreenchange", handleFullscreenChange);
+		document.addEventListener("mozfullscreenchange", handleFullscreenChange);
+
 		return () => {
 			document.removeEventListener("fullscreenchange", handleFullscreenChange);
+			document.removeEventListener(
+				"webkitfullscreenchange",
+				handleFullscreenChange,
+			);
+			document.removeEventListener(
+				"mozfullscreenchange",
+				handleFullscreenChange,
+			);
 		};
 	}, []);
 
 	const toggleFullscreen = useCallback(async () => {
 		try {
-			if (!document.fullscreenElement) {
-				await document.documentElement.requestFullscreen();
+			if (
+				!document.fullscreenElement &&
+				!document.webkitFullscreenElement &&
+				!document.mozFullScreenElement
+			) {
+				// Request fullscreen
+				const element = document.documentElement;
+				if (element.requestFullscreen) {
+					await element.requestFullscreen();
+				} else if (element.webkitRequestFullscreen) {
+					await element.webkitRequestFullscreen();
+				} else if (element.mozRequestFullScreen) {
+					await element.mozRequestFullScreen();
+				}
 			} else {
-				await document.exitFullscreen();
+				// Exit fullscreen
+				if (document.exitFullscreen) {
+					await document.exitFullscreen();
+				} else if (document.webkitExitFullscreen) {
+					await document.webkitExitFullscreen();
+				} else if (document.mozCancelFullScreen) {
+					await document.mozCancelFullScreen();
+				}
 			}
-		} catch (err) {
-			console.error("Error toggling fullscreen:", err);
+		} catch (error) {
+			console.error("Error toggling fullscreen:", error);
 		}
 	}, []);
 
