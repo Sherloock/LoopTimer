@@ -54,26 +54,28 @@ export function Clock() {
 	const seconds = time.getSeconds().toString().padStart(2, "0");
 
 	return (
-		<div className="absolute inset-0 flex flex-col items-center justify-center bg-[#000B14]">
-			<div className="scale-[0.35] sm:scale-[0.45] md:scale-[0.6] lg:scale-[0.75] xl:scale-[0.85] 2xl:scale-100">
-				<div className="seven-segment-display">
-					<SevenSegmentDigit value={hours[0]} />
-					<SevenSegmentDigit value={hours[1]} />
-					<Colon />
-					<SevenSegmentDigit value={minutes[0]} />
-					<SevenSegmentDigit value={minutes[1]} />
-					<Colon />
-					<SevenSegmentDigit value={seconds[0]} />
-					<SevenSegmentDigit value={seconds[1]} />
+		<div className="fixed inset-0 overflow-hidden bg-[#000B14]">
+			<div className="absolute inset-0 flex flex-col items-center justify-center">
+				<div className="-mt-16 flex flex-col items-center">
+					<div className="seven-segment-display">
+						<SevenSegmentDigit value={hours[0]} />
+						<SevenSegmentDigit value={hours[1]} />
+						<Colon />
+						<SevenSegmentDigit value={minutes[0]} />
+						<SevenSegmentDigit value={minutes[1]} />
+						<Colon />
+						<SevenSegmentDigit value={seconds[0]} />
+						<SevenSegmentDigit value={seconds[1]} />
+					</div>
+					<div className="mt-8 font-mono text-muted-foreground/60">
+						{time.toLocaleDateString("en-GB", {
+							weekday: "long",
+							day: "numeric",
+							month: "long",
+							year: "numeric",
+						})}
+					</div>
 				</div>
-			</div>
-			<div className="mt-8 font-mono text-muted-foreground/60">
-				{time.toLocaleDateString("en-GB", {
-					weekday: "long",
-					day: "numeric",
-					month: "long",
-					year: "numeric",
-				})}
 			</div>
 		</div>
 	);

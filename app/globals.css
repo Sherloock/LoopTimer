@@ -83,15 +83,19 @@
 
 .seven-segment-display {
   display: inline-flex;
-  gap: 2rem;
-  padding: 2rem;
+  gap: min(1.5vw, 2rem);
+  padding: min(1.5vw, 2rem);
   filter: blur(0.7px);
+  width: 90vw;
+  max-width: 1200px;
 }
 
 .seven-segment-digit {
   position: relative;
-  width: 12rem;
-  height: 22rem;
+  width: calc(90vw / 9);
+  max-width: 12rem;
+  height: calc((90vw / 9) * 1.8);
+  max-height: 22rem;
   display: inline-block;
 }
 
@@ -112,9 +116,9 @@
 .seven-segment-digit span:nth-child(1),
 .seven-segment-digit span:nth-child(4),
 .seven-segment-digit span:nth-child(7) {
-  height: 1rem;
-  width: 10rem;
-  left: 1rem;
+  height: min(0.8vw, 1rem);
+  width: 80%;
+  left: 10%;
 }
 
 /* Vertical segments */
@@ -122,9 +126,9 @@
 .seven-segment-digit span:nth-child(3),
 .seven-segment-digit span:nth-child(5),
 .seven-segment-digit span:nth-child(6) {
-  width: 1rem;
-  height: 10rem;
-  top: 1rem;
+  width: min(0.8vw, 1rem);
+  height: 45%;
+  top: 5%;
 }
 
 /* Top */
@@ -132,11 +136,11 @@
 /* Top right */
 .seven-segment-digit span:nth-child(2) { right: 0; }
 /* Bottom right */
-.seven-segment-digit span:nth-child(3) { right: 0; top: 11rem; }
+.seven-segment-digit span:nth-child(3) { right: 0; top: 50%; }
 /* Middle */
-.seven-segment-digit span:nth-child(4) { top: 10.5rem; }
+.seven-segment-digit span:nth-child(4) { top: 47.5%; }
 /* Bottom left */
-.seven-segment-digit span:nth-child(5) { left: 0; top: 11rem; }
+.seven-segment-digit span:nth-child(5) { left: 0; top: 50%; }
 /* Top left */
 .seven-segment-digit span:nth-child(6) { left: 0; }
 /* Bottom */
@@ -146,14 +150,16 @@
   display: inline-flex;
   flex-direction: column;
   justify-content: space-around;
-  height: 22rem;
-  padding: 6rem 0;
-  margin: 0 -1rem;
+  width: calc(90vw / 20);
+  max-width: 2rem;
+  height: calc((90vw / 9) * 1.8);
+  max-height: 22rem;
+  padding: 25% 0;
 }
 
 .seven-segment-colon span {
-  width: 1rem;
-  height: 1rem;
+  width: min(0.8vw, 1rem);
+  height: min(0.8vw, 1rem);
   background: hsl(var(--segment-color));
   box-shadow: 0 0 15px hsl(var(--segment-color));
 }
