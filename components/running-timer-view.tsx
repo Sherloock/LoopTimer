@@ -6,6 +6,8 @@ import { useWakeLock } from "@/hooks/use-wake-lock";
 import { getMute, setMute } from "@/lib/sound-utils";
 import { formatTime, TimerState } from "@/lib/timer-utils";
 import {
+	Maximize2,
+	Minimize2,
 	Pause,
 	Play,
 	SkipBack,
@@ -80,10 +82,35 @@ export function RunningTimerView({
 	nextInterval,
 }: RunningTimerViewProps) {
 	const [isMuted, setIsMuted] = useState(false);
+	const [isFullscreen, setIsFullscreen] = useState(false);
 	const [escHoldStartTime, setEscHoldStartTime] = useState<number | null>(null);
 
 	// Keep the screen awake while the timer is running (mobile support)
 	useWakeLock(state === "running");
+
+	// Handle fullscreen changes
+	useEffect(() => {
+		const handleFullscreenChange = () => {
+			setIsFullscreen(!!document.fullscreenElement);
+		};
+
+		document.addEventListener("fullscreenchange", handleFullscreenChange);
+		return () => {
+			document.removeEventListener("fullscreenchange", handleFullscreenChange);
+		};
+	}, []);
+
+	const toggleFullscreen = useCallback(async () => {
+		try {
+			if (!document.fullscreenElement) {
+				await document.documentElement.requestFullscreen();
+			} else {
+				await document.exitFullscreen();
+			}
+		} catch (err) {
+			console.error("Error toggling fullscreen:", err);
+		}
+	}, []);
 
 	useEffect(() => {
 		setIsMuted(getMute());
@@ -100,7 +127,9 @@ export function RunningTimerView({
 		const handleKeyDown = (e: KeyboardEvent) => {
 			// Prevent default behavior for these keys
 			if (
-				["Space", "ArrowLeft", "ArrowRight", "Escape", "KeyM"].includes(e.code)
+				["Space", "ArrowLeft", "ArrowRight", "Escape", "KeyM", "KeyF"].includes(
+					e.code,
+				)
 			) {
 				e.preventDefault();
 			}
@@ -117,6 +146,9 @@ export function RunningTimerView({
 					break;
 				case "KeyM":
 					handleMuteToggle();
+					break;
+				case "KeyF":
+					toggleFullscreen();
 					break;
 				case "Escape":
 					if (!escHoldStartTime) {
@@ -148,6 +180,7 @@ export function RunningTimerView({
 		onFastBackward,
 		onFastForward,
 		handleMuteToggle,
+		toggleFullscreen,
 		onHoldStart,
 		onHoldEnd,
 		escHoldStartTime,
@@ -219,9 +252,9 @@ export function RunningTimerView({
 				</div>
 			</div>
 
-			{/* Sound controls */}
+			{/* Sound and fullscreen controls */}
 			<div className="pb-4">
-				<div className="flex items-center justify-center">
+				<div className="flex items-center justify-center gap-2">
 					<Button
 						onClick={handleMuteToggle}
 						variant="ghost"
@@ -229,6 +262,14 @@ export function RunningTimerView({
 						className="h-10 w-10 transition-all duration-200 hover:bg-muted/80"
 					>
 						{isMuted ? <VolumeX size={20} /> : <Volume2 size={20} />}
+					</Button>
+					<Button
+						onClick={toggleFullscreen}
+						variant="ghost"
+						size="icon"
+						className="h-10 w-10 transition-all duration-200 hover:bg-muted/80"
+					>
+						{isFullscreen ? <Minimize2 size={20} /> : <Maximize2 size={20} />}
 					</Button>
 				</div>
 			</div>
