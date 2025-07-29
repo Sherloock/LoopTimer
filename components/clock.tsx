@@ -55,8 +55,8 @@ export function Clock() {
 
 	return (
 		<div className="fixed inset-0 overflow-hidden bg-[#000B14]">
-			<div className="absolute inset-0 flex flex-col items-center justify-center">
-				<div className="-mt-16 flex flex-col items-center">
+			<div className="absolute inset-0 flex items-center justify-center">
+				<div className="flex flex-col items-center">
 					<div className="seven-segment-display">
 						<SevenSegmentDigit value={hours[0]} />
 						<SevenSegmentDigit value={hours[1]} />
@@ -67,14 +67,14 @@ export function Clock() {
 						<SevenSegmentDigit value={seconds[0]} />
 						<SevenSegmentDigit value={seconds[1]} />
 					</div>
-					<div className="mt-8 font-mono text-muted-foreground/60">
+					{/* <div className="mt-8 font-mono text-muted-foreground/60">
 						{time.toLocaleDateString("en-GB", {
 							weekday: "long",
 							day: "numeric",
 							month: "long",
 							year: "numeric",
 						})}
-					</div>
+					</div> */}
 				</div>
 			</div>
 		</div>

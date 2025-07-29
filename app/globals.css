@@ -35,8 +35,8 @@
     --ring: 222.2 84% 4.9%;
 
     --radius: 0.5rem;
-    --segment-color: 210 100% 50%;  /* Bright blue color */
-    --segment-off: 210 30% 15%;     /* Dark blue for off segments */
+    --segment-color: 220 80% 35%;  /* Darker blue color */
+    --segment-off: 220 30% 15%;     /* Dark blue for off segments */
   }
 
   .dark {
@@ -67,7 +67,7 @@
     --border: 217.2 32.6% 17.5%;
     --input: 217.2 32.6% 17.5%;
     --ring: 212.7 26.8% 83.9%;
-    --segment-color: 220 100% 60%;
+    --segment-color: 220 70% 40%;
     --segment-off: 220 15% 25%;
   }
 }
@@ -85,7 +85,7 @@
   display: inline-flex;
   gap: min(1.5vw, 2rem);
   padding: min(1.5vw, 2rem);
-  filter: blur(0.7px);
+  filter: blur(0.3px) drop-shadow(0 0 5px hsl(var(--segment-color)));
   width: 90vw;
   max-width: 1200px;
 }
@@ -97,11 +97,12 @@
   height: calc((90vw / 9) * 1.8);
   max-height: 22rem;
   display: inline-block;
+  filter: drop-shadow(0 0 3px hsl(var(--segment-color)));
 }
 
 .seven-segment-digit span {
   position: absolute;
-  opacity: 0.08;
+  opacity: 0.05;
   background: hsl(var(--segment-off));
   box-shadow: 0 0 2px hsl(var(--segment-off));
 }
@@ -109,7 +110,9 @@
 .seven-segment-digit span.on {
   opacity: 1;
   background: hsl(var(--segment-color));
-  box-shadow: 0 0 15px hsl(var(--segment-color));
+  box-shadow:
+    0 0 5px hsl(var(--segment-color)),
+    0 0 10px hsl(var(--segment-color));
 }
 
 /* Horizontal segments */
@@ -149,24 +152,26 @@
 .seven-segment-colon {
   display: inline-flex;
   flex-direction: column;
-  justify-content: space-around;
-  width: calc(90vw / 20);
-  max-width: 2rem;
+  justify-content: center;
+  align-items: center;
+  width: calc(90vw / 15);
+  max-width: 3rem;
   height: calc((90vw / 9) * 1.8);
   max-height: 22rem;
-  padding: 25% 0;
+  gap: min(2vw, 3rem);
+  padding: 0;
+  filter: drop-shadow(0 0 3px hsl(var(--segment-color)));
 }
 
 .seven-segment-colon span {
-  width: min(0.8vw, 1rem);
-  height: min(0.8vw, 1rem);
+  width: min(2.0vw, 2.0rem);
+  height: min(2.0vw, 2.0rem);
   background: hsl(var(--segment-color));
-  box-shadow: 0 0 15px hsl(var(--segment-color));
-}
-
-.seven-segment-colon {
-  /* animation: blink 1s infinite; */
-  opacity: 0.8;
+  box-shadow:
+    0 0 5px hsl(var(--segment-color)),
+    0 0 10px hsl(var(--segment-color));
+  opacity: 1;
+  flex-shrink: 0;
 }
 
 @keyframes blink {
