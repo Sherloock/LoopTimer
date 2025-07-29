@@ -14,7 +14,7 @@ import {
 	Volume2,
 	VolumeX,
 } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 
 interface RunningTimerViewProps {
 	// Timer state
@@ -80,6 +80,7 @@ export function RunningTimerView({
 	nextInterval,
 }: RunningTimerViewProps) {
 	const [isMuted, setIsMuted] = useState(false);
+	const [escHoldStartTime, setEscHoldStartTime] = useState<number | null>(null);
 
 	// Keep the screen awake while the timer is running (mobile support)
 	useWakeLock(state === "running");
@@ -88,11 +89,69 @@ export function RunningTimerView({
 		setIsMuted(getMute());
 	}, []);
 
-	const handleMuteToggle = () => {
+	const handleMuteToggle = useCallback(() => {
 		const newMutedState = !isMuted;
 		setIsMuted(newMutedState);
 		setMute(newMutedState);
-	};
+	}, [isMuted]);
+
+	// Handle keyboard controls
+	useEffect(() => {
+		const handleKeyDown = (e: KeyboardEvent) => {
+			// Prevent default behavior for these keys
+			if (
+				["Space", "ArrowLeft", "ArrowRight", "Escape", "KeyM"].includes(e.code)
+			) {
+				e.preventDefault();
+			}
+
+			switch (e.code) {
+				case "Space":
+					state === "running" ? onPause() : onPlay();
+					break;
+				case "ArrowLeft":
+					onFastBackward();
+					break;
+				case "ArrowRight":
+					onFastForward();
+					break;
+				case "KeyM":
+					handleMuteToggle();
+					break;
+				case "Escape":
+					if (!escHoldStartTime) {
+						setEscHoldStartTime(Date.now());
+						onHoldStart();
+					}
+					break;
+			}
+		};
+
+		const handleKeyUp = (e: KeyboardEvent) => {
+			if (e.code === "Escape") {
+				setEscHoldStartTime(null);
+				onHoldEnd();
+			}
+		};
+
+		window.addEventListener("keydown", handleKeyDown);
+		window.addEventListener("keyup", handleKeyUp);
+
+		return () => {
+			window.removeEventListener("keydown", handleKeyDown);
+			window.removeEventListener("keyup", handleKeyUp);
+		};
+	}, [
+		state,
+		onPlay,
+		onPause,
+		onFastBackward,
+		onFastForward,
+		handleMuteToggle,
+		onHoldStart,
+		onHoldEnd,
+		escHoldStartTime,
+	]);
 
 	return (
 		<>

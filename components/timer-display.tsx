@@ -153,15 +153,18 @@ function NextUp({
 	};
 }) {
 	const getIcon = () => {
+		const iconSize = 24;
 		switch (nextInterval.type) {
 			case "workout":
-				return <Dumbbell size={16} className="text-green-500" />;
+				return <Dumbbell size={iconSize} className="text-green-500" />;
 			case "rest":
-				return <Coffee size={16} className="text-blue-500" />;
+				return <Coffee size={iconSize} className="text-blue-500" />;
 			case "prepare":
-				return <AlarmClock size={16} className="text-orange-500" />;
+				return <AlarmClock size={iconSize} className="text-orange-500" />;
 			default:
-				return <ArrowDownCircle size={16} className="text-muted-foreground" />;
+				return (
+					<ArrowDownCircle size={iconSize} className="text-muted-foreground" />
+				);
 		}
 	};
 
