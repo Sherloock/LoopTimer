@@ -2,12 +2,12 @@
 
 import { Clock } from "@/components/clock";
 import { Button } from "@/components/ui/button";
+import { useNavigation } from "@/lib/navigation";
 import { ArrowLeft, Maximize2, Minimize2 } from "lucide-react";
-import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
 export default function ClockPage() {
-	const router = useRouter();
+	const { goToMenu } = useNavigation();
 	const [isFullscreen, setIsFullscreen] = useState(false);
 
 	const toggleFullscreen = async () => {
@@ -73,7 +73,7 @@ export default function ClockPage() {
 				<Clock />
 			</div>
 			<div className="fixed left-4 top-4 z-50">
-				<Button variant="ghost" size="icon" onClick={() => router.push("/app")}>
+				<Button variant="ghost" size="icon" onClick={goToMenu}>
 					<ArrowLeft size={20} />
 				</Button>
 			</div>

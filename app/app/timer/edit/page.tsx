@@ -2,14 +2,15 @@
 
 import { EditTimer } from "@/components/edit-timer";
 import { useTimers } from "@/hooks/use-timers";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useNavigation } from "@/lib/navigation";
+import { useSearchParams } from "next/navigation";
 import { Suspense, useMemo } from "react";
 
 function EditTimerContent() {
 	const searchParams = useSearchParams();
 	const timerId = searchParams.get("id");
 	const { data: timers } = useTimers();
-	const router = useRouter();
+	const { goToAdvancedTimer } = useNavigation();
 
 	const loadedTimer = useMemo(() => {
 		if (!timerId || !timers) return undefined;
@@ -17,11 +18,11 @@ function EditTimerContent() {
 	}, [timerId, timers]);
 
 	const handleSaveComplete = () => {
-		router.push("/app");
+		goToAdvancedTimer();
 	};
 
 	const handleBack = () => {
-		router.push("/app");
+		goToAdvancedTimer();
 	};
 
 	return (

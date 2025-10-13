@@ -68,3 +68,9 @@ Do not ask for confirmation before making changes that the user has explicitly r
 
 
 AFTER YOU FINISH A TASK MAKE SURE TO SUGGESTING RULES FOR .cursorrule ADDITION.
+
+## Navigation Patterns
+- Use centralized navigation utilities in @/lib/navigation.ts
+- Prefer useNavigation() hook over direct router.push() calls
+- Define all routes in ROUTES constant for maintainability
+- Use descriptive function names like goToAdvancedTimer() instead of generic navigate()

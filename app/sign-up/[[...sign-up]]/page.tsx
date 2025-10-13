@@ -5,7 +5,7 @@ import { redirect } from "next/navigation";
 export default async function SignUpPage() {
 	const { userId } = await auth();
 	if (!!userId) {
-		redirect("/app");
+		redirect("/");
 	}
 	return (
 		<div className="flex min-h-screen items-center justify-center bg-background">

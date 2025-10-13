@@ -5,6 +5,7 @@ import {
 	CardHeader,
 	CardTitle,
 } from "@/components/ui/card";
+import { ROUTES } from "@/lib/navigation";
 import { SignInButton, SignUpButton, SignedIn, SignedOut } from "@clerk/nextjs";
 import { auth } from "@clerk/nextjs/server";
 import {
@@ -23,7 +24,7 @@ import { redirect } from "next/navigation";
 export default async function LandingPage() {
 	const { userId } = await auth();
 	if (!!userId) {
-		redirect("/app");
+		redirect(ROUTES.MENU);
 	}
 	return (
 		<div className="min-h-screen bg-gradient-to-br from-background via-background to-muted">
@@ -45,7 +46,7 @@ export default async function LandingPage() {
 								</SignUpButton>
 							</SignedOut>
 							<SignedIn>
-								<Link href="/app">
+								<Link href={ROUTES.MENU}>
 									<Button>Go to App</Button>
 								</Link>
 							</SignedIn>
@@ -89,7 +90,7 @@ export default async function LandingPage() {
 								</SignInButton>
 							</SignedOut>
 							<SignedIn>
-								<Link href="/app">
+								<Link href={ROUTES.MENU}>
 									<Button size="lg" className="px-8 py-3 text-lg">
 										Go to Your Timers
 										<ArrowRight size={20} className="ml-2" />
@@ -210,7 +211,7 @@ export default async function LandingPage() {
 							</SignUpButton>
 						</SignedOut>
 						<SignedIn>
-							<Link href="/app">
+							<Link href={ROUTES.MENU}>
 								<Button size="lg" className="px-8 py-3 text-lg">
 									Create Your First Timer
 									<ArrowRight size={20} className="ml-2" />

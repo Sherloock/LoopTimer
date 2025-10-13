@@ -10,6 +10,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useDeleteTimer, useSaveTimer, useTimers } from "@/hooks/use-timers";
+import { useNavigation } from "@/lib/navigation";
 import { formatTime } from "@/lib/timer-utils";
 import { computeTotalTime } from "@/utils/compute-total-time";
 import { Copy, Edit, MoreVertical, Play, Plus, Trash2 } from "lucide-react";
@@ -22,6 +23,7 @@ export function TimersList() {
 	const { mutate: deleteTimer } = useDeleteTimer();
 	const { mutate: duplicateTimer } = useSaveTimer();
 	const [confirmId, setConfirmId] = useState<string | null>(null);
+	const { goToEditTimer, goToPlayTimer } = useNavigation();
 
 	if (isLoading)
 		return (
@@ -75,9 +77,7 @@ export function TimersList() {
 									</Button>
 								</DropdownMenuTrigger>
 								<DropdownMenuContent align="end">
-									<DropdownMenuItem
-										onSelect={() => router.push(`/app/edit?id=${timer.id}`)}
-									>
+									<DropdownMenuItem onSelect={() => goToEditTimer(timer.id)}>
 										<Edit size={16} /> Edit
 									</DropdownMenuItem>
 									<DropdownMenuItem
@@ -104,7 +104,7 @@ export function TimersList() {
 								variant="default"
 								size="sm"
 								className="gap-2"
-								onClick={() => router.push(`/app/play?id=${timer.id}`)}
+								onClick={() => goToPlayTimer(timer.id)}
 							>
 								<Play size={16} />
 								Start
@@ -118,7 +118,7 @@ export function TimersList() {
 			<Button
 				variant="default"
 				className="fixed bottom-6 right-6 z-50 gap-2 bg-gradient-to-r from-primary to-blue-500 px-6 py-2 text-base text-white shadow-lg transition-colors duration-200 hover:from-blue-500 hover:to-primary md:bottom-8 md:right-8 md:text-lg lg:bottom-12 lg:right-12 xl:right-1/4 2xl:right-1/3"
-				onClick={() => router.push("/app/edit")}
+				onClick={() => goToEditTimer()}
 			>
 				<Plus size={16} /> New Timer
 			</Button>
