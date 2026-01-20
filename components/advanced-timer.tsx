@@ -1745,17 +1745,6 @@ export function AdvancedTimer({
 			{/* Minimalistic view when timer is running */}
 			{isMinimalisticView && !isCompletionView && (
 				<>
-					{/* Minimalistic view: always show an easy-to-reach back button */}
-					<Button
-						variant="outline"
-						size="icon"
-						className="fixed bottom-6 left-6 z-50 h-12 w-12 rounded-full bg-background/80 shadow-lg backdrop-blur supports-[backdrop-filter]:bg-background/60"
-						onClick={handleBack}
-					>
-						<ArrowLeft size={20} />
-						<span className="sr-only">Back</span>
-					</Button>
-
 					<MinimalisticContainer>
 						<RunningTimerView
 							timeLeft={timeLeft}
