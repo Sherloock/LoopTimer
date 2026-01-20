@@ -65,7 +65,7 @@ A modern, responsive workout timer application built with Next.js 15, TypeScript
    npm run dev
    ```
 
-4. **Open your browser** and navigate to [http://localhost:3000](http://localhost:3000)
+7. **Open your browser** and navigate to [http://localhost:3000](http://localhost:3000)
 
 ## 📝 Available Scripts
 

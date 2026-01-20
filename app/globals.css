@@ -2,126 +2,126 @@
 @tailwind components;
 @tailwind utilities;
 
-@import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap');
+@import url("https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap");
 
 @layer base {
-  :root {
-    --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
+	:root {
+		--background: 0 0% 100%;
+		--foreground: 222.2 84% 4.9%;
 
-    --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
+		--card: 0 0% 100%;
+		--card-foreground: 222.2 84% 4.9%;
 
-    --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
+		--popover: 0 0% 100%;
+		--popover-foreground: 222.2 84% 4.9%;
 
-    --primary: 222.2 47.4% 11.2%;
-    --primary-foreground: 210 40% 98%;
+		--primary: 222.2 47.4% 11.2%;
+		--primary-foreground: 210 40% 98%;
 
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
+		--secondary: 210 40% 96.1%;
+		--secondary-foreground: 222.2 47.4% 11.2%;
 
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
+		--muted: 210 40% 96.1%;
+		--muted-foreground: 215.4 16.3% 46.9%;
 
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222.2 47.4% 11.2%;
+		--accent: 210 40% 96.1%;
+		--accent-foreground: 222.2 47.4% 11.2%;
 
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
+		--destructive: 0 84.2% 60.2%;
+		--destructive-foreground: 210 40% 98%;
 
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 222.2 84% 4.9%;
+		--border: 214.3 31.8% 91.4%;
+		--input: 214.3 31.8% 91.4%;
+		--ring: 222.2 84% 4.9%;
 
-    --radius: 0.5rem;
-    --segment-color: 220 80% 35%;  /* Darker blue color */
-    --segment-off: 220 30% 15%;     /* Dark blue for off segments */
-  }
+		--radius: 0.5rem;
+		--segment-color: 220 80% 35%; /* Darker blue color */
+		--segment-off: 220 30% 15%; /* Dark blue for off segments */
+	}
 
-  .dark {
-    --background: 222.2 84% 4.9%;
-    --foreground: 210 40% 98%;
+	.dark {
+		--background: 222.2 84% 4.9%;
+		--foreground: 210 40% 98%;
 
-    --card: 222.2 84% 4.9%;
-    --card-foreground: 210 40% 98%;
+		--card: 222.2 84% 4.9%;
+		--card-foreground: 210 40% 98%;
 
-    --popover: 222.2 84% 4.9%;
-    --popover-foreground: 210 40% 98%;
+		--popover: 222.2 84% 4.9%;
+		--popover-foreground: 210 40% 98%;
 
-    --primary: 210 40% 98%;
-    --primary-foreground: 222.2 47.4% 11.2%;
+		--primary: 210 40% 98%;
+		--primary-foreground: 222.2 47.4% 11.2%;
 
-    --secondary: 217.2 32.6% 17.5%;
-    --secondary-foreground: 210 40% 98%;
+		--secondary: 217.2 32.6% 17.5%;
+		--secondary-foreground: 210 40% 98%;
 
-    --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
+		--muted: 217.2 32.6% 17.5%;
+		--muted-foreground: 215 20.2% 65.1%;
 
-    --accent: 217.2 32.6% 17.5%;
-    --accent-foreground: 210 40% 98%;
+		--accent: 217.2 32.6% 17.5%;
+		--accent-foreground: 210 40% 98%;
 
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 210 40% 98%;
+		--destructive: 0 62.8% 30.6%;
+		--destructive-foreground: 210 40% 98%;
 
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
-    --ring: 212.7 26.8% 83.9%;
-    --segment-color: 220 70% 40%;
-    --segment-off: 220 15% 25%;
-  }
+		--border: 217.2 32.6% 17.5%;
+		--input: 217.2 32.6% 17.5%;
+		--ring: 212.7 26.8% 83.9%;
+		--segment-color: 220 70% 40%;
+		--segment-off: 220 15% 25%;
+	}
 }
 
 @layer base {
-  * {
-    @apply border-border;
-  }
-  body {
-    @apply bg-background text-foreground;
-  }
+	* {
+		@apply border-border;
+	}
+	body {
+		@apply bg-background text-foreground;
+	}
 }
 
 .seven-segment-display {
-  display: inline-flex;
-  gap: min(1.5vw, 2rem);
-  padding: min(1.5vw, 2rem);
-  filter: blur(0.3px) drop-shadow(0 0 5px hsl(var(--segment-color)));
-  width: 90vw;
-  max-width: 1200px;
+	display: inline-flex;
+	gap: min(1.5vw, 2rem);
+	padding: min(1.5vw, 2rem);
+	filter: blur(0.3px) drop-shadow(0 0 5px hsl(var(--segment-color)));
+	width: 90vw;
+	max-width: 1200px;
 }
 
 .seven-segment-digit {
-  position: relative;
-  width: calc(90vw / 9);
-  max-width: 12rem;
-  height: calc((90vw / 9) * 1.8);
-  max-height: 22rem;
-  display: inline-block;
-  filter: drop-shadow(0 0 3px hsl(var(--segment-color)));
+	position: relative;
+	width: calc(90vw / 9);
+	max-width: 12rem;
+	height: calc((90vw / 9) * 1.8);
+	max-height: 22rem;
+	display: inline-block;
+	filter: drop-shadow(0 0 3px hsl(var(--segment-color)));
 }
 
 .seven-segment-digit span {
-  position: absolute;
-  opacity: 0.05;
-  background: hsl(var(--segment-off));
-  box-shadow: 0 0 2px hsl(var(--segment-off));
+	position: absolute;
+	opacity: 0.05;
+	background: hsl(var(--segment-off));
+	box-shadow: 0 0 2px hsl(var(--segment-off));
 }
 
 .seven-segment-digit span.on {
-  opacity: 1;
-  background: hsl(var(--segment-color));
-  box-shadow:
-    0 0 5px hsl(var(--segment-color)),
-    0 0 10px hsl(var(--segment-color));
+	opacity: 1;
+	background: hsl(var(--segment-color));
+	box-shadow:
+		0 0 5px hsl(var(--segment-color)),
+		0 0 10px hsl(var(--segment-color));
 }
 
 /* Horizontal segments */
 .seven-segment-digit span:nth-child(1),
 .seven-segment-digit span:nth-child(4),
 .seven-segment-digit span:nth-child(7) {
-  height: min(0.8vw, 1rem);
-  width: 80%;
-  left: 10%;
+	height: min(0.8vw, 1rem);
+	width: 80%;
+	left: 10%;
 }
 
 /* Vertical segments */
@@ -129,54 +129,75 @@
 .seven-segment-digit span:nth-child(3),
 .seven-segment-digit span:nth-child(5),
 .seven-segment-digit span:nth-child(6) {
-  width: min(0.8vw, 1rem);
-  height: 45%;
-  top: 5%;
+	width: min(0.8vw, 1rem);
+	height: 45%;
+	top: 5%;
 }
 
 /* Top */
-.seven-segment-digit span:nth-child(1) { top: 0; }
+.seven-segment-digit span:nth-child(1) {
+	top: 0;
+}
 /* Top right */
-.seven-segment-digit span:nth-child(2) { right: 0; }
+.seven-segment-digit span:nth-child(2) {
+	right: 0;
+}
 /* Bottom right */
-.seven-segment-digit span:nth-child(3) { right: 0; top: 50%; }
+.seven-segment-digit span:nth-child(3) {
+	right: 0;
+	top: 50%;
+}
 /* Middle */
-.seven-segment-digit span:nth-child(4) { top: 47.5%; }
+.seven-segment-digit span:nth-child(4) {
+	top: 47.5%;
+}
 /* Bottom left */
-.seven-segment-digit span:nth-child(5) { left: 0; top: 50%; }
+.seven-segment-digit span:nth-child(5) {
+	left: 0;
+	top: 50%;
+}
 /* Top left */
-.seven-segment-digit span:nth-child(6) { left: 0; }
+.seven-segment-digit span:nth-child(6) {
+	left: 0;
+}
 /* Bottom */
-.seven-segment-digit span:nth-child(7) { bottom: 0; }
+.seven-segment-digit span:nth-child(7) {
+	bottom: 0;
+}
 
 .seven-segment-colon {
-  display: inline-flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  width: calc(90vw / 15);
-  max-width: 3rem;
-  height: calc((90vw / 9) * 1.8);
-  max-height: 22rem;
-  gap: min(2vw, 3rem);
-  padding: 0;
-  filter: drop-shadow(0 0 3px hsl(var(--segment-color)));
+	display: inline-flex;
+	flex-direction: column;
+	justify-content: center;
+	align-items: center;
+	width: calc(90vw / 15);
+	max-width: 3rem;
+	height: calc((90vw / 9) * 1.8);
+	max-height: 22rem;
+	gap: min(2vw, 3rem);
+	padding: 0;
+	filter: drop-shadow(0 0 3px hsl(var(--segment-color)));
 }
 
 .seven-segment-colon span {
-  width: min(2.0vw, 2.0rem);
-  height: min(2.0vw, 2.0rem);
-  background: hsl(var(--segment-color));
-  box-shadow:
-    0 0 5px hsl(var(--segment-color)),
-    0 0 10px hsl(var(--segment-color));
-  opacity: 1;
-  flex-shrink: 0;
+	width: min(2vw, 2rem);
+	height: min(2vw, 2rem);
+	background: hsl(var(--segment-color));
+	box-shadow:
+		0 0 5px hsl(var(--segment-color)),
+		0 0 10px hsl(var(--segment-color));
+	opacity: 1;
+	flex-shrink: 0;
 }
 
 @keyframes blink {
-  0%, 100% { opacity: 0.2; }
-  50% { opacity: 1; }
+	0%,
+	100% {
+		opacity: 0.2;
+	}
+	50% {
+		opacity: 1;
+	}
 }
 
 /* Custom workout timer styles */
