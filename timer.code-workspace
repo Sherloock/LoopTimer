@@ -34,13 +34,13 @@
 			"name": "timer",
 			"path": ".",
 		},
-		{
-			"name": "scrapeease",
-			"path": "./../scrape-flow/",
-		},
-		{
-			"name": "ai42",
-			"path": "./../../office42/ai42/",
-		},
+		// {
+		// 	"name": "scrapeease",
+		// 	"path": "./../scrape-flow/",
+		// },
+		// {
+		// 	"name": "ai42",
+		// 	"path": "./../../office42/ai42/",
+		// },
 	],
 }

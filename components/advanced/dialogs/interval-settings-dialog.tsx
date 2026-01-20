@@ -7,6 +7,13 @@ import { Dialog, DialogClose, DialogContent } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { NumberInput } from "@/components/ui/number-input";
+import {
+	Select,
+	SelectContent,
+	SelectItem,
+	SelectTrigger,
+	SelectValue,
+} from "@/components/ui/select";
 import { SOUND_OPTIONS, playSound } from "@/lib/sound-utils";
 import {
 	ColorSettings,
@@ -72,39 +79,47 @@ export default function IntervalSettingsDialog({
 
 					<div className="space-y-2">
 						<Label>Interval Type</Label>
-						<select
+						<Select
 							value={item.type}
-							onChange={(e) =>
-								handleTypeChange(e.target.value as "prepare" | "work" | "rest")
+							onValueChange={(value) =>
+								handleTypeChange(value as "prepare" | "work" | "rest")
 							}
-							className="w-full rounded-md border px-3 py-2"
 						>
-							<option value="prepare">Prepare</option>
-							<option value="work">Work</option>
-							<option value="rest">Rest</option>
-						</select>
+							<SelectTrigger className="w-full">
+								<SelectValue placeholder="Select type" />
+							</SelectTrigger>
+							<SelectContent>
+								<SelectItem value="prepare">Prepare</SelectItem>
+								<SelectItem value="work">Work</SelectItem>
+								<SelectItem value="rest">Rest</SelectItem>
+							</SelectContent>
+						</Select>
 					</div>
 
 					{/* Sound selector */}
 					<div className="space-y-2">
 						<Label>Sound</Label>
 						<div className="flex gap-2">
-							<select
-								value={item.sound ?? ""}
-								onChange={(e) => {
-									const val = e.target.value || undefined;
+							<Select
+								value={item.sound ?? "default"}
+								onValueChange={(value) => {
+									const val = value === "default" ? undefined : value;
 									onUpdate(item.id, "sound", val);
 									playSound(val);
 								}}
-								className="flex-1 rounded-md border px-3 py-2"
 							>
-								<option value="">Default</option>
-								{SOUND_OPTIONS.map((opt) => (
-									<option key={opt.value} value={opt.value}>
-										{opt.label}
-									</option>
-								))}
-							</select>
+								<SelectTrigger className="flex-1">
+									<SelectValue placeholder="Default" />
+								</SelectTrigger>
+								<SelectContent>
+									<SelectItem value="default">Default</SelectItem>
+									{SOUND_OPTIONS.map((opt) => (
+										<SelectItem key={opt.value} value={opt.value}>
+											{opt.label}
+										</SelectItem>
+									))}
+								</SelectContent>
+							</Select>
 
 							<Button
 								variant="outline"

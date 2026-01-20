@@ -54,7 +54,7 @@ export function Clock() {
 	const seconds = time.getSeconds().toString().padStart(2, "0");
 
 	return (
-		<div className="fixed inset-0 overflow-hidden bg-[#000B14]">
+		<div className="fixed inset-0 overflow-hidden bg-gradient-to-br from-background via-background to-muted">
 			<div className="absolute inset-0 flex items-center justify-center">
 				<div className="flex flex-col items-center">
 					<div className="seven-segment-display">

@@ -72,9 +72,22 @@ export default function ClockPage() {
 			<div className="fixed right-0 top-0 h-screen w-screen">
 				<Clock />
 			</div>
-			<div className="fixed left-4 top-4 z-50">
+			{/* Mobile: thumb-reachable back button */}
+			<Button
+				variant="outline"
+				size="icon"
+				className="fixed bottom-6 left-6 z-50 h-12 w-12 rounded-full bg-background/80 shadow-lg backdrop-blur supports-[backdrop-filter]:bg-background/60 md:hidden"
+				onClick={goToMenu}
+			>
+				<ArrowLeft size={20} />
+				<span className="sr-only">Back to menu</span>
+			</Button>
+
+			{/* Desktop: keep back button near top-left */}
+			<div className="fixed left-4 top-4 z-50 hidden md:block">
 				<Button variant="ghost" size="icon" onClick={goToMenu}>
 					<ArrowLeft size={20} />
+					<span className="sr-only">Back to menu</span>
 				</Button>
 			</div>
 			<div className="fixed right-4 top-4 z-50">

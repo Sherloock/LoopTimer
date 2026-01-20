@@ -107,12 +107,12 @@ export function SortableItem(props: Props) {
 			<>
 				<div ref={setNodeRef} style={style} className="relative space-y-2">
 					<div
-						className={`rounded-lg border-2 border-dashed p-3 ${
-							isActiveDropTarget ? "border-blue-400 bg-blue-100" : ""
-						}`}
+						className="rounded-lg border-2 border-dashed p-3"
 						style={{
-							borderColor: isActiveDropTarget ? "#3b82f6" : borderColor,
-							backgroundColor: isActiveDropTarget ? "#dbeafe" : bgColor,
+							borderColor: isActiveDropTarget ? "hsl(var(--brand))" : borderColor,
+							backgroundColor: isActiveDropTarget
+								? "hsl(var(--brand) / 0.12)"
+								: bgColor,
 						}}
 					>
 						<div className="flex flex-wrap items-center gap-2 sm:flex-nowrap sm:gap-3">
@@ -200,7 +200,7 @@ export function SortableItem(props: Props) {
 								{/* Mobile layout - Line 2: Add Interval + Feature buttons */}
 								<div className="flex w-full items-center justify-between gap-2 sm:hidden">
 									<Button
-										variant="outline"
+										variant="control"
 										size="sm"
 										onClick={() => onAddToLoop?.(item.id)}
 										className="gap-1 px-2"
@@ -243,7 +243,7 @@ export function SortableItem(props: Props) {
 								{/* Desktop layout - actions and total */}
 								<div className="hidden w-full items-center justify-between gap-2 sm:flex">
 									<Button
-										variant="outline"
+										variant="control"
 										size="sm"
 										onClick={() => onAddToLoop?.(item.id)}
 										className="gap-1 px-2"
@@ -293,7 +293,7 @@ export function SortableItem(props: Props) {
 						{!item.collapsed && (
 							<div className="relative mt-4">
 								{/* Items inside the loop with proper padding from the edges */}
-								<div className="px-2 pb-2">
+								<div className="px-0 pb-2">
 									{item.items.length ? (
 										<>
 											<DroppableZone
@@ -394,12 +394,12 @@ export function SortableItem(props: Props) {
 				ref={setNodeRef}
 				style={{
 					...style,
-					borderColor: isOver && activeId ? "#3b82f6" : borderColor,
-					backgroundColor: isOver && activeId ? "#dbeafe" : bgColor,
+					borderColor: isOver && activeId ? "hsl(var(--brand))" : borderColor,
+					backgroundColor: isOver && activeId ? "hsl(var(--brand) / 0.1)" : bgColor,
 				}}
 				className={`relative rounded-lg border-2 p-2 transition-all duration-200 sm:p-3 ${
 					isNested ? "border-opacity-60" : ""
-				} ${isOver && activeId ? "border-blue-400 bg-blue-100 shadow-lg" : ""}`}
+				} ${isOver && activeId ? "shadow-lg" : ""}`}
 			>
 				<div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-2">
 					{/* Line 1: GripVertical + NAME */}

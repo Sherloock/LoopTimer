@@ -49,7 +49,7 @@ export function NumberInput({
 	return (
 		<div className={wrapperClassName}>
 			<Button
-				variant="outline"
+				variant="control"
 				size="icon"
 				onClick={handleDecrement}
 				disabled={disabled || value <= min}
@@ -69,7 +69,7 @@ export function NumberInput({
 				max={max}
 			/>
 			<Button
-				variant="outline"
+				variant="control"
 				size="icon"
 				onClick={handleIncrement}
 				disabled={disabled || value >= max}
