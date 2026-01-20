@@ -38,5 +38,9 @@
 			"name": "scrapeease",
 			"path": "./../scrape-flow/",
 		},
+		{
+			"name": "ai42",
+			"path": "./../../office42/ai42/",
+		},
 	],
 }
