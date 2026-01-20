@@ -1,6 +1,6 @@
+import { ROUTES } from "@/lib/constants/routes";
 import { SignIn } from "@clerk/nextjs";
 import { auth } from "@clerk/nextjs/server";
-import { ROUTES } from "@/lib/constants/routes";
 import { redirect } from "next/navigation";
 
 type SearchParams = Record<string, string | string[] | undefined>;
