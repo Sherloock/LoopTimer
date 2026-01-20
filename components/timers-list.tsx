@@ -20,7 +20,15 @@ import { useDeleteTimer, useSaveTimer, useTimers } from "@/hooks/use-timers";
 import { useNavigation } from "@/lib/navigation";
 import { formatTime } from "@/lib/timer-utils";
 import { computeTotalTime } from "@/utils/compute-total-time";
-import { Copy, Edit, MoreVertical, Play, Plus, Sparkles, Trash2 } from "lucide-react";
+import {
+	Copy,
+	Edit,
+	MoreVertical,
+	Play,
+	Plus,
+	Sparkles,
+	Trash2,
+} from "lucide-react";
 import { useState } from "react";
 
 export function TimersList() {
@@ -46,7 +54,11 @@ export function TimersList() {
 					<p className="text-sm text-muted-foreground">{subtitle}</p>
 				</div>
 				{hasTimers && (
-					<Button variant="brand" className="gap-2" onClick={() => goToEditTimer()}>
+					<Button
+						variant="brand"
+						className="gap-2"
+						onClick={() => goToEditTimer()}
+					>
 						<Plus size={16} />
 						New timer
 					</Button>
@@ -76,9 +88,7 @@ export function TimersList() {
 				<Card className="border-destructive/40 bg-destructive/5">
 					<CardHeader className="pb-4">
 						<CardTitle className="text-base">Couldn’t load timers</CardTitle>
-						<CardDescription>
-							Please try again in a moment.
-						</CardDescription>
+						<CardDescription>Please try again in a moment.</CardDescription>
 					</CardHeader>
 				</Card>
 			) : !hasTimers ? (
@@ -91,14 +101,18 @@ export function TimersList() {
 							<div className="space-y-1">
 								<CardTitle className="text-lg">No timers yet</CardTitle>
 								<CardDescription>
-									Create your first timer in seconds — intervals, breaks, and loops
-									included.
+									Create your first timer in seconds — intervals, breaks, and
+									loops included.
 								</CardDescription>
 							</div>
 						</div>
 					</CardHeader>
 					<CardFooter className="pt-0">
-						<Button variant="brand" className="gap-2" onClick={() => goToEditTimer()}>
+						<Button
+							variant="brand"
+							className="gap-2"
+							onClick={() => goToEditTimer()}
+						>
 							<Plus size={16} />
 							Create your first timer
 						</Button>
@@ -129,7 +143,9 @@ export function TimersList() {
 											</Button>
 										</DropdownMenuTrigger>
 										<DropdownMenuContent align="end">
-											<DropdownMenuItem onSelect={() => goToEditTimer(timer.id)}>
+											<DropdownMenuItem
+												onSelect={() => goToEditTimer(timer.id)}
+											>
 												<Edit size={16} /> Edit
 											</DropdownMenuItem>
 											<DropdownMenuItem

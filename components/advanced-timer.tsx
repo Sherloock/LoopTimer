@@ -1906,78 +1906,78 @@ export function AdvancedTimer({
 											<div data-dnd-sortable="true" className="space-y-4">
 												{config.items.map((item, idx) => (
 													<div key={item.id} className="relative">
-													{/* Drop indicator before the first root item */}
-													{activeId && idx === 0 && (
+														{/* Drop indicator before the first root item */}
+														{activeId && idx === 0 && (
+															<DroppableZone
+																id={`drop-before-${item.id}`}
+																className="-my-3 h-6 bg-transparent"
+																style={{ minHeight: 24 }}
+															>
+																<span className="sr-only">before-drop</span>
+															</DroppableZone>
+														)}
+
+														<SortableItem
+															item={item}
+															onUpdate={updateItem}
+															onRemove={removeItem}
+															onToggleCollapse={toggleLoopCollapse}
+															onAddToLoop={addToLoop}
+															onDuplicate={duplicateItem}
+															onMoveToTop={moveToTop}
+															onMoveToBottom={moveToBottom}
+															onMoveUp={moveUp}
+															onMoveDown={moveDown}
+															activeId={activeId}
+															colors={config.colors}
+														/>
+
+														{/* Drop indicator after each root item */}
 														<DroppableZone
-															id={`drop-before-${item.id}`}
+															id={`drop-after-${item.id}`}
 															className="-my-3 h-6 bg-transparent"
 															style={{ minHeight: 24 }}
 														>
-															<span className="sr-only">before-drop</span>
+															<span className="sr-only">after-drop</span>
 														</DroppableZone>
-													)}
-
-													<SortableItem
-														item={item}
-														onUpdate={updateItem}
-														onRemove={removeItem}
-														onToggleCollapse={toggleLoopCollapse}
-														onAddToLoop={addToLoop}
-														onDuplicate={duplicateItem}
-														onMoveToTop={moveToTop}
-														onMoveToBottom={moveToBottom}
-														onMoveUp={moveUp}
-														onMoveDown={moveDown}
-														activeId={activeId}
-														colors={config.colors}
-													/>
-
-													{/* Drop indicator after each root item */}
-													<DroppableZone
-														id={`drop-after-${item.id}`}
-														className="-my-3 h-6 bg-transparent"
-														style={{ minHeight: 24 }}
-													>
-														<span className="sr-only">after-drop</span>
-													</DroppableZone>
-												</div>
-											))}
-										</div>
-									</DroppableZone>
-								</SortableContext>
-
-								<DragOverlay>
-									{activeId ? (
-										<div className="rounded-lg border bg-card p-3 text-card-foreground shadow-lg">
-											<div className="text-sm font-medium">
-												{(() => {
-													const item = findItemById(config.items, activeId);
-													if (!item) return "Item";
-													return isInterval(item) ? item.name : "Loop";
-												})()}
+													</div>
+												))}
 											</div>
-										</div>
-									) : null}
-								</DragOverlay>
-							</DndContext>
-						</div>
+										</DroppableZone>
+									</SortableContext>
 
-						{editMode ? null : (
-							<TimerControls
-								state={state}
-								onStart={startTimer}
-								onPause={pauseTimer}
-								onReset={resetTimer}
-								onStop={stopTimer}
-								onFastBackward={fastBackward}
-								onFastForward={fastForward}
-								startLabel="Start Advanced Timer"
-								resetLabel="Start New Advanced Workout"
-								disabled={flattenedIntervals.length === 0}
-							/>
-						)}
-					</CardContent>
-				</Card>
+									<DragOverlay>
+										{activeId ? (
+											<div className="rounded-lg border bg-card p-3 text-card-foreground shadow-lg">
+												<div className="text-sm font-medium">
+													{(() => {
+														const item = findItemById(config.items, activeId);
+														if (!item) return "Item";
+														return isInterval(item) ? item.name : "Loop";
+													})()}
+												</div>
+											</div>
+										) : null}
+									</DragOverlay>
+								</DndContext>
+							</div>
+
+							{editMode ? null : (
+								<TimerControls
+									state={state}
+									onStart={startTimer}
+									onPause={pauseTimer}
+									onReset={resetTimer}
+									onStop={stopTimer}
+									onFastBackward={fastBackward}
+									onFastForward={fastForward}
+									startLabel="Start Advanced Timer"
+									resetLabel="Start New Advanced Workout"
+									disabled={flattenedIntervals.length === 0}
+								/>
+							)}
+						</CardContent>
+					</Card>
 				</>
 			)}
 

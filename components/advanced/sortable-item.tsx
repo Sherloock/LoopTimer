@@ -109,7 +109,9 @@ export function SortableItem(props: Props) {
 					<div
 						className="rounded-lg border-2 border-dashed p-3"
 						style={{
-							borderColor: isActiveDropTarget ? "hsl(var(--brand))" : borderColor,
+							borderColor: isActiveDropTarget
+								? "hsl(var(--brand))"
+								: borderColor,
 							backgroundColor: isActiveDropTarget
 								? "hsl(var(--brand) / 0.12)"
 								: bgColor,
@@ -395,7 +397,8 @@ export function SortableItem(props: Props) {
 				style={{
 					...style,
 					borderColor: isOver && activeId ? "hsl(var(--brand))" : borderColor,
-					backgroundColor: isOver && activeId ? "hsl(var(--brand) / 0.1)" : bgColor,
+					backgroundColor:
+						isOver && activeId ? "hsl(var(--brand) / 0.1)" : bgColor,
 				}}
 				className={`relative rounded-lg border-2 p-2 transition-all duration-200 sm:p-3 ${
 					isNested ? "border-opacity-60" : ""

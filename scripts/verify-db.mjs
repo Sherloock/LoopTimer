@@ -21,12 +21,8 @@ async function verify() {
 			console.log(`  ID: ${timer.id}`);
 			console.log(`  Name: ${timer.name}`);
 			console.log(`  User ID: ${timer.userId}`);
-			console.log(
-				`  Created: ${timer.createdAt.toISOString()}`,
-			);
-			console.log(
-				`  Updated: ${timer.updatedAt.toISOString()}`,
-			);
+			console.log(`  Created: ${timer.createdAt.toISOString()}`);
+			console.log(`  Updated: ${timer.updatedAt.toISOString()}`);
 			console.log(`  Data: ${JSON.stringify(timer.data, null, 2)}`);
 			console.log("");
 		});
