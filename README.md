@@ -27,6 +27,7 @@ A modern, responsive workout timer application built with Next.js 15, TypeScript
 
 - Node.js 20 or higher
 - npm or yarn package manager
+- Docker Desktop (recommended for local PostgreSQL via `docker compose`)
 
 ## 🛠️ Installation
 
@@ -38,7 +39,27 @@ A modern, responsive workout timer application built with Next.js 15, TypeScript
    npm install
    ```
 
-3. **Start the development server**:
+3. **Start local PostgreSQL (Docker)**:
+
+   ```bash
+   docker compose up -d
+   ```
+
+4. **Configure environment variables**:
+
+   Copy `env.example` to `.env` and adjust if needed:
+
+   ```bash
+   cp env.example .env
+   ```
+
+5. **Apply Prisma migrations (local)**:
+
+   ```bash
+   npm run prisma:migrate
+   ```
+
+6. **Start the development server**:
 
    ```bash
    npm run dev
@@ -53,6 +74,32 @@ A modern, responsive workout timer application built with Next.js 15, TypeScript
 - `npm run start` - Start production server
 - `npm run lint` - Run ESLint
 - `npm run lint:fix` - Fix ESLint issues automatically
+- `npm run prisma:migrate` - Apply migrations to your local DB (development)
+- `npm run prisma:studio` - Open Prisma Studio
+
+## 🗄️ Database (PostgreSQL + Prisma)
+
+### Local (Docker)
+
+- Start DB:
+
+```bash
+docker compose up -d
+```
+
+- Stop DB:
+
+```bash
+docker compose down
+```
+
+### Production (Neon + Vercel)
+
+- Set the following environment variables in Vercel:
+  - `DATABASE_URL`: Neon **pooled** Postgres connection string
+  - `DIRECT_URL`: Neon **direct/non-pooled** Postgres connection string (used for migrations)
+- Ensure both URLs include `sslmode=require`.
+- Deploys run migrations via `prisma migrate deploy` during the Vercel build step (`vercel.json`).
 
 ## 🎯 Usage
 

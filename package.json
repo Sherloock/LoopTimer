@@ -114,6 +114,6 @@
 		"seed": "tsx prisma/seed.ts"
 	},
 	"vercel": {
-		"buildCommand": "prisma generate && next build"
+		"buildCommand": "prisma generate && prisma migrate deploy && next build"
 	}
 }
