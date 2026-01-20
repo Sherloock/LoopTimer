@@ -1,20 +1,14 @@
 "use client";
 
+export { ROUTES } from "@/lib/constants/routes";
+
+import { ROUTES } from "@/lib/constants/routes";
 import { useRouter } from "next/navigation";
 
 /**
  * Navigation utility functions for the timer app
  * Centralizes common navigation patterns to avoid repetition
  */
-
-export const ROUTES = {
-	HOME: "/",
-	MENU: "/app/menu",
-	TIMER_LIST: "/app/timer/list",
-	TIMER_EDIT: "/app/timer/edit",
-	TIMER_PLAY: "/app/timer/play",
-	CLOCK: "/app/clock",
-} as const;
 
 /**
  * Hook for common navigation actions

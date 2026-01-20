@@ -31,7 +31,7 @@ export function DroppableZone({
 			ref={setNodeRef}
 			className={`${className} transition-all duration-200 ${
 				shouldHighlight
-					? "border-dashed border-blue-400 bg-blue-50 shadow-inner"
+					? "border-dashed border-brand/50 bg-brand/10 shadow-inner"
 					: ""
 			}`}
 			style={style}

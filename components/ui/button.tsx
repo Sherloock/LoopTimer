@@ -9,11 +9,18 @@ const buttonVariants = cva(
 	{
 		variants: {
 			variant: {
-				default: "bg-primary text-primary-foreground hover:bg-primary/90",
+				// Calmer CTA: matches the violet theme without harsh contrast
+				default:
+					"border border-border bg-background text-foreground hover:bg-accent hover:border-brand/50",
+				brand:
+					"bg-brand text-brand-foreground neon-glow hover:bg-brand/90 hover:brightness-110",
+				// Purple, higher-contrast control buttons (e.g. +/- steppers, "Add interval")
+				control:
+					"border border-brand/60 bg-brand/10 text-brand shadow-sm hover:bg-brand/15 hover:border-brand/80 dark:bg-brand/10 dark:hover:bg-brand/20",
 				destructive:
 					"bg-destructive text-destructive-foreground hover:bg-destructive/90",
 				outline:
-					"border border-input bg-background hover:bg-accent hover:text-accent-foreground",
+					"border border-border bg-transparent hover:bg-accent hover:text-accent-foreground",
 				secondary:
 					"bg-secondary text-secondary-foreground hover:bg-secondary/80",
 				ghost: "hover:bg-accent hover:text-accent-foreground",

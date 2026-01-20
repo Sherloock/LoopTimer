@@ -12,6 +12,13 @@ import { ColorPicker } from "@/components/ui/color-picker";
 import { Dialog, DialogClose, DialogContent } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import {
+	Select,
+	SelectContent,
+	SelectItem,
+	SelectTrigger,
+	SelectValue,
+} from "@/components/ui/select";
 import { StatCard } from "@/components/ui/stat-card";
 import { useTimerState } from "@/hooks/use-timer-state";
 import { useSaveTimer, useTimers, useUpdateTimer } from "@/hooks/use-timers";
@@ -117,11 +124,11 @@ export function AdvancedTimer({
 			},
 		],
 		colors: {
-			prepare: "#f97316", // orange
-			work: "#22c55e", // green
-			rest: "#3b82f6", // blue
-			loop: "#8b5cf6", // purple
-			nestedLoop: "#f59e0b", // amber
+			prepare: "#7c3aed", // violet-600
+			work: "#8b5cf6", // violet-500
+			rest: "#a78bfa", // violet-400
+			loop: "#c4b5fd", // violet-300
+			nestedLoop: "#ddd6fe", // violet-200
 		},
 		defaultAlarm: "beep-1x",
 		speakNames: true,
@@ -1394,11 +1401,11 @@ export function AdvancedTimer({
 		setConfig((prev) => ({
 			...prev,
 			colors: {
-				prepare: "#f97316", // orange
-				work: "#22c55e", // green
-				rest: "#3b82f6", // blue
-				loop: "#8b5cf6", // purple
-				nestedLoop: "#f59e0b", // amber
+				prepare: "#7c3aed", // violet-600
+				work: "#8b5cf6", // violet-500
+				rest: "#a78bfa", // violet-400
+				loop: "#c4b5fd", // violet-300
+				nestedLoop: "#ddd6fe", // violet-200
 			},
 		}));
 	}, []);
@@ -1580,17 +1587,31 @@ export function AdvancedTimer({
 	// --- Dirty state tracking for unsaved changes ---
 	const initialConfigRef = useRef<AdvancedConfig | null>(null);
 	const initialNameRef = useRef<string>("");
+	const initialSourceRef = useRef<string>("__uninitialized__");
 
 	// Set initial config and name on mount or when loadedTimer changes
 	useEffect(() => {
+		const sourceKey = loadedTimer?.id ? `timer:${loadedTimer.id}` : "new";
+
+		// If we switched timers (or switched to "new"), reset the captured baseline.
+		if (initialSourceRef.current !== sourceKey) {
+			initialSourceRef.current = sourceKey;
+			initialConfigRef.current = null;
+			initialNameRef.current = "";
+		}
+
 		if (loadedTimer?.data) {
 			initialConfigRef.current = loadedTimer.data as AdvancedConfig;
 			initialNameRef.current = loadedTimer.name || "";
-		} else {
+			return;
+		}
+
+		// Only capture the "new timer" baseline once; otherwise dirty tracking breaks.
+		if (initialConfigRef.current === null) {
 			initialConfigRef.current = config;
 			initialNameRef.current = timerName;
 		}
-	}, [loadedTimer]);
+	}, [loadedTimer, config, timerName]);
 
 	// Helper to compare config and name for dirty state
 	const isDirty = useMemo(() => {
@@ -1668,7 +1689,7 @@ export function AdvancedTimer({
 	]);
 
 	return (
-		<div className="relative space-y-6">
+		<div className="relative">
 			{/* Confirmation dialog for unsaved changes */}
 			<Dialog open={showConfirmExit} onOpenChange={setShowConfirmExit}>
 				<DialogContent className="max-w-sm">
@@ -1723,198 +1744,241 @@ export function AdvancedTimer({
 
 			{/* Minimalistic view when timer is running */}
 			{isMinimalisticView && !isCompletionView && (
-				<MinimalisticContainer>
-					<RunningTimerView
-						timeLeft={timeLeft}
-						state={state}
-						currentSet={currentLoopSet}
-						totalSets={totalLoopSets}
-						intervalType={getIntervalTypeForDisplay(currentType)}
-						currentIntervalName={getCurrentIntervalName()}
-						progress={getTimerProgress()}
-						overallProgress={overallProgress}
-						totalTimeRemaining={totalTimeRemaining}
-						currentStep={currentItemIndex + 1}
-						totalSteps={flattenedIntervals.length}
-						isHolding={isHolding}
-						holdProgress={holdProgress}
-						onFastBackward={fastBackward}
-						onFastForward={fastForward}
-						onHoldStart={handleHoldStart}
-						onHoldEnd={handleHoldEnd}
-						onPlay={startTimer}
-						onPause={pauseTimer}
-						nextInterval={nextInterval}
-					/>
-				</MinimalisticContainer>
+				<>
+					<MinimalisticContainer>
+						<RunningTimerView
+							timeLeft={timeLeft}
+							state={state}
+							currentSet={currentLoopSet}
+							totalSets={totalLoopSets}
+							intervalType={getIntervalTypeForDisplay(currentType)}
+							currentIntervalName={getCurrentIntervalName()}
+							progress={getTimerProgress()}
+							overallProgress={overallProgress}
+							totalTimeRemaining={totalTimeRemaining}
+							currentStep={currentItemIndex + 1}
+							totalSteps={flattenedIntervals.length}
+							isHolding={isHolding}
+							holdProgress={holdProgress}
+							onFastBackward={fastBackward}
+							onFastForward={fastForward}
+							onHoldStart={handleHoldStart}
+							onHoldEnd={handleHoldEnd}
+							onPlay={startTimer}
+							onPause={pauseTimer}
+							nextInterval={nextInterval}
+						/>
+					</MinimalisticContainer>
+				</>
 			)}
 
 			{!isMinimalisticView && !isCompletionView && (
-				<Card>
-					{/* Sticky top bar with Back & Save */}
-					<div className="sticky top-0 z-10 flex items-center justify-between gap-2 border-b bg-background/80 px-4 py-2 backdrop-blur">
-						<Button variant="ghost" size="icon" onClick={handleBack}>
-							<ArrowLeft size={16} />
-						</Button>
+				<>
+					{/* Mobile: thumb-reachable back button */}
+					<Button
+						variant="outline"
+						size="icon"
+						className="fixed bottom-6 left-6 z-50 h-12 w-12 rounded-full bg-background/80 shadow-lg backdrop-blur supports-[backdrop-filter]:bg-background/60 md:hidden"
+						onClick={handleBack}
+					>
+						<ArrowLeft size={20} />
+						<span className="sr-only">Back</span>
+					</Button>
 
-						<Button
-							onClick={handleSave}
-							variant="default"
-							size="sm"
-							className="gap-2"
-							disabled={isSavingOrUpdating}
-						>
-							{isSavingOrUpdating ? (
-								"Saving..."
-							) : (
-								<>
-									<SaveIcon size={16} /> Save
-								</>
-							)}
-						</Button>
-					</div>
+					{/* Mobile: thumb-reachable save button (floating like back) */}
+					<Button
+						onClick={handleSave}
+						variant="brand"
+						size="icon"
+						className="fixed bottom-6 right-6 z-50 h-12 w-12 rounded-full shadow-lg md:hidden"
+						disabled={isSavingOrUpdating}
+					>
+						<SaveIcon size={20} />
+						<span className="sr-only">
+							{isSavingOrUpdating ? "Saving..." : "Save"}
+						</span>
+					</Button>
 
-					<CardContent className="space-y-6 p-1 pt-6 md:p-6">
-						{/* Timer Name, Stats, and Actions - Responsive Row/Column */}
-						<div className="flex flex-col gap-4">
-							{/* Row 1: Name + Stats (side by side on md+) */}
-							<div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between md:gap-4">
-								<div className="w-full md:w-auto">
-									<Input
-										id="timer-name"
-										className="w-full"
-										value={timerName}
-										onChange={(e) => handleTimerNameChange(e.target.value)}
-										placeholder="Enter timer name..."
-									/>
-								</div>
-								<div className="flex w-full flex-wrap items-center justify-center gap-4 md:w-auto md:justify-center">
-									<StatCard
-										label="Total Session Time"
-										value={formatTime(totalSessionTime)}
-									/>
-									<StatCard
-										label="Total Steps"
-										value={flattenedIntervals.length.toString()}
-										valueClassName="text-2xl font-bold"
-									/>
-								</div>
-							</div>
-							{/* Row 2: Buttons (50% width each on mobile, right-aligned on sm+) */}
-							<div className="flex w-full flex-row gap-2 sm:justify-end">
-								<Button
-									onClick={() => setShowSettings(true)}
-									variant="outline"
-									size="sm"
-									className="w-1/2 gap-2 sm:w-auto"
-								>
-									<Settings size={16} />
-									Settings
-								</Button>
-								<Button
-									onClick={addLoop}
-									variant="outline"
-									size="sm"
-									className="w-1/2 gap-2 sm:w-auto"
-								>
-									<Repeat size={16} />
-									Add Loop
-								</Button>
-							</div>
+					<Card>
+						{/* Desktop: sticky top bar with Back & Save */}
+						<div className="sticky top-0 z-10 hidden items-center justify-between gap-2 border-b bg-background/80 px-4 py-2 backdrop-blur md:flex">
+							<Button
+								variant="ghost"
+								size="icon"
+								onClick={handleBack}
+								className="hidden md:inline-flex"
+							>
+								<ArrowLeft size={16} />
+								<span className="sr-only">Back</span>
+							</Button>
+
+							<Button
+								onClick={handleSave}
+								variant="default"
+								size="sm"
+								className="gap-2"
+								disabled={isSavingOrUpdating}
+							>
+								{isSavingOrUpdating ? (
+									"Saving..."
+								) : (
+									<>
+										<SaveIcon size={16} /> Save
+									</>
+								)}
+							</Button>
 						</div>
 
-						<div className="space-y-4">
-							<DndContext
-								sensors={sensors}
-								collisionDetection={closestCenter}
-								onDragStart={handleDragStart}
-								onDragEnd={handleDragEnd}
-							>
-								<DndMonitor />
-								<SortableContext
-									items={config.items.map((item) => item.id)}
-									strategy={verticalListSortingStrategy}
-								>
-									<DroppableZone
-										id="main-container"
-										className=""
-										style={{ touchAction: "manipulation" }}
+						<CardContent className="space-y-6 p-1 pb-24 pt-2 md:p-6">
+							{/* Timer Name, Stats, and Actions - Responsive Row/Column */}
+							<div className="flex flex-col gap-4">
+								{/* Row 1: Name + Stats (side by side on md+) */}
+								<div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between md:gap-4">
+									<div className="w-full md:w-auto">
+										<div className="relative">
+											<Input
+												id="timer-name"
+												className="peer w-full"
+												value={timerName}
+												onChange={(e) => handleTimerNameChange(e.target.value)}
+												placeholder=" "
+											/>
+											<Label
+												htmlFor="timer-name"
+												className="pointer-events-none absolute left-3 top-2 z-10 origin-left -translate-y-4 scale-75 bg-background px-1 text-xs text-muted-foreground transition-all duration-200 peer-placeholder-shown:top-1/2 peer-placeholder-shown:-translate-y-1/2 peer-placeholder-shown:scale-100 peer-placeholder-shown:text-sm peer-focus:top-2 peer-focus:-translate-y-4 peer-focus:scale-75 peer-focus:text-xs peer-focus:text-foreground"
+											>
+												Timer name
+											</Label>
+										</div>
+									</div>
+									<div className="flex w-full flex-wrap items-center justify-center gap-4 md:w-auto md:justify-center">
+										<StatCard
+											label="Total Session Time"
+											value={formatTime(totalSessionTime)}
+										/>
+										<StatCard
+											label="Total Steps"
+											value={flattenedIntervals.length.toString()}
+											valueClassName="text-2xl font-bold"
+										/>
+									</div>
+								</div>
+								{/* Row 2: Buttons (50% width each on mobile, right-aligned on sm+) */}
+								<div className="flex w-full flex-row gap-2 sm:justify-end">
+									<Button
+										onClick={() => setShowSettings(true)}
+										variant="control"
+										size="sm"
+										className="w-1/2 gap-2 sm:w-auto"
 									>
-										<div data-dnd-sortable="true" className="space-y-4">
-											{config.items.map((item, idx) => (
-												<div key={item.id} className="relative">
-													{/* Drop indicator before the first root item */}
-													{activeId && idx === 0 && (
+										<Settings size={16} />
+										Settings
+									</Button>
+									<Button
+										onClick={addLoop}
+										variant="control"
+										size="sm"
+										className="w-1/2 gap-2 sm:w-auto"
+									>
+										<Repeat size={16} />
+										Add Loop
+									</Button>
+								</div>
+							</div>
+
+							<div className="space-y-4">
+								<DndContext
+									sensors={sensors}
+									collisionDetection={closestCenter}
+									onDragStart={handleDragStart}
+									onDragEnd={handleDragEnd}
+								>
+									<DndMonitor />
+									<SortableContext
+										items={config.items.map((item) => item.id)}
+										strategy={verticalListSortingStrategy}
+									>
+										<DroppableZone
+											id="main-container"
+											className=""
+											style={{ touchAction: "manipulation" }}
+										>
+											<div data-dnd-sortable="true" className="space-y-4">
+												{config.items.map((item, idx) => (
+													<div key={item.id} className="relative">
+														{/* Drop indicator before the first root item */}
+														{activeId && idx === 0 && (
+															<DroppableZone
+																id={`drop-before-${item.id}`}
+																className="-my-3 h-6 bg-transparent"
+																style={{ minHeight: 24 }}
+															>
+																<span className="sr-only">before-drop</span>
+															</DroppableZone>
+														)}
+
+														<SortableItem
+															item={item}
+															onUpdate={updateItem}
+															onRemove={removeItem}
+															onToggleCollapse={toggleLoopCollapse}
+															onAddToLoop={addToLoop}
+															onDuplicate={duplicateItem}
+															onMoveToTop={moveToTop}
+															onMoveToBottom={moveToBottom}
+															onMoveUp={moveUp}
+															onMoveDown={moveDown}
+															activeId={activeId}
+															colors={config.colors}
+														/>
+
+														{/* Drop indicator after each root item */}
 														<DroppableZone
-															id={`drop-before-${item.id}`}
+															id={`drop-after-${item.id}`}
 															className="-my-3 h-6 bg-transparent"
 															style={{ minHeight: 24 }}
 														>
-															<span className="sr-only">before-drop</span>
+															<span className="sr-only">after-drop</span>
 														</DroppableZone>
-													)}
-
-													<SortableItem
-														item={item}
-														onUpdate={updateItem}
-														onRemove={removeItem}
-														onToggleCollapse={toggleLoopCollapse}
-														onAddToLoop={addToLoop}
-														onDuplicate={duplicateItem}
-														onMoveToTop={moveToTop}
-														onMoveToBottom={moveToBottom}
-														onMoveUp={moveUp}
-														onMoveDown={moveDown}
-														activeId={activeId}
-														colors={config.colors}
-													/>
-
-													{/* Drop indicator after each root item */}
-													<DroppableZone
-														id={`drop-after-${item.id}`}
-														className="-my-3 h-6 bg-transparent"
-														style={{ minHeight: 24 }}
-													>
-														<span className="sr-only">after-drop</span>
-													</DroppableZone>
-												</div>
-											))}
-										</div>
-									</DroppableZone>
-								</SortableContext>
-
-								<DragOverlay>
-									{activeId ? (
-										<div className="rounded-lg border bg-white p-3 shadow-lg">
-											<div className="text-sm font-medium">
-												{(() => {
-													const item = findItemById(config.items, activeId);
-													if (!item) return "Item";
-													return isInterval(item) ? item.name : "Loop";
-												})()}
+													</div>
+												))}
 											</div>
-										</div>
-									) : null}
-								</DragOverlay>
-							</DndContext>
-						</div>
+										</DroppableZone>
+									</SortableContext>
 
-						{editMode ? null : (
-							<TimerControls
-								state={state}
-								onStart={startTimer}
-								onPause={pauseTimer}
-								onReset={resetTimer}
-								onStop={stopTimer}
-								onFastBackward={fastBackward}
-								onFastForward={fastForward}
-								startLabel="Start Advanced Timer"
-								resetLabel="Start New Advanced Workout"
-								disabled={flattenedIntervals.length === 0}
-							/>
-						)}
-					</CardContent>
-				</Card>
+									<DragOverlay>
+										{activeId ? (
+											<div className="rounded-lg border bg-card p-3 text-card-foreground shadow-lg">
+												<div className="text-sm font-medium">
+													{(() => {
+														const item = findItemById(config.items, activeId);
+														if (!item) return "Item";
+														return isInterval(item) ? item.name : "Loop";
+													})()}
+												</div>
+											</div>
+										) : null}
+									</DragOverlay>
+								</DndContext>
+							</div>
+
+							{editMode ? null : (
+								<TimerControls
+									state={state}
+									onStart={startTimer}
+									onPause={pauseTimer}
+									onReset={resetTimer}
+									onStop={stopTimer}
+									onFastBackward={fastBackward}
+									onFastForward={fastForward}
+									startLabel="Start Advanced Timer"
+									resetLabel="Start New Advanced Workout"
+									disabled={flattenedIntervals.length === 0}
+								/>
+							)}
+						</CardContent>
+					</Card>
+				</>
 			)}
 
 			{/* Settings Dialog */}
@@ -1966,23 +2030,24 @@ export function AdvancedTimer({
 							<h3 className="text-base font-medium">Alarm Sound</h3>
 
 							<div className="flex gap-2">
-								<select
+								<Select
 									value={config.defaultAlarm}
-									onChange={(e) => {
-										setConfig((prev) => ({
-											...prev,
-											defaultAlarm: e.target.value,
-										}));
-										playSound(e.target.value);
+									onValueChange={(value) => {
+										setConfig((prev) => ({ ...prev, defaultAlarm: value }));
+										playSound(value);
 									}}
-									className="flex-1 rounded-md border px-3 py-2"
 								>
-									{SOUND_OPTIONS.map((opt) => (
-										<option key={opt.value} value={opt.value}>
-											{opt.label}
-										</option>
-									))}
-								</select>
+									<SelectTrigger className="flex-1">
+										<SelectValue placeholder="Select alarm" />
+									</SelectTrigger>
+									<SelectContent>
+										{SOUND_OPTIONS.map((opt) => (
+											<SelectItem key={opt.value} value={opt.value}>
+												{opt.label}
+											</SelectItem>
+										))}
+									</SelectContent>
+								</Select>
 
 								<Button
 									variant="outline"

@@ -265,10 +265,14 @@ export function RunningTimerView({
 							onTouchStart={onHoldStart}
 							onTouchEnd={onHoldEnd}
 							variant="ghost"
-							className="relative overflow-hidden rounded-lg border-2 border-muted-foreground/20 px-6 py-3 text-sm font-medium transition-all duration-200 hover:border-muted-foreground/40 hover:bg-muted/80"
+							className={`relative overflow-hidden rounded-lg border-2 px-6 py-3 text-sm font-medium transition-all duration-200 hover:bg-muted/80 ${
+								holdProgress > 0
+									? "border-primary/50 text-primary hover:border-primary/60"
+									: "border-muted-foreground/20 hover:border-muted-foreground/40"
+							}`}
 						>
 							<div
-								className="absolute inset-0 bg-destructive/20 transition-all duration-100 ease-out"
+								className="absolute inset-0 bg-primary/20 transition-all duration-100 ease-out"
 								style={{ width: `${holdProgress}%` }}
 							/>
 							<span className="relative z-10 flex items-center gap-2">

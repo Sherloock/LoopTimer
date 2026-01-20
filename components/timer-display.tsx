@@ -38,11 +38,11 @@ export function TimerDisplay({
 	const getIntervalBadgeColor = () => {
 		switch (intervalType) {
 			case "prepare":
-				return "bg-orange-500 hover:bg-orange-600 text-white";
+				return "bg-interval-prepare text-interval-foreground hover:bg-interval-prepare/90";
 			case "workout":
-				return "bg-green-500 hover:bg-green-600 text-white";
+				return "bg-interval-workout text-interval-foreground hover:bg-interval-workout/90";
 			case "rest":
-				return "bg-blue-500 hover:bg-blue-600 text-white";
+				return "bg-interval-rest text-interval-foreground hover:bg-interval-rest/90";
 			default:
 				return "default";
 		}
@@ -51,11 +51,11 @@ export function TimerDisplay({
 	const getTimerDisplayColor = () => {
 		switch (intervalType) {
 			case "prepare":
-				return "text-orange-500";
+				return "text-interval-prepare";
 			case "workout":
-				return "text-green-500";
+				return "text-interval-workout";
 			case "rest":
-				return "text-blue-500";
+				return "text-interval-rest";
 			default:
 				return "text-primary";
 		}
@@ -64,11 +64,11 @@ export function TimerDisplay({
 	const getExerciseTextColor = () => {
 		switch (intervalType) {
 			case "prepare":
-				return "text-orange-500/70";
+				return "text-interval-prepare/70";
 			case "workout":
-				return "text-green-500/70";
+				return "text-interval-workout/70";
 			case "rest":
-				return "text-blue-500/70";
+				return "text-interval-rest/70";
 			default:
 				return "text-primary/70";
 		}
@@ -77,11 +77,11 @@ export function TimerDisplay({
 	const getProgressColor = () => {
 		switch (intervalType) {
 			case "prepare":
-				return "bg-orange-500";
+				return "bg-interval-prepare";
 			case "workout":
-				return "bg-green-500";
+				return "bg-interval-workout";
 			case "rest":
-				return "bg-blue-500";
+				return "bg-interval-rest";
 			default:
 				return "";
 		}
@@ -156,11 +156,11 @@ function NextUp({
 		const iconSize = 24;
 		switch (nextInterval.type) {
 			case "workout":
-				return <Dumbbell size={iconSize} className="text-green-500" />;
+				return <Dumbbell size={iconSize} className="text-interval-workout" />;
 			case "rest":
-				return <Coffee size={iconSize} className="text-blue-500" />;
+				return <Coffee size={iconSize} className="text-interval-rest" />;
 			case "prepare":
-				return <AlarmClock size={iconSize} className="text-orange-500" />;
+				return <AlarmClock size={iconSize} className="text-interval-prepare" />;
 			default:
 				return (
 					<ArrowDownCircle size={iconSize} className="text-muted-foreground" />
@@ -171,11 +171,11 @@ function NextUp({
 	const getBackground = () => {
 		switch (nextInterval.type) {
 			case "workout":
-				return "bg-green-100/80 border-green-200";
+				return "bg-interval-workout/10 border-interval-workout/35";
 			case "rest":
-				return "bg-blue-100/80 border-blue-200";
+				return "bg-interval-rest/10 border-interval-rest/35";
 			case "prepare":
-				return "bg-orange-100/80 border-orange-200";
+				return "bg-interval-prepare/10 border-interval-prepare/35";
 			default:
 				return "bg-secondary border-muted";
 		}
@@ -185,6 +185,7 @@ function NextUp({
 		<div
 			className={cn(
 				"mx-auto mt-4 flex w-full max-w-md items-center justify-start gap-4 rounded-2xl border p-4 shadow-lg backdrop-blur-md transition-all duration-300 sm:max-w-lg lg:max-w-xl",
+				getBackground(),
 			)}
 		>
 			{/* Icon with minimal space */}

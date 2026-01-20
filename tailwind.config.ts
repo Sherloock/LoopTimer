@@ -29,6 +29,21 @@ const config: Config = {
 				ring: "hsl(var(--ring))",
 				background: "hsl(var(--background))",
 				foreground: "hsl(var(--foreground))",
+				brand: {
+					DEFAULT: "hsl(var(--brand))",
+					foreground: "hsl(var(--brand-foreground))",
+				},
+				surface: {
+					"1": "hsl(var(--surface-1))",
+					"2": "hsl(var(--surface-2))",
+					"3": "hsl(var(--surface-3))",
+				},
+				interval: {
+					prepare: "hsl(var(--interval-prepare))",
+					workout: "hsl(var(--interval-workout))",
+					rest: "hsl(var(--interval-rest))",
+					foreground: "hsl(var(--interval-foreground))",
+				},
 				primary: {
 					DEFAULT: "hsl(var(--primary))",
 					foreground: "hsl(var(--primary-foreground))",
