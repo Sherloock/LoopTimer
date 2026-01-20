@@ -108,7 +108,7 @@
 		"singleQuote": false,
 		"trailingComma": "all",
 		"semi": true,
-		"endOfLine": "auto"
+		"endOfLine": "lf"
 	},
 	"prisma": {
 		"seed": "tsx prisma/seed.ts"
