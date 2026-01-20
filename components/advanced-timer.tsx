@@ -1580,17 +1580,31 @@ export function AdvancedTimer({
 	// --- Dirty state tracking for unsaved changes ---
 	const initialConfigRef = useRef<AdvancedConfig | null>(null);
 	const initialNameRef = useRef<string>("");
+	const initialSourceRef = useRef<string>("__uninitialized__");
 
 	// Set initial config and name on mount or when loadedTimer changes
 	useEffect(() => {
+		const sourceKey = loadedTimer?.id ? `timer:${loadedTimer.id}` : "new";
+
+		// If we switched timers (or switched to "new"), reset the captured baseline.
+		if (initialSourceRef.current !== sourceKey) {
+			initialSourceRef.current = sourceKey;
+			initialConfigRef.current = null;
+			initialNameRef.current = "";
+		}
+
 		if (loadedTimer?.data) {
 			initialConfigRef.current = loadedTimer.data as AdvancedConfig;
 			initialNameRef.current = loadedTimer.name || "";
-		} else {
+			return;
+		}
+
+		// Only capture the "new timer" baseline once; otherwise dirty tracking breaks.
+		if (initialConfigRef.current === null) {
 			initialConfigRef.current = config;
 			initialNameRef.current = timerName;
 		}
-	}, [loadedTimer]);
+	}, [loadedTimer, config, timerName]);
 
 	// Helper to compare config and name for dirty state
 	const isDirty = useMemo(() => {

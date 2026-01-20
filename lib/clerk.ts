@@ -1,3 +1,4 @@
+import { ROUTES } from "@/lib/constants/routes";
 import { ClerkProvider } from "@clerk/nextjs";
 import type { ComponentProps } from "react";
 
@@ -6,8 +7,8 @@ interface ClerkConfig {
 	appearance?: ComponentProps<typeof ClerkProvider>["appearance"];
 	signInUrl?: string;
 	signUpUrl?: string;
-	afterSignInUrl?: string;
-	afterSignUpUrl?: string;
+	signInFallbackRedirectUrl?: string;
+	signUpFallbackRedirectUrl?: string;
 }
 
 // Validate environment variables
@@ -54,8 +55,10 @@ const clerkAppearance: ComponentProps<typeof ClerkProvider>["appearance"] = {
  */
 export const clerkProviderProps: ClerkConfig = {
 	appearance: clerkAppearance,
-	signInUrl: "/sign-in",
-	signUpUrl: "/sign-up",
-	afterSignInUrl: "/",
-	afterSignUpUrl: "/",
+	signInUrl: ROUTES.SIGN_IN,
+	signUpUrl: ROUTES.SIGN_UP,
+	// Clerk v6+: use fallback redirect props (afterSignInUrl is deprecated).
+	// This prevents ending up at "/undefined" when a redirect value is missing/misconfigured.
+	signInFallbackRedirectUrl: ROUTES.HOME,
+	signUpFallbackRedirectUrl: ROUTES.HOME,
 };
