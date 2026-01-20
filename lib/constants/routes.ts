@@ -8,4 +8,3 @@ export const ROUTES = {
 	TIMER_PLAY: "/app/timer/play",
 	CLOCK: "/app/clock",
 } as const;
-
