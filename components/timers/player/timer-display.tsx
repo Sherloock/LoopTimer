@@ -9,8 +9,8 @@ const SET_LINE_PLACEHOLDER_CURRENT_ROUND = 1;
 const SET_LINE_PLACEHOLDER_TOTAL_ROUNDS = 1;
 
 const NEXT_UP_LABEL = "Next Up";
-const FINAL_NEXT_UP_TITLE = "Final interval";
-const FINAL_NEXT_UP_SUBTITLE = "You're nearly there.";
+const FINAL_NEXT_UP_TITLE = "You're nearly there.";
+const FINAL_NEXT_UP_SUBTITLE = "the end...";
 
 const INTERVAL_CUSTOM_COLOR = {
 	exerciseTextAlpha: 0.7,

@@ -39,7 +39,7 @@ describe("TimerDisplay", () => {
 			/>,
 		);
 
-		expect(screen.getByText("Final interval")).toBeInTheDocument();
 		expect(screen.getByText("You're nearly there.")).toBeInTheDocument();
+		expect(screen.getByText("the end...")).toBeInTheDocument();
 	});
 });
