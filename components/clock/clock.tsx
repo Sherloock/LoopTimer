@@ -16,7 +16,8 @@ const DIGITS = {
 } as const;
 
 function SevenSegmentDigit({ value }: { value: string }) {
-	const segments: readonly number[] = DIGITS[value as keyof typeof DIGITS] ?? [];
+	const segments: readonly number[] =
+		DIGITS[value as keyof typeof DIGITS] ?? [];
 	return (
 		<div className="seven-segment-digit">
 			{[1, 2, 3, 4, 5, 6, 7].map((segment) => (
