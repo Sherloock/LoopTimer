@@ -1676,7 +1676,7 @@ export function AdvancedTimer({
 					<div className="py-2 text-sm text-muted-foreground">
 						You have unsaved changes. What would you like to do?
 					</div>
-					<div className="flex flex-col gap-2 pt-2 md:flex-row md:justify-end">
+					<div className="flex flex-col gap-2 pt-2 ">
 						<Button
 							variant="outline"
 							onClick={() => setShowConfirmExit(false)}
