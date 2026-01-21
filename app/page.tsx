@@ -1,3 +1,4 @@
+import { SparklesBackground } from "@/components/sparkles/sparkles-background";
 import { Button } from "@/components/ui/button";
 import {
 	Card,
@@ -27,24 +28,34 @@ export default async function LandingPage() {
 		redirect(ROUTES.MENU);
 	}
 	return (
-		<div className="min-h-screen bg-gradient-to-br from-background via-background to-muted">
+		<div className="relative min-h-screen overflow-hidden bg-background">
+			{/* Animated background lights */}
+			<div className="neon-bg-lights absolute inset-0 -z-10" />
+			<div className="neon-bg-grid absolute inset-0 -z-10" />
+
 			{/* Navigation */}
-			<nav className="sticky top-0 z-50 border-b bg-background/80 backdrop-blur-sm">
+			<nav className="sticky top-0 z-50 border-b border-primary/20 bg-background/80 backdrop-blur-md">
 				<div className="container mx-auto px-4 sm:px-6 lg:px-8">
 					<div className="flex h-16 items-center justify-between">
 						<div className="flex items-center space-x-2">
-							<Timer size={24} className="text-primary" />
-							<span className="text-xl font-bold">Workout Timer</span>
+							<div className="rounded-lg p-1">
+								<Timer size={24} className="text-primary" />
+							</div>
+							<span className="neon-text text-xl font-bold">Workout Timer</span>
 						</div>
 						<div className="flex items-center space-x-4">
 							<SignedOut>
 								<SignInButton mode="modal">
-									<Button variant="ghost">Sign In</Button>
+									<Button variant="ghost" className="neon-hover-glow">
+										Sign In
+									</Button>
 								</SignInButton>
 							</SignedOut>
 							<SignedIn>
 								<Link href={ROUTES.MENU}>
-									<Button>Go to App</Button>
+									<Button variant="brand" className="neon-hover-glow">
+										Go to App
+									</Button>
 								</Link>
 							</SignedIn>
 						</div>
@@ -53,11 +64,15 @@ export default async function LandingPage() {
 			</nav>
 
 			{/* Hero Section */}
-			<section className="px-4 py-20 sm:px-6 lg:px-8">
-				<div className="container mx-auto text-center">
+			<section className="relative px-4 py-20 sm:px-6 lg:px-8">
+				{/* Sparkles centered on hero */}
+				<div className="pointer-events-none absolute inset-0 z-0 overflow-hidden [mask-image:linear-gradient(to_bottom,transparent,black_5%,black_60%,transparent)]">
+					<SparklesBackground />
+				</div>
+				<div className="container relative z-10 mx-auto text-center">
 					<div className="mx-auto max-w-4xl">
 						<h1 className="mb-6 text-4xl font-bold tracking-tight sm:text-5xl lg:text-6xl">
-							<span className="bg-gradient-to-r from-primary to-blue-600 bg-clip-text text-transparent">
+							<span className="animate-text-gradient neon-text">
 								Perfect Your Workout
 							</span>
 							<br />
@@ -71,7 +86,11 @@ export default async function LandingPage() {
 						<div className="flex flex-col items-center justify-center gap-4 sm:flex-row">
 							<SignedOut>
 								<SignUpButton mode="modal">
-									<Button size="lg" className="px-8 py-3 text-lg">
+									<Button
+										variant="brand"
+										size="lg"
+										className="neon-hover-glow px-8 py-3 text-lg"
+									>
 										Start Your Journey
 										<ArrowRight size={20} className="ml-2" />
 									</Button>
@@ -79,7 +98,11 @@ export default async function LandingPage() {
 							</SignedOut>
 							<SignedIn>
 								<Link href={ROUTES.MENU}>
-									<Button size="lg" className="px-8 py-3 text-lg">
+									<Button
+										variant="brand"
+										size="lg"
+										className="neon-hover-glow px-8 py-3 text-lg"
+									>
 										Go to Your Timers
 										<ArrowRight size={20} className="ml-2" />
 									</Button>
@@ -91,10 +114,10 @@ export default async function LandingPage() {
 			</section>
 
 			{/* Features Section */}
-			<section className="bg-muted/50 px-4 py-20 sm:px-6 lg:px-8">
+			<section className="relative bg-muted/30 px-4 py-20 sm:px-6 lg:px-8">
 				<div className="container mx-auto">
 					<div className="mb-16 text-center">
-						<h2 className="mb-4 text-3xl font-bold">
+						<h2 className="neon-text mb-4 text-3xl font-bold">
 							Everything You Need for Perfect Workouts
 						</h2>
 						<p className="mx-auto max-w-2xl text-xl text-muted-foreground">
@@ -103,10 +126,10 @@ export default async function LandingPage() {
 						</p>
 					</div>
 					<div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-3">
-						<Card className="border-0 bg-background/60 backdrop-blur-sm">
+						<Card className="neon-feature-card group relative border-2 border-primary/20 bg-card/80 backdrop-blur-sm transition-all hover:border-primary/40">
 							<CardHeader>
 								<div className="flex items-center gap-3">
-									<div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-primary/10">
+									<div className="neon-glow flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-primary/10 transition-transform group-hover:scale-110">
 										<Clock size={24} className="text-primary" />
 									</div>
 									<CardTitle>Custom Intervals</CardTitle>
@@ -117,10 +140,10 @@ export default async function LandingPage() {
 								</CardDescription>
 							</CardHeader>
 						</Card>
-						<Card className="border-0 bg-background/60 backdrop-blur-sm">
+						<Card className="neon-feature-card group relative border-2 border-primary/20 bg-card/80 backdrop-blur-sm transition-all hover:border-primary/40">
 							<CardHeader>
 								<div className="flex items-center gap-3">
-									<div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-primary/10">
+									<div className="neon-glow flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-primary/10 transition-transform group-hover:scale-110">
 										<Zap size={24} className="text-primary" />
 									</div>
 									<CardTitle>Loop Control</CardTitle>
@@ -131,10 +154,10 @@ export default async function LandingPage() {
 								</CardDescription>
 							</CardHeader>
 						</Card>
-						<Card className="border-0 bg-background/60 backdrop-blur-sm">
+						<Card className="neon-feature-card group relative border-2 border-primary/20 bg-card/80 backdrop-blur-sm transition-all hover:border-primary/40">
 							<CardHeader>
 								<div className="flex items-center gap-3">
-									<div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-primary/10">
+									<div className="neon-glow flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-primary/10 transition-transform group-hover:scale-110">
 										<Play size={24} className="text-primary" />
 									</div>
 									<CardTitle>Easy to Use</CardTitle>
@@ -145,10 +168,10 @@ export default async function LandingPage() {
 								</CardDescription>
 							</CardHeader>
 						</Card>
-						<Card className="border-0 bg-background/60 backdrop-blur-sm">
+						<Card className="neon-feature-card group relative border-2 border-primary/20 bg-card/80 backdrop-blur-sm transition-all hover:border-primary/40">
 							<CardHeader>
 								<div className="flex items-center gap-3">
-									<div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-primary/10">
+									<div className="neon-glow flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-primary/10 transition-transform group-hover:scale-110">
 										<Target size={24} className="text-primary" />
 									</div>
 									<CardTitle>Precision Timing</CardTitle>
@@ -159,10 +182,10 @@ export default async function LandingPage() {
 								</CardDescription>
 							</CardHeader>
 						</Card>
-						<Card className="border-0 bg-background/60 backdrop-blur-sm">
+						<Card className="neon-feature-card group relative border-2 border-primary/20 bg-card/80 backdrop-blur-sm transition-all hover:border-primary/40">
 							<CardHeader>
 								<div className="flex items-center gap-3">
-									<div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-primary/10">
+									<div className="neon-glow flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-primary/10 transition-transform group-hover:scale-110">
 										<BarChart3 size={24} className="text-primary" />
 									</div>
 									<CardTitle>Progress Tracking</CardTitle>
@@ -173,10 +196,10 @@ export default async function LandingPage() {
 								</CardDescription>
 							</CardHeader>
 						</Card>
-						<Card className="border-0 bg-background/60 backdrop-blur-sm">
+						<Card className="neon-feature-card group relative border-2 border-primary/20 bg-card/80 backdrop-blur-sm transition-all hover:border-primary/40">
 							<CardHeader>
 								<div className="flex items-center gap-3">
-									<div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-primary/10">
+									<div className="neon-glow flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-primary/10 transition-transform group-hover:scale-110">
 										<Users size={24} className="text-primary" />
 									</div>
 									<CardTitle>Community Driven</CardTitle>
@@ -192,10 +215,10 @@ export default async function LandingPage() {
 			</section>
 
 			{/* CTA Section */}
-			<section className="px-4 py-20 sm:px-6 lg:px-8">
+			<section className="relative px-4 py-20 sm:px-6 lg:px-8">
 				<div className="container mx-auto text-center">
 					<div className="mx-auto max-w-3xl">
-						<h2 className="mb-4 text-3xl font-bold">
+						<h2 className="neon-text mb-4 text-3xl font-bold">
 							Ready to Transform Your Workouts?
 						</h2>
 						<p className="mb-8 text-xl text-muted-foreground">
@@ -204,7 +227,11 @@ export default async function LandingPage() {
 						</p>
 						<SignedOut>
 							<SignUpButton mode="modal">
-								<Button size="lg" className="px-8 py-3 text-lg">
+								<Button
+									variant="brand"
+									size="lg"
+									className="neon-hover-glow px-8 py-3 text-lg"
+								>
 									Get Started Free
 									<ArrowRight size={20} className="ml-2" />
 								</Button>
@@ -212,7 +239,11 @@ export default async function LandingPage() {
 						</SignedOut>
 						<SignedIn>
 							<Link href={ROUTES.MENU}>
-								<Button size="lg" className="px-8 py-3 text-lg">
+								<Button
+									variant="brand"
+									size="lg"
+									className="neon-hover-glow px-8 py-3 text-lg"
+								>
 									Create Your First Timer
 									<ArrowRight size={20} className="ml-2" />
 								</Button>
@@ -223,11 +254,13 @@ export default async function LandingPage() {
 			</section>
 
 			{/* Footer */}
-			<footer className="border-t bg-muted/30">
+			<footer className="border-t border-primary/20 bg-muted/30">
 				<div className="container mx-auto px-4 py-8 sm:px-6 lg:px-8">
 					<div className="flex flex-col items-center justify-between md:flex-row">
 						<div className="mb-4 flex items-center space-x-2 md:mb-0">
-							<Timer size={20} className="text-primary" />
+							<div className="rounded p-1">
+								<Timer size={20} className="text-primary" />
+							</div>
 							<span className="font-semibold">Workout Timer</span>
 						</div>
 						<p className="text-sm text-muted-foreground">

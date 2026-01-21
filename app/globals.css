@@ -177,6 +177,194 @@
 			0 0 40px hsl(var(--primary) / 0.3),
 			0 0 60px hsl(var(--primary) / 0.15);
 	}
+
+	/* Animated background lights for menu page */
+	.neon-bg-lights {
+		background:
+			radial-gradient(
+				circle at 20% 30%,
+				hsl(var(--primary) / 0.15) 0%,
+				transparent 50%
+			),
+			radial-gradient(
+				circle at 80% 70%,
+				hsl(var(--primary) / 0.12) 0%,
+				transparent 50%
+			),
+			radial-gradient(
+				circle at 50% 50%,
+				hsl(var(--primary) / 0.08) 0%,
+				transparent 60%
+			);
+		animation: neon-bg-move 20s ease-in-out infinite;
+	}
+
+	.dark .neon-bg-lights {
+		background:
+			radial-gradient(
+				circle at 20% 30%,
+				hsl(var(--primary) / 0.25) 0%,
+				transparent 50%
+			),
+			radial-gradient(
+				circle at 80% 70%,
+				hsl(var(--primary) / 0.2) 0%,
+				transparent 50%
+			),
+			radial-gradient(
+				circle at 50% 50%,
+				hsl(var(--primary) / 0.15) 0%,
+				transparent 60%
+			);
+	}
+
+	.neon-bg-grid {
+		background-image:
+			linear-gradient(hsl(var(--primary) / 0.03) 1px, transparent 1px),
+			linear-gradient(90deg, hsl(var(--primary) / 0.03) 1px, transparent 1px);
+		background-size: 50px 50px;
+		animation: neon-grid-move 30s linear infinite;
+	}
+
+	.dark .neon-bg-grid {
+		background-image:
+			linear-gradient(hsl(var(--primary) / 0.08) 1px, transparent 1px),
+			linear-gradient(90deg, hsl(var(--primary) / 0.08) 1px, transparent 1px);
+	}
+
+	/* Enhanced menu button styles */
+	.neon-menu-button {
+		box-shadow:
+			0 0 0 1px hsl(var(--primary) / 0.2),
+			0 0 20px hsl(var(--primary) / 0.1),
+			0 4px 6px -1px rgb(0 0 0 / 0.1);
+	}
+
+	.neon-menu-button:hover {
+		box-shadow:
+			0 0 0 2px hsl(var(--primary) / 0.4),
+			0 0 30px hsl(var(--primary) / 0.3),
+			0 0 60px hsl(var(--primary) / 0.2),
+			0 0 90px hsl(var(--primary) / 0.1),
+			0 4px 6px -1px rgb(0 0 0 / 0.1);
+	}
+
+	.dark .neon-menu-button {
+		box-shadow:
+			0 0 0 1px hsl(var(--primary) / 0.3),
+			0 0 30px hsl(var(--primary) / 0.2),
+			0 4px 6px -1px rgb(0 0 0 / 0.3);
+	}
+
+	.dark .neon-menu-button:hover {
+		box-shadow:
+			0 0 0 2px hsl(var(--primary) / 0.5),
+			0 0 40px hsl(var(--primary) / 0.4),
+			0 0 80px hsl(var(--primary) / 0.3),
+			0 0 120px hsl(var(--primary) / 0.2),
+			0 4px 6px -1px rgb(0 0 0 / 0.3);
+	}
+
+	/* Pulsing neon effect */
+	.neon-pulse {
+		background: radial-gradient(
+			circle,
+			hsl(var(--primary) / 0.3) 0%,
+			transparent 70%
+		);
+		animation: neon-pulse 2s ease-in-out infinite;
+	}
+
+	@keyframes neon-bg-move {
+		0%,
+		100% {
+			background-position:
+				0% 0%,
+				100% 100%,
+				50% 50%;
+		}
+		33% {
+			background-position:
+				30% 20%,
+				70% 80%,
+				40% 60%;
+		}
+		66% {
+			background-position:
+				10% 40%,
+				90% 60%,
+				60% 40%;
+		}
+	}
+
+	@keyframes neon-grid-move {
+		0% {
+			background-position: 0 0;
+		}
+		100% {
+			background-position: 50px 50px;
+		}
+	}
+
+	@keyframes neon-pulse {
+		0%,
+		100% {
+			opacity: 0;
+			transform: scale(1);
+		}
+		50% {
+			opacity: 0.3;
+			transform: scale(1.1);
+		}
+	}
+
+	/* Feature cards with enhanced neon effects */
+	.neon-feature-card {
+		transition: all 0.3s ease;
+	}
+
+	.neon-feature-card:hover {
+		box-shadow:
+			0 0 0 1px hsl(var(--primary) / 0.3),
+			0 0 20px hsl(var(--primary) / 0.2),
+			0 0 40px hsl(var(--primary) / 0.1),
+			0 4px 6px -1px rgb(0 0 0 / 0.1);
+		transform: translateY(-2px);
+	}
+
+	.dark .neon-feature-card:hover {
+		box-shadow:
+			0 0 0 1px hsl(var(--primary) / 0.4),
+			0 0 30px hsl(var(--primary) / 0.3),
+			0 0 60px hsl(var(--primary) / 0.2),
+			0 4px 6px -1px rgb(0 0 0 / 0.3);
+	}
+
+	/* Animated gradient text effect */
+	.animate-text-gradient {
+		background: linear-gradient(
+			90deg,
+			hsl(var(--primary)),
+			hsl(var(--primary) / 0.8),
+			hsl(var(--primary)),
+			hsl(var(--primary) / 0.6)
+		);
+		background-size: 200% 200%;
+		background-clip: text;
+		-webkit-background-clip: text;
+		-webkit-text-fill-color: transparent;
+		animation: text-gradient 5s ease infinite;
+	}
+
+	@keyframes text-gradient {
+		0%,
+		100% {
+			background-position: 0% 50%;
+		}
+		50% {
+			background-position: 100% 50%;
+		}
+	}
 }
 
 .seven-segment-display {
