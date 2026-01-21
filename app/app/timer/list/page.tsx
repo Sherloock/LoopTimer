@@ -14,7 +14,7 @@ export default function TimersListPage() {
 			<div aria-hidden className="pointer-events-none absolute inset-0">
 				<div className="absolute -top-24 left-1/2 h-80 w-80 -translate-x-1/2 rounded-full bg-primary/20 blur-3xl" />
 				<div className="absolute -bottom-28 -left-28 h-80 w-80 rounded-full bg-primary/10 blur-3xl" />
-				<div className="absolute top-1/3 -right-28 h-80 w-80 rounded-full bg-primary/10 blur-3xl" />
+				<div className="absolute -right-28 top-1/3 h-80 w-80 rounded-full bg-primary/10 blur-3xl" />
 			</div>
 
 			{/* Mobile: thumb-reachable back button */}

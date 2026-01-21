@@ -13,3 +13,10 @@ export const TIMER_LIST = {
 	},
 } as const;
 
+export const ADVANCED_TIMER_DEFAULT_COLORS = {
+	prepare: "#7c3aed", // violet-600
+	work: "#8b5cf6", // violet-500
+	rest: "#d946ef", // fuchsia-500
+	loop: "#c4b5fd", // violet-300
+	nestedLoop: "#ddd6fe", // violet-200
+} as const;

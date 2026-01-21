@@ -243,7 +243,9 @@ function FinalNextUpPlaceholder() {
 				<span className="text-lg font-semibold text-foreground">
 					{FINAL_NEXT_UP_TITLE}
 				</span>
-				<span className="text-sm text-muted-foreground">{FINAL_NEXT_UP_SUBTITLE}</span>
+				<span className="text-sm text-muted-foreground">
+					{FINAL_NEXT_UP_SUBTITLE}
+				</span>
 			</div>
 		</div>
 	);

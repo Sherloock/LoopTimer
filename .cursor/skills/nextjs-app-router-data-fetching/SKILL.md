@@ -4,17 +4,21 @@ description: Use when working on Next.js App Router route handlers, caching, sea
 ---
 
 ## Checklist
+
 - Route handlers live in `app/api/**/route.ts`.
 - Validate inputs (Zod) and enforce auth server-side.
 - Prefer minimal payloads; avoid over-fetching.
 
 ## Search params rule
+
 - If using `useSearchParams()`, wrap it in a Suspense boundary (separate component + `<Suspense fallback={...}>`) to avoid build/runtime issues.
 
 ## Caching / performance
+
 - Use code splitting (`next/dynamic`) for non-critical UI where it improves initial load.
 - Keep client components lean; move heavy work server-side when possible.
 
 ## Repo references
+
 - Navigation utilities: `lib/navigation.ts`
 - Routes constants: `lib/constants/routes.ts`

@@ -4,12 +4,14 @@ description: Use when adding/updating react-query queries/mutations, cache keys,
 ---
 
 ## Checklist
+
 - Centralize query keys (no hardcoded arrays/strings): prefer `lib/constants/*` as `QUERY_KEYS`.
 - Keep request functions typed and small; validate network payloads at boundaries if needed.
 - Invalidate the smallest scope that is correct (avoid blanket invalidation).
 - Show user feedback with toasts (include toast ids).
 
 ## Patterns
+
 - Queries:
   - Provide stable keys and stable parameters.
   - Use `select` on the server to keep payloads small.
@@ -18,5 +20,6 @@ description: Use when adding/updating react-query queries/mutations, cache keys,
   - On success, invalidate the exact keys impacted.
 
 ## Repo references
+
 - Query provider: `components/query-provider.tsx`
 - Timer hooks: `hooks/use-timers.ts`

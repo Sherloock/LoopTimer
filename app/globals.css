@@ -50,13 +50,14 @@
 		/* Interval accents (kept inside the violet family) */
 		--interval-prepare: 258.3 89.5% 66.3%;
 		--interval-workout: 255.1 91.7% 76.3%;
-		--interval-rest: 252.5 94.7% 85.1%;
+		/* Rest uses a fuchsia-leaning purple to stay distinct from Prepare */
+		--interval-rest: 292 91% 72%;
 		--interval-foreground: 261 34.5% 11.4%;
 
 		/* Optional chart colors (for any charts/stats) */
 		--chart-1: 258.3 89.5% 60.3%;
 		--chart-2: 255.1 91.7% 76.3%;
-		--chart-3: 252.5 94.7% 85.1%;
+		--chart-3: 292 91% 72%;
 		--chart-4: 250.5 95.2% 91.8%; /* #DDD6FE */
 		--chart-5: 258.3 40.8% 33.1%;
 
@@ -104,12 +105,12 @@
 
 		--interval-prepare: 258.3 89.5% 66.3%;
 		--interval-workout: 255.1 91.7% 76.3%;
-		--interval-rest: 252.5 94.7% 85.1%;
+		--interval-rest: 292 91% 72%;
 		--interval-foreground: 261 34.5% 11.4%;
 
 		--chart-1: 270 100% 70%;
 		--chart-2: 255.1 91.7% 76.3%;
-		--chart-3: 252.5 94.7% 85.1%;
+		--chart-3: 292 91% 72%;
 		--chart-4: 250.5 95.2% 91.8%;
 		--chart-5: 258.3 55% 25%;
 
