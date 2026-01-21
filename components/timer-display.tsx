@@ -4,6 +4,14 @@ import { formatTime, TimerState } from "@/lib/timer-utils";
 import { cn } from "@/lib/utils";
 import { AlarmClock, ArrowDownCircle, Coffee, Dumbbell } from "lucide-react";
 
+const SET_LINE_LABEL = "SET";
+const SET_LINE_PLACEHOLDER_CURRENT_ROUND = 1;
+const SET_LINE_PLACEHOLDER_TOTAL_ROUNDS = 1;
+
+const NEXT_UP_LABEL = "Next Up";
+const FINAL_NEXT_UP_TITLE = "Final interval";
+const FINAL_NEXT_UP_SUBTITLE = "You're nearly there.";
+
 interface TimerDisplayProps {
 	timeLeft: number;
 	state: TimerState;
@@ -91,12 +99,19 @@ export function TimerDisplay({
 		<>
 			{/* Primary layout: Centered vertical design for all screen sizes */}
 			<div className="space-y-4 text-center">
-				{/* Line 1: SET X/Y - only show if there are multiple sets */}
-				{totalRounds > 1 && (
-					<div className="text-2xl font-semibold text-muted-foreground sm:text-3xl">
-						SET {currentRound}/{totalRounds}
-					</div>
-				)}
+				{/* Line 1: SET X/Y (reserve space even without sets to prevent layout shift) */}
+				<div className="text-2xl font-semibold text-muted-foreground sm:text-3xl">
+					{totalRounds > 1 ? (
+						<>
+							{SET_LINE_LABEL} {currentRound}/{totalRounds}
+						</>
+					) : (
+						<span className="invisible" aria-hidden>
+							{SET_LINE_LABEL} {SET_LINE_PLACEHOLDER_CURRENT_ROUND}/
+							{SET_LINE_PLACEHOLDER_TOTAL_ROUNDS}
+						</span>
+					)}
+				</div>
 
 				<div>
 					{/* Line 2: TIMER - with extra spacing */}
@@ -133,11 +148,13 @@ export function TimerDisplay({
 				</div>
 
 				{/* Next Up section directly under exercise name */}
-				{nextInterval && (
-					<div className="pt-20">
+				<div className="pt-20">
+					{nextInterval ? (
 						<NextUp nextInterval={nextInterval} />
-					</div>
-				)}
+					) : (
+						<FinalNextUpPlaceholder />
+					)}
+				</div>
 			</div>
 		</>
 	);
@@ -194,7 +211,7 @@ function NextUp({
 			</span>
 			<div className="flex flex-col items-start">
 				<span className="text-xs font-medium uppercase tracking-widest text-muted-foreground">
-					Next Up
+					{NEXT_UP_LABEL}
 				</span>
 				<span className="text-lg font-semibold text-foreground">
 					{nextInterval.name}
@@ -202,6 +219,31 @@ function NextUp({
 				<span className="flex items-center gap-1 text-sm text-muted-foreground">
 					{formatTime(nextInterval.duration)}
 				</span>
+			</div>
+		</div>
+	);
+}
+
+function FinalNextUpPlaceholder() {
+	const iconSize = 24;
+
+	return (
+		<div
+			className={cn(
+				"mx-auto mt-4 flex w-full max-w-md items-center justify-start gap-4 rounded-2xl border bg-secondary p-4 shadow-lg backdrop-blur-md transition-all duration-300 sm:max-w-lg lg:max-w-xl",
+			)}
+		>
+			<span className="flex size-10 flex-shrink-0 items-center justify-center">
+				<AlarmClock size={iconSize} className="text-muted-foreground" />
+			</span>
+			<div className="flex flex-col items-start">
+				<span className="text-xs font-medium uppercase tracking-widest text-muted-foreground">
+					{NEXT_UP_LABEL}
+				</span>
+				<span className="text-lg font-semibold text-foreground">
+					{FINAL_NEXT_UP_TITLE}
+				</span>
+				<span className="text-sm text-muted-foreground">{FINAL_NEXT_UP_SUBTITLE}</span>
 			</div>
 		</div>
 	);
