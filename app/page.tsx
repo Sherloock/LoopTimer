@@ -65,18 +65,19 @@ export default async function LandingPage() {
 
 			{/* Hero Section */}
 			<section className="relative px-4 py-20 sm:px-6 lg:px-8">
-				{/* Sparkles centered on hero */}
-				<div className="pointer-events-none absolute inset-0 z-0 overflow-hidden [mask-image:linear-gradient(to_bottom,transparent,black_5%,black_60%,transparent)]">
-					<SparklesBackground />
+				{/* Background layer with mask */}
+				<div className="absolute inset-0 [mask-image:linear-gradient(to_bottom,transparent,black_10%,black_70%,transparent)]">
+					{/* Sparkles centered on hero */}
+					<div className="pointer-events-none absolute inset-0 z-0 overflow-hidden">
+						<SparklesBackground />
+					</div>
 				</div>
 				<div className="container relative z-10 mx-auto text-center">
 					<div className="mx-auto max-w-4xl">
 						<h1 className="mb-6 text-4xl font-bold tracking-tight sm:text-5xl lg:text-6xl">
-							<span className="animate-text-gradient neon-text">
-								Perfect Your Workout
-							</span>
+							<span className="header-gradient-text">Perfect Your Workout</span>
 							<br />
-							<span className="text-foreground">With Custom Timers</span>
+							{/* <span className=" text-foreground">With Custom Timers</span> */}
 						</h1>
 						<p className="mx-auto mb-8 max-w-2xl text-xl text-muted-foreground">
 							Create powerful, customizable workout timers with loops,

@@ -340,29 +340,45 @@
 			0 4px 6px -1px rgb(0 0 0 / 0.3);
 	}
 
-	/* Animated gradient text effect */
-	.animate-text-gradient {
+	/* Animated gradient text effect - portfolio style */
+	.header-gradient-text {
 		background: linear-gradient(
 			90deg,
-			hsl(var(--primary)),
-			hsl(var(--primary) / 0.8),
-			hsl(var(--primary)),
-			hsl(var(--primary) / 0.6)
+			hsl(173 80% 40%),
+			/* teal-500 */ hsl(258 89% 60%),
+			/* purple-500 */ hsl(25 95% 53%) /* orange-500 */
 		);
 		background-size: 200% 200%;
 		background-clip: text;
 		-webkit-background-clip: text;
 		-webkit-text-fill-color: transparent;
-		animation: text-gradient 5s ease infinite;
+		animation: text-gradient-move 5s ease infinite;
+		padding-bottom: 0.5rem;
 	}
 
-	@keyframes text-gradient {
+	.dark .header-gradient-text {
+		background: linear-gradient(
+			90deg,
+			hsl(173 80% 50%),
+			/* teal-400 */ hsl(258 89% 70%),
+			/* purple-400 */ hsl(25 95% 63%) /* orange-400 */
+		);
+		background-size: 200% 200%;
+		background-clip: text;
+		-webkit-background-clip: text;
+		-webkit-text-fill-color: transparent;
+		animation: text-gradient-move 5s ease infinite;
+	}
+
+	@keyframes text-gradient-move {
 		0%,
 		100% {
-			background-position: 0% 50%;
+			background-size: 200% 200%;
+			background-position: left center;
 		}
 		50% {
-			background-position: 100% 50%;
+			background-size: 200% 200%;
+			background-position: right center;
 		}
 	}
 }
