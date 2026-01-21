@@ -31,13 +31,44 @@ function extractJson(text: string): string {
 	return text.trim();
 }
 
+interface GroqUsage {
+	prompt_tokens: number;
+	completion_tokens: number;
+	total_tokens: number;
+}
+
+interface GroqResponse {
+	content: string;
+	usage: GroqUsage;
+}
+
+// Groq pricing (USD per 1M tokens)
+const GROQ_PRICING = {
+	"llama-3.3-70b-versatile": {
+		input: 0.59,
+		output: 0.79,
+	},
+};
+
 /**
- * Calls Groq API with timeout
+ * Calculates cost from token usage
+ */
+function calculateCost(usage: GroqUsage): number {
+	const pricing =
+		GROQ_PRICING[AI_MODEL as keyof typeof GROQ_PRICING] ||
+		GROQ_PRICING["llama-3.3-70b-versatile"];
+	const inputCost = (usage.prompt_tokens * pricing.input) / 1_000_000;
+	const outputCost = (usage.completion_tokens * pricing.output) / 1_000_000;
+	return inputCost + outputCost;
+}
+
+/**
+ * Calls Groq API with timeout and returns content + usage stats
  */
 async function callGroqWithTimeout(
 	prompt: string,
 	timeoutMs: number,
-): Promise<string> {
+): Promise<GroqResponse> {
 	const controller = new AbortController();
 	const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
 
@@ -66,7 +97,13 @@ async function callGroqWithTimeout(
 			throw new Error("No content in AI response");
 		}
 
-		return content;
+		const usage: GroqUsage = {
+			prompt_tokens: completion.usage?.prompt_tokens || 0,
+			completion_tokens: completion.usage?.completion_tokens || 0,
+			total_tokens: completion.usage?.total_tokens || 0,
+		};
+
+		return { content, usage };
 	} catch (error) {
 		clearTimeout(timeoutId);
 		if ((error as Error).name === "AbortError") {
@@ -95,6 +132,8 @@ export async function POST(req: Request) {
 		// Sanitize prompt (basic XSS prevention)
 		const sanitizedPrompt = prompt.trim().slice(0, 1000);
 
+		let totalCost = 0;
+
 		// Step 1: Use AI router to validate exercise intent
 		try {
 			const routerPrompt = buildRouterPrompt(sanitizedPrompt);
@@ -103,8 +142,15 @@ export async function POST(req: Request) {
 				AI_TIMEOUT_MS,
 			);
 
+			// Calculate and log router cost
+			const routerCost = calculateCost(routerResponse.usage);
+			totalCost += routerCost;
+			console.log(
+				`[AI Router] Tokens: ${routerResponse.usage.prompt_tokens} input + ${routerResponse.usage.completion_tokens} output = ${routerResponse.usage.total_tokens} total | Cost: $${routerCost.toFixed(6)}`,
+			);
+
 			// Parse router response
-			const routerJsonString = extractJson(routerResponse);
+			const routerJsonString = extractJson(routerResponse.content);
 			let routerResult: { isExerciseRelated: boolean; reason: string };
 
 			try {
@@ -117,10 +163,15 @@ export async function POST(req: Request) {
 
 			// If not exercise-related, reject immediately
 			if (!routerResult.isExerciseRelated) {
+				console.log(
+					`[AI Router] Rejected non-exercise prompt. Total cost: $${totalCost.toFixed(6)}`,
+				);
 				return NextResponse.json(
 					{
 						error: "Invalid prompt: not exercise-related",
-						message: routerResult.reason || "Your request doesn't appear to be about workouts or exercises. Please describe a workout, exercise routine, stretch session, or training plan.",
+						message:
+							routerResult.reason ||
+							"Your request doesn't appear to be about workouts or exercises. Please describe a workout, exercise routine, stretch session, or training plan.",
 					},
 					{ status: 400 },
 				);
@@ -150,8 +201,15 @@ export async function POST(req: Request) {
 				// Call Groq API
 				const aiResponse = await callGroqWithTimeout(fullPrompt, AI_TIMEOUT_MS);
 
+				// Calculate and log workout generation cost
+				const workoutCost = calculateCost(aiResponse.usage);
+				totalCost += workoutCost;
+				console.log(
+					`[AI Workout Gen - Attempt ${attempt}] Tokens: ${aiResponse.usage.prompt_tokens} input + ${aiResponse.usage.completion_tokens} output = ${aiResponse.usage.total_tokens} total | Cost: $${workoutCost.toFixed(6)}`,
+				);
+
 				// Extract JSON from response
-				const jsonString = extractJson(aiResponse);
+				const jsonString = extractJson(aiResponse.content);
 				lastInvalidJson = jsonString;
 
 				// Parse JSON
@@ -163,6 +221,9 @@ export async function POST(req: Request) {
 						`Invalid JSON syntax: ${(parseError as Error).message}`,
 					];
 					if (attempt === AI_MAX_RETRIES) {
+						console.log(
+							`[AI Workout Gen] Failed after ${attempt} attempts. Total cost: $${totalCost.toFixed(6)}`,
+						);
 						return NextResponse.json(
 							{
 								error: "Failed to generate valid JSON after maximum retries",
@@ -173,6 +234,9 @@ export async function POST(req: Request) {
 							{ status: 400 },
 						);
 					}
+					console.log(
+						`[AI Workout Gen - Attempt ${attempt}] JSON parse failed, retrying...`,
+					);
 					continue; // Retry
 				}
 
@@ -181,6 +245,9 @@ export async function POST(req: Request) {
 
 				if (validation.valid) {
 					// Success!
+					console.log(
+						`[AI Workout Gen] ✅ SUCCESS! Generated workout in ${attempt} attempt(s). Total cost: $${totalCost.toFixed(6)} (~${Math.floor(1 / totalCost)} requests per $1)`,
+					);
 					return NextResponse.json({
 						config: parsedConfig as AdvancedConfig,
 						attempt,
@@ -192,6 +259,9 @@ export async function POST(req: Request) {
 
 				if (attempt === AI_MAX_RETRIES) {
 					// Max retries reached
+					console.log(
+						`[AI Workout Gen] Validation failed after ${attempt} attempts. Total cost: $${totalCost.toFixed(6)}`,
+					);
 					return NextResponse.json(
 						{
 							error:
@@ -204,10 +274,16 @@ export async function POST(req: Request) {
 					);
 				}
 
+				console.log(
+					`[AI Workout Gen - Attempt ${attempt}] Validation failed, retrying...`,
+				);
 				// Continue to next retry
 			} catch (error) {
 				// Handle API errors
 				if (attempt === AI_MAX_RETRIES) {
+					console.log(
+						`[AI Workout Gen] API error after ${attempt} attempts. Total cost: $${totalCost.toFixed(6)}`,
+					);
 					return NextResponse.json(
 						{
 							error: "AI generation failed",
@@ -218,11 +294,17 @@ export async function POST(req: Request) {
 					);
 				}
 				// Retry on error
+				console.log(
+					`[AI Workout Gen - Attempt ${attempt}] API error, retrying...`,
+				);
 				lastErrors = [(error as Error).message];
 			}
 		}
 
 		// Should not reach here, but just in case
+		console.log(
+			`[AI Workout Gen] Unexpected error. Total cost: $${totalCost.toFixed(6)}`,
+		);
 		return NextResponse.json(
 			{
 				error: "Unexpected error during workout generation",
@@ -231,7 +313,7 @@ export async function POST(req: Request) {
 			{ status: 500 },
 		);
 	} catch (error) {
-		console.error("Generate workout error:", error);
+		console.error("[AI Workout Gen] Fatal error:", error);
 		return NextResponse.json(
 			{ error: "Internal server error", details: [(error as Error).message] },
 			{ status: 500 },
