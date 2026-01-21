@@ -131,7 +131,7 @@ export function TimersList() {
 	return (
 		<div className="space-y-6">
 			{/* Header */}
-			<div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+			<div className="relative flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
 				<div className="space-y-2">
 					<div className="flex flex-wrap items-center gap-2">
 						<h1 className="neon-text text-3xl font-semibold leading-none tracking-tight sm:text-4xl">
@@ -152,12 +152,13 @@ export function TimersList() {
 					<Button
 						variant="brand"
 						size="sm"
-						className="neon-hover-glow h-9 gap-2 px-2 md:ml-auto md:px-3"
+						className="neon-hover-glow absolute right-0 top-0 h-9 gap-2 px-2 sm:relative sm:px-3 md:px-3"
 						onClick={() => goToEditTimer()}
 						aria-label="Add timer"
 					>
 						<Plus size={16} />
-						<span className="hidden md:inline">Add timer</span>
+						<span className="">Add</span>
+						<span className="hidden md:inline"> timer</span>
 					</Button>
 				)}
 			</div>

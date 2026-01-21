@@ -8,34 +8,34 @@
 	:root {
 		/* Neon purple (LIGHT) */
 		color-scheme: light;
-		/* Stronger lavender tint so light mode isn't perceived as white */
-		--background: 252.5 94.7% 92%; /* visibly purple */
-		--foreground: 261 34.5% 11.4%; /* #1A1327 */
+		/* Neutral white background with subtle gray tint */
+		--background: 0 0% 100%; /* pure white */
+		--foreground: 0 0% 9%; /* near black */
 
-		--card: 252.5 94.7% 95%;
-		--card-foreground: 261 34.5% 11.4%;
+		--card: 0 0% 100%; /* pure white */
+		--card-foreground: 0 0% 9%;
 
-		--popover: 252.5 94.7% 95%;
-		--popover-foreground: 261 34.5% 11.4%;
+		--popover: 0 0% 100%;
+		--popover-foreground: 0 0% 9%;
 
 		/* Brand */
-		--primary: 258.3 89.5% 60.3%; /* neon-ish purple on white */
+		--primary: 258.3 89.5% 60.3%; /* vibrant purple for accents */
 		--primary-foreground: 0 0% 100%;
 
-		--secondary: 250.5 95.2% 91.8%; /* #DDD6FE */
-		--secondary-foreground: 261 34.5% 11.4%;
+		--secondary: 0 0% 96%; /* neutral light gray */
+		--secondary-foreground: 0 0% 9%;
 
-		--muted: 250.5 95.2% 95%;
-		--muted-foreground: 258.3 40.8% 33.1%; /* #473277 */
+		--muted: 0 0% 97%; /* very light gray */
+		--muted-foreground: 0 0% 45%; /* medium gray for muted text */
 
-		--accent: 250.5 95.2% 91.8%;
-		--accent-foreground: 261 34.5% 11.4%;
+		--accent: 258.3 89.5% 95%; /* very light purple tint for accents */
+		--accent-foreground: 258.3 89.5% 40%;
 
 		--destructive: 0 72% 56%;
 		--destructive-foreground: 0 0% 100%;
 
-		--border: 250.5 60% 88%;
-		--input: 250.5 60% 88%;
+		--border: 0 0% 90%; /* neutral light gray border */
+		--input: 0 0% 90%;
 		--ring: 258.3 89.5% 60.3%;
 
 		--radius: 0.5rem;
@@ -43,9 +43,9 @@
 		/* Extra tokens for app-specific UI */
 		--brand: 258.3 89.5% 60.3%;
 		--brand-foreground: 0 0% 100%;
-		--surface-1: 252.5 94.7% 92%;
-		--surface-2: 252.5 94.7% 95%;
-		--surface-3: 250.5 95.2% 91.8%;
+		--surface-1: 0 0% 100%; /* white */
+		--surface-2: 0 0% 98%; /* very light gray */
+		--surface-3: 0 0% 96%; /* light gray */
 
 		/* Interval accents (kept inside the violet family) */
 		--interval-prepare: 258.3 89.5% 66.3%;
@@ -58,12 +58,12 @@
 		--chart-1: 258.3 89.5% 60.3%;
 		--chart-2: 255.1 91.7% 76.3%;
 		--chart-3: 292 91% 72%;
-		--chart-4: 250.5 95.2% 91.8%; /* #DDD6FE */
-		--chart-5: 258.3 40.8% 33.1%;
+		--chart-4: 258.3 89.5% 95%; /* very light purple */
+		--chart-5: 0 0% 70%; /* neutral gray */
 
 		/* Seven segment display */
 		--segment-color: 258.3 89.5% 60.3%;
-		--segment-off: 258.3 25% 82%;
+		--segment-off: 0 0% 85%; /* neutral gray */
 	}
 
 	.dark {
@@ -132,12 +132,25 @@
 	/* Reusable neon effects (theme-aware via CSS variables) */
 	.neon-glow {
 		box-shadow:
+			0 0 0 1px hsl(var(--primary) / 0.2),
+			0 0 12px hsl(var(--primary) / 0.25),
+			0 0 24px hsl(var(--primary) / 0.15);
+	}
+
+	.dark .neon-glow {
+		box-shadow:
 			0 0 0 1px hsl(var(--primary) / 0.28),
 			0 0 18px hsl(var(--primary) / 0.35),
 			0 0 48px hsl(var(--primary) / 0.18);
 	}
 
 	.neon-text {
+		text-shadow:
+			0 0 8px hsl(var(--primary) / 0.4),
+			0 0 16px hsl(var(--primary) / 0.2);
+	}
+
+	.dark .neon-text {
 		text-shadow:
 			0 0 12px hsl(var(--primary) / 0.55),
 			0 0 28px hsl(var(--primary) / 0.25);
@@ -150,6 +163,14 @@
 
 	.neon-hover-glow:hover {
 		transform: scale(1.05);
+		box-shadow:
+			0 0 0 1px hsl(var(--primary) / 0.3),
+			0 0 16px hsl(var(--primary) / 0.4),
+			0 0 32px hsl(var(--primary) / 0.25),
+			0 0 48px hsl(var(--primary) / 0.12);
+	}
+
+	.dark .neon-hover-glow:hover {
 		box-shadow:
 			0 0 0 1px hsl(var(--primary) / 0.4),
 			0 0 20px hsl(var(--primary) / 0.5),
