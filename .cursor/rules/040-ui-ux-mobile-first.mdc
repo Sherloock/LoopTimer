@@ -1,0 +1,24 @@
+---
+description: UI/UX rules for TIMER: mobile-first, Shadcn-first, Next Image, dialogs/toasts.
+globs: "app/**/*.tsx, components/**/*.tsx"
+alwaysApply: false
+---
+
+## UI and styling (mobile-first is mandatory)
+- Use Shadcn UI components (`@/components/ui/*`) and Tailwind utility classes.
+- Mobile-first responsive design: toolbars/action bars stack on mobile (`flex-col`) and row on larger screens (`sm:flex-row`).
+- Prefer `w-full sm:w-auto` for toolbar buttons and actions.
+- Avoid horizontal scrolling; use `flex-wrap` or vertical stacking.
+- Standard radius: `rounded-lg` (avoid `rounded-full` unless truly needed).
+
+## Icons and images
+- Use Lucide icons sized with `size={20}` / `size={16}` / `size={12}` only.
+- Never use `<img>`; always use Next.js `Image` from `next/image`.
+
+## Loading and confirmations
+- Prefer Skeleton loaders (`Skeleton`) over generic spinners.
+- Never use `confirm()`, `alert()`, `prompt()`; use Shadcn dialogs/alert dialogs and toasts.
+
+## Inputs (mobile UX)
+- For time/number inputs use `inputMode=\"numeric\"` and `pattern=\"[0-9:]*\"` when appropriate.
+- Prefer wider inputs and larger touch targets on mobile.
