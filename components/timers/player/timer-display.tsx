@@ -27,14 +27,18 @@ function hexToRgb(hex: string): { r: number; g: number; b: number } | null {
 		const r = parseInt(raw[0] + raw[0], 16);
 		const g = parseInt(raw[1] + raw[1], 16);
 		const b = parseInt(raw[2] + raw[2], 16);
-		return Number.isNaN(r) || Number.isNaN(g) || Number.isNaN(b) ? null : { r, g, b };
+		return Number.isNaN(r) || Number.isNaN(g) || Number.isNaN(b)
+			? null
+			: { r, g, b };
 	}
 
 	if (raw.length === 6 || raw.length === 8) {
 		const r = parseInt(raw.slice(0, 2), 16);
 		const g = parseInt(raw.slice(2, 4), 16);
 		const b = parseInt(raw.slice(4, 6), 16);
-		return Number.isNaN(r) || Number.isNaN(g) || Number.isNaN(b) ? null : { r, g, b };
+		return Number.isNaN(r) || Number.isNaN(g) || Number.isNaN(b)
+			? null
+			: { r, g, b };
 	}
 
 	return null;
@@ -182,7 +186,7 @@ export function TimerDisplay({
 				{/* Line 4: EXERCISE NAME - with extra spacing */}
 				<div
 					className={cn(
-						"mx-auto min-h-16 w-full break-words text-2xl font-semibold uppercase leading-tight line-clamp-2 sm:min-h-20 sm:text-3xl lg:min-h-24 lg:text-4xl",
+						"mx-auto line-clamp-2 min-h-16 w-full break-words text-2xl font-semibold uppercase leading-tight sm:min-h-20 sm:text-3xl lg:min-h-24 lg:text-4xl",
 						getExerciseTextColor(),
 					)}
 					style={

@@ -24,9 +24,11 @@ export function TimerCompletionScreen({
 						<div className="space-y-2">
 							<h2 className="text-2xl font-bold text-green-600">Great Job!</h2>
 							{timerName && (
-								<p className="text-muted-foreground break-words">
+								<p className="break-words text-muted-foreground">
 									You completed{" "}
-									<span className="font-medium text-foreground">{timerName}</span>
+									<span className="font-medium text-foreground">
+										{timerName}
+									</span>
 								</p>
 							)}
 							<p className="text-lg">Workout completed successfully!</p>

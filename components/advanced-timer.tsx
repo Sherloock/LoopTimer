@@ -32,7 +32,12 @@ import {
 	ADVANCED_TIMER_DEFAULT_COLORS,
 	TIMER_NAME_MAX_LENGTH,
 } from "@/lib/constants/timers";
-import { playSound, SOUND_OPTIONS, speakText, stopAllSounds } from "@/lib/sound-utils";
+import {
+	playSound,
+	SOUND_OPTIONS,
+	speakText,
+	stopAllSounds,
+} from "@/lib/sound-utils";
 import { formatTime, getProgress, timerToasts } from "@/lib/timer-utils";
 import {
 	getIntervalTypeForDisplay,

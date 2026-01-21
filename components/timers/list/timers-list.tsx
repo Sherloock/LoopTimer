@@ -149,17 +149,17 @@ export function TimersList() {
 					<p className="text-sm text-muted-foreground">{subtitle}</p>
 				</div>
 				{hasTimers && (
-				<div className="flex justify-end w-full">
-					<Button
-						variant="brand"
-						size="sm"
-						className="w-full gap-2 "
-						onClick={() => goToEditTimer()}
-					>
-						<Plus size={16} />
-						New timer
-					</Button>
-				</div>
+					<div className="flex w-full justify-end">
+						<Button
+							variant="brand"
+							size="sm"
+							className="w-full gap-2"
+							onClick={() => goToEditTimer()}
+						>
+							<Plus size={16} />
+							New timer
+						</Button>
+					</div>
 				)}
 			</div>
 
