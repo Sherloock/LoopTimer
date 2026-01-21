@@ -5,6 +5,43 @@ import {
 } from "@/lib/constants/ai";
 import type { AdvancedConfig } from "@/types/advanced-timer";
 
+/**
+ * Builds a prompt for the AI router to determine if a query is exercise-related
+ */
+export function buildRouterPrompt(userPrompt: string): string {
+	return `You are a workout intent classifier. Your ONLY job is to determine if a user's request is about creating a workout, exercise routine, stretch session, or training timer.
+
+Analyze this user request:
+"${userPrompt}"
+
+Respond with ONLY a JSON object in this exact format:
+{
+  "isExerciseRelated": true/false,
+  "reason": "brief explanation"
+}
+
+Examples of VALID exercise-related requests:
+- "30 minute HIIT workout"
+- "stretching routine for my hips"
+- "strength training with 5 exercises"
+- "create a yoga session"
+- "fájt a medencém és szeretnék nyújtani" (Hungarian: my hip hurts and I want to stretch)
+- "1 hour full body workout"
+- "cardio circuit training"
+
+Examples of INVALID non-exercise requests:
+- "What's the weather?"
+- "Tell me a joke"
+- "How do I cook pasta?"
+- "Calculate 2+2"
+- "Write me a story"
+
+Set "isExerciseRelated" to true ONLY if the request is clearly about workouts, exercises, stretching, training, or fitness timers.
+If unclear or unrelated, set it to false and explain why in the "reason" field.
+
+Respond now:`;
+}
+
 const SCHEMA_SPECIFICATION = `
 ## JSON Schema for AdvancedConfig
 

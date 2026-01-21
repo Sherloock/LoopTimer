@@ -1,6 +1,10 @@
 import { checkAuth } from "@/actions/auth/authCheck";
 import { validateAdvancedConfig } from "@/lib/ai/validate-workout";
-import { buildInitialPrompt, buildRetryPrompt } from "@/lib/ai/workout-prompt";
+import {
+	buildInitialPrompt,
+	buildRetryPrompt,
+	buildRouterPrompt,
+} from "@/lib/ai/workout-prompt";
 import { AI_MAX_RETRIES, AI_MODEL, AI_TIMEOUT_MS } from "@/lib/constants/ai";
 import type { AdvancedConfig } from "@/types/advanced-timer";
 import Groq from "groq-sdk";
@@ -90,6 +94,41 @@ export async function POST(req: Request) {
 
 		// Sanitize prompt (basic XSS prevention)
 		const sanitizedPrompt = prompt.trim().slice(0, 1000);
+
+		// Step 1: Use AI router to validate exercise intent
+		try {
+			const routerPrompt = buildRouterPrompt(sanitizedPrompt);
+			const routerResponse = await callGroqWithTimeout(
+				routerPrompt,
+				AI_TIMEOUT_MS,
+			);
+
+			// Parse router response
+			const routerJsonString = extractJson(routerResponse);
+			let routerResult: { isExerciseRelated: boolean; reason: string };
+
+			try {
+				routerResult = JSON.parse(routerJsonString);
+			} catch {
+				// If router fails to parse, allow through (fail-open for edge cases)
+				console.warn("Router response parsing failed, allowing prompt through");
+				routerResult = { isExerciseRelated: true, reason: "Parser fallback" };
+			}
+
+			// If not exercise-related, reject immediately
+			if (!routerResult.isExerciseRelated) {
+				return NextResponse.json(
+					{
+						error: "Invalid prompt: not exercise-related",
+						message: routerResult.reason || "Your request doesn't appear to be about workouts or exercises. Please describe a workout, exercise routine, stretch session, or training plan.",
+					},
+					{ status: 400 },
+				);
+			}
+		} catch (error) {
+			// If router fails, log but allow through (fail-open)
+			console.warn("Router check failed:", error);
+		}
 
 		let lastInvalidJson = "";
 		let lastErrors: string[] = [];

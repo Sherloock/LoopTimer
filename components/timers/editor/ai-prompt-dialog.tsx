@@ -71,6 +71,7 @@ export function AiPromptDialog({
 				} else {
 					toast.error(data.error || "Failed to generate workout", {
 						id: "ai-generation-error",
+						description: data.message || undefined,
 					});
 				}
 				return;
