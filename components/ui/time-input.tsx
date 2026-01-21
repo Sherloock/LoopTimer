@@ -74,7 +74,7 @@ export function TimeInput({
 			<Button
 				variant="control"
 				// Match input height for UX consistency (see NumberInput)
-				className="px-4 py-3 sm:px-3 sm:py-2"
+				className="px-3 py-3"
 				onClick={handleDecrement}
 				disabled={disabled || value <= min}
 				type="button"
@@ -87,7 +87,7 @@ export function TimeInput({
 				value={isEditing ? inputValue : formatTimeInput(value)}
 				onChange={handleInputChange}
 				className={cn(
-					"w-24 px-4 py-3 text-center font-mono text-lg sm:w-16 sm:px-3 sm:py-2",
+					"w-20 px-2 py-2 text-center font-mono text-sm sm:w-16 sm:px-3 sm:py-2 sm:text-lg",
 					className,
 				)}
 				placeholder={placeholder ?? "__ : __"}
@@ -100,7 +100,7 @@ export function TimeInput({
 			<Button
 				variant="control"
 				// Match input height for UX consistency (see NumberInput)
-				className="px-4 py-3 sm:px-3 sm:py-2"
+				className="px-3 py-3"
 				onClick={handleIncrement}
 				disabled={disabled}
 				type="button"

@@ -1,0 +1,1 @@
+- fix responsive layout when rotated on phone - timer/play
