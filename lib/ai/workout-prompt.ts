@@ -63,12 +63,23 @@ interface ColorSettings {
 
 ## Default Values
 
-Use these defaults when not specified by user:
-- colors.prepare: "#3b82f6" (blue)
-- colors.work: "#ef4444" (red)
-- colors.rest: "#22c55e" (green)
-- colors.loop: "#8b5cf6" (purple)
-- colors.nestedLoop: "#ec4899" (pink)
+**ALWAYS use these default colors in the ColorSettings object:**
+- colors.prepare: "#f97316" (orange) - for warm-up/preparation intervals
+- colors.work: "#22c55e" (green) - for work/exercise intervals
+- colors.rest: "#3b82f6" (blue) - for rest intervals
+- colors.loop: "#8b5cf6" (purple) - for loop groups
+- colors.nestedLoop: "#f59e0b" (amber) - for nested loops
+
+**Color Usage Rules:**
+- **DO NOT** add a \`color\` field to individual IntervalStep items unless you need to override the default
+- Individual intervals will automatically use the appropriate color from ColorSettings based on their \`type\`:
+  - \`type: "prepare"\` → uses colors.prepare
+  - \`type: "work"\` → uses colors.work
+  - \`type: "rest"\` → uses colors.rest
+- Only add \`color\` to an IntervalStep if you need a specific color different from the default
+- LoopGroups can optionally have a \`color\` field to override colors.loop
+
+**Other defaults:**
 - defaultAlarm: "beep-2x"
 - speakNames: true
 `;
@@ -106,11 +117,11 @@ const EXAMPLES = `
     }
   ],
   "colors": {
-    "prepare": "#3b82f6",
-    "work": "#ef4444",
-    "rest": "#22c55e",
+    "prepare": "#f97316",
+    "work": "#22c55e",
+    "rest": "#3b82f6",
     "loop": "#8b5cf6",
-    "nestedLoop": "#ec4899"
+    "nestedLoop": "#f59e0b"
   },
   "defaultAlarm": "beep-2x",
   "speakNames": true
@@ -165,11 +176,11 @@ const EXAMPLES = `
     }
   ],
   "colors": {
-    "prepare": "#3b82f6",
-    "work": "#ef4444",
-    "rest": "#22c55e",
+    "prepare": "#f97316",
+    "work": "#22c55e",
+    "rest": "#3b82f6",
     "loop": "#8b5cf6",
-    "nestedLoop": "#ec4899"
+    "nestedLoop": "#f59e0b"
   },
   "defaultAlarm": "beep-2x",
   "speakNames": true
@@ -428,11 +439,12 @@ ${currentStateSection}
    - Use skipOnLastLoop: false for rest periods between repetitions
 5. **Calculate total duration** - If user specifies total duration (e.g., "20 minutes"), distribute it across all exercises and loops
 6. **Exercise naming** - Use descriptive names for exercises. For stretches, use common names (e.g., "hipflexor", "pigeon pose", "lat stretch", "90-90 stretch")
-7. **Ensure all IDs are unique strings** - Use sequential numbers: "1", "2", "3", etc.
-8. **Use "prepare" type** for warm-up/preparation phases
-9. **Use "work" type** for exercise/activity phases (including stretches)
-10. **Use "rest" type** for rest/recovery phases between exercises
-11. **Return ONLY the valid JSON object** - No markdown code blocks, no explanations, no additional text
+7. **Use default colors** - Always include the default ColorSettings object. Do NOT add color fields to individual IntervalStep items unless you need to override the default. The system will automatically apply the correct color from ColorSettings based on the interval type.
+8. **Ensure all IDs are unique strings** - Use sequential numbers: "1", "2", "3", etc.
+9. **Use "prepare" type** for warm-up/preparation phases
+10. **Use "work" type** for exercise/activity phases (including stretches)
+11. **Use "rest" type** for rest/recovery phases between exercises
+12. **Return ONLY the valid JSON object** - No markdown code blocks, no explanations, no additional text
 
 ## Key Patterns for Stretch Routines
 

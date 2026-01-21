@@ -1676,11 +1676,11 @@ export function AdvancedTimer({
 					<div className="py-2 text-sm text-muted-foreground">
 						You have unsaved changes. What would you like to do?
 					</div>
-					<div className="flex flex-col gap-2 pt-2 sm:flex-row sm:justify-end">
+					<div className="flex flex-col gap-2 pt-2 md:flex-row md:justify-end">
 						<Button
 							variant="outline"
 							onClick={() => setShowConfirmExit(false)}
-							className="flex-1"
+							className="w-full md:w-auto"
 						>
 							<X size={16} className="mr-2" /> Cancel
 						</Button>
@@ -1690,14 +1690,14 @@ export function AdvancedTimer({
 								setShowConfirmExit(false);
 								onExit?.();
 							}}
-							className="flex-1"
+							className="w-full md:w-auto"
 						>
 							<Undo size={16} className="mr-2" /> Back without saving
 						</Button>
 						<Button
 							disabled={pendingExit}
 							onClick={handleSaveAndExit}
-							className="flex-1"
+							className="w-full md:w-auto"
 						>
 							<SaveIcon size={16} className="mr-2" />
 							{pendingExit ? "Saving..." : "Save and back"}
