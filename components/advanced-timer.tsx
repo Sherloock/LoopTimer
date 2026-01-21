@@ -69,6 +69,7 @@ import {
 	Save as SaveIcon,
 	Settings,
 	Undo,
+	Wand2,
 	X,
 } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
@@ -76,6 +77,7 @@ import { toast } from "sonner";
 
 // Externalised components
 import { SortableItem } from "@/components/timers/editor/advanced/dnd/sortable-item";
+import { AiPromptDialog } from "@/components/timers/editor/ai-prompt-dialog";
 import {
 	AdvancedConfig,
 	ColorSettings,
@@ -169,6 +171,7 @@ export function AdvancedTimer({
 	const [timeLeft, setTimeLeft] = useState(0);
 	const [currentItemIndex, setCurrentItemIndex] = useState(0);
 	const [showSettings, setShowSettings] = useState(false);
+	const [showAiDialog, setShowAiDialog] = useState(false);
 
 	const {
 		state,
@@ -1574,6 +1577,34 @@ export function AdvancedTimer({
 	const [showConfirmExit, setShowConfirmExit] = useState(false);
 	const [pendingExit, setPendingExit] = useState(false);
 
+	// --- AI generation handler ---
+	const handleAiGenerated = useCallback(
+		(generatedConfig: AdvancedConfig) => {
+			// Update config with AI-generated workout
+			setConfig(generatedConfig);
+
+			// Update next ID to avoid collisions with generated IDs
+			const extractIds = (items: WorkoutItem[]): number[] => {
+				return items.reduce<number[]>((acc, item) => {
+					acc.push(parseInt(item.id, 10));
+					if (isLoop(item)) {
+						acc.push(...extractIds(item.items));
+					}
+					return acc;
+				}, []);
+			};
+
+			const ids = extractIds(generatedConfig.items ?? []);
+			const maxId = ids.length ? Math.max(...ids) : 0;
+			setNextId(maxId + 1);
+
+			toast.success("Workout generated! Review and save when ready.", {
+				id: "ai-workout-applied",
+			});
+		},
+		[setNextId],
+	);
+
 	// Intercept exit: if dirty, show dialog, else call onExit
 	const handleBack = useCallback(() => {
 		if (isDirty) {
@@ -1818,13 +1849,22 @@ export function AdvancedTimer({
 										/>
 									</div>
 								</div>
-								{/* Row 2: Buttons (50% width each on mobile, right-aligned on sm+) */}
-								<div className="flex w-full flex-row gap-2 sm:justify-end">
+								{/* Row 2: Buttons (responsive layout) */}
+								<div className="flex w-full flex-row flex-wrap gap-2 sm:justify-end">
+									<Button
+										onClick={() => setShowAiDialog(true)}
+										variant="default"
+										size="sm"
+										className="flex-1 gap-2 sm:flex-initial"
+									>
+										<Wand2 size={16} />
+										AI Generate
+									</Button>
 									<Button
 										onClick={() => setShowSettings(true)}
 										variant="control"
 										size="sm"
-										className="w-1/2 gap-2 sm:w-auto"
+										className="flex-1 gap-2 sm:flex-initial"
 									>
 										<Settings size={16} />
 										Settings
@@ -1833,7 +1873,7 @@ export function AdvancedTimer({
 										onClick={addLoop}
 										variant="control"
 										size="sm"
-										className="w-1/2 gap-2 sm:w-auto"
+										className="flex-1 gap-2 sm:flex-initial"
 									>
 										<Repeat size={16} />
 										Add Loop
@@ -2043,6 +2083,14 @@ export function AdvancedTimer({
 					</div>
 				</DialogContent>
 			</Dialog>
+
+			{/* AI Prompt Dialog */}
+			<AiPromptDialog
+				open={showAiDialog}
+				onOpenChange={setShowAiDialog}
+				onGenerated={handleAiGenerated}
+				currentConfig={config}
+			/>
 		</div>
 	);
 }
