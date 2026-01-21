@@ -135,9 +135,9 @@ export function TimerDisplay({
 	return (
 		<>
 			{/* Primary layout: Centered vertical design for all screen sizes */}
-			<div className="mx-auto w-full max-w-xl space-y-4 px-2 text-center sm:max-w-2xl">
+			<div className="mx-auto w-full max-w-xl space-y-6 px-2 text-center sm:max-w-2xl sm:space-y-8">
 				{/* Line 1: SET X/Y (reserve space even without sets to prevent layout shift) */}
-				<div className="text-2xl font-semibold text-muted-foreground sm:text-3xl">
+				<div className="flex min-h-12 items-center justify-center text-2xl font-semibold text-muted-foreground sm:min-h-16 sm:text-3xl">
 					{totalRounds > 1 ? (
 						<>
 							{SET_LINE_LABEL} {currentRound}/{totalRounds}
@@ -150,7 +150,7 @@ export function TimerDisplay({
 					)}
 				</div>
 
-				<div>
+				<div className="space-y-4 sm:space-y-6">
 					{/* Line 2: TIMER - with extra spacing */}
 					<div
 						className={cn(
@@ -182,7 +182,7 @@ export function TimerDisplay({
 				{/* Line 4: EXERCISE NAME - with extra spacing */}
 				<div
 					className={cn(
-						"mx-auto w-full break-words pt-4 text-2xl font-semibold uppercase leading-tight line-clamp-2 sm:pt-6 sm:text-3xl lg:text-4xl",
+						"mx-auto min-h-16 w-full break-words text-2xl font-semibold uppercase leading-tight line-clamp-2 sm:min-h-20 sm:text-3xl lg:min-h-24 lg:text-4xl",
 						getExerciseTextColor(),
 					)}
 					style={
@@ -200,7 +200,7 @@ export function TimerDisplay({
 				</div>
 
 				{/* Next Up section directly under exercise name */}
-				<div className="pt-8 sm:pt-10">
+				<div className="pt-6 sm:pt-8">
 					{nextInterval ? (
 						<NextUp nextInterval={nextInterval} />
 					) : (
@@ -224,7 +224,7 @@ function NextUp({
 }) {
 	const customColor = nextInterval.color;
 	const getIcon = () => {
-		const iconSize = 24;
+		const iconSize = 20;
 		switch (nextInterval.type) {
 			case "workout":
 				return (
@@ -273,7 +273,7 @@ function NextUp({
 	return (
 		<div
 			className={cn(
-				"mx-auto mt-4 w-full max-w-md rounded-2xl border p-4 shadow-lg backdrop-blur-md transition-all duration-300 sm:max-w-lg lg:max-w-xl",
+				"mx-auto w-80 rounded-2xl border p-4 shadow-lg backdrop-blur-md transition-all duration-300 sm:w-96",
 				getBackground(),
 			)}
 			style={
@@ -322,14 +322,10 @@ function NextUp({
 }
 
 function FinalNextUpPlaceholder() {
-	const iconSize = 24;
+	const iconSize = 20;
 
 	return (
-		<div
-			className={cn(
-				"mx-auto mt-4 w-full max-w-md rounded-2xl border bg-secondary p-4 shadow-lg backdrop-blur-md transition-all duration-300 sm:max-w-lg lg:max-w-xl",
-			)}
-		>
+		<div className="mx-auto w-80 rounded-2xl border bg-secondary p-4 shadow-lg backdrop-blur-md transition-all duration-300 sm:w-96">
 			<div className="grid grid-cols-2 items-center gap-4">
 				{/* Left column: icon + label */}
 				<div className="flex min-w-0 items-center gap-3">
@@ -340,7 +336,7 @@ function FinalNextUpPlaceholder() {
 						<span className="text-xs font-medium uppercase tracking-widest text-muted-foreground">
 							{NEXT_UP_LABEL}
 						</span>
-						<span className="text-xs text-muted-foreground text-left">
+						<span className="text-left text-sm text-muted-foreground">
 							{FINAL_NEXT_UP_SUBTITLE}
 						</span>
 					</div>
@@ -348,7 +344,7 @@ function FinalNextUpPlaceholder() {
 
 				{/* Right column: title */}
 				<div className="min-w-0 text-right">
-					<span className="block w-full min-w-0 truncate text-lg font-semibold text-foreground">
+					<span className="block w-full min-w-0 truncate text-sm font-semibold text-foreground">
 						{FINAL_NEXT_UP_TITLE}
 					</span>
 				</div>

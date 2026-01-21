@@ -336,25 +336,25 @@ export function RunningTimerView({
 				</div>
 			</div>
 
-			{/* Main timer display - perfectly centered */}
-			<div className="flex flex-1 items-center justify-center">
-				<div className="-translate-y-4 sm:-translate-y-6">
-					<TimerDisplay
-						timeLeft={timeLeft}
-						state={state}
-						currentIntervalName={currentIntervalName}
-						currentRound={currentSet}
-						totalRounds={totalSets}
-						progress={progress}
-						intervalType={intervalType}
-						intervalColor={intervalColor}
-						showStepCounter={showStepCounter}
-						currentStep={currentStep}
-						totalSteps={totalSteps}
-						nextInterval={nextInterval}
-					/>
-				</div>
+		{/* Main timer display - perfectly centered */}
+		<div className="flex flex-1 items-center justify-center">
+			<div className="-translate-y-8 sm:-translate-y-12">
+				<TimerDisplay
+					timeLeft={timeLeft}
+					state={state}
+					currentIntervalName={currentIntervalName}
+					currentRound={currentSet}
+					totalRounds={totalSets}
+					progress={progress}
+					intervalType={intervalType}
+					intervalColor={intervalColor}
+					showStepCounter={showStepCounter}
+					currentStep={currentStep}
+					totalSteps={totalSteps}
+					nextInterval={nextInterval}
+				/>
 			</div>
+		</div>
 
 			{/* Play/Pause button in bottom right corner */}
 			<div className="absolute bottom-6 right-6 md:bottom-8 md:left-1/2 md:right-auto md:-translate-x-1/2">
