@@ -1,6 +1,6 @@
+import { ROUTES } from "@/lib/constants/routes";
 import { SignUp } from "@clerk/nextjs";
 import { auth } from "@clerk/nextjs/server";
-import { ROUTES } from "@/lib/constants/routes";
 import { redirect } from "next/navigation";
 
 type SearchParams = Record<string, string | string[] | undefined>;
@@ -16,16 +16,18 @@ function getSingleSearchParam(
 export default async function SignUpPage({
 	searchParams,
 }: {
-	searchParams?: SearchParams;
+	searchParams?: Promise<SearchParams>;
 }) {
 	const { userId } = await auth();
 	if (!!userId) {
 		redirect(ROUTES.HOME);
 	}
 
+	const resolvedSearchParams = await searchParams;
+
 	const redirectUrl =
-		getSingleSearchParam(searchParams, "redirect_url") ??
-		getSingleSearchParam(searchParams, "redirectUrl");
+		getSingleSearchParam(resolvedSearchParams, "redirect_url") ??
+		getSingleSearchParam(resolvedSearchParams, "redirectUrl");
 	const hasInvalidRedirectUrl =
 		redirectUrl === "undefined" || redirectUrl === "null" || redirectUrl === "";
 

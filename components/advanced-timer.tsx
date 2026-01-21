@@ -22,6 +22,7 @@ import {
 import { StatCard } from "@/components/ui/stat-card";
 import { useTimerState } from "@/hooks/use-timer-state";
 import { useSaveTimer, useTimers, useUpdateTimer } from "@/hooks/use-timers";
+import { ADVANCED_TIMER_DEFAULT_COLORS } from "@/lib/constants/timers";
 import { playSound, SOUND_OPTIONS, speakText } from "@/lib/sound-utils";
 import { formatTime, getProgress, timerToasts } from "@/lib/timer-utils";
 import {
@@ -123,13 +124,7 @@ export function AdvancedTimer({
 				collapsed: false,
 			},
 		],
-		colors: {
-			prepare: "#7c3aed", // violet-600
-			work: "#8b5cf6", // violet-500
-			rest: "#a78bfa", // violet-400
-			loop: "#c4b5fd", // violet-300
-			nestedLoop: "#ddd6fe", // violet-200
-		},
+		colors: ADVANCED_TIMER_DEFAULT_COLORS,
 		defaultAlarm: "beep-1x",
 		speakNames: true,
 	});
@@ -1400,13 +1395,7 @@ export function AdvancedTimer({
 	const resetColors = useCallback(() => {
 		setConfig((prev) => ({
 			...prev,
-			colors: {
-				prepare: "#7c3aed", // violet-600
-				work: "#8b5cf6", // violet-500
-				rest: "#a78bfa", // violet-400
-				loop: "#c4b5fd", // violet-300
-				nestedLoop: "#ddd6fe", // violet-200
-			},
+			colors: ADVANCED_TIMER_DEFAULT_COLORS,
 		}));
 	}, []);
 

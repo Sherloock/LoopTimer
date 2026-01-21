@@ -16,7 +16,8 @@ import {
 	Volume2,
 	VolumeX,
 } from "lucide-react";
-import { useCallback, useEffect, useState } from "react";
+import type { PointerEvent as ReactPointerEvent } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 interface RunningTimerViewProps {
 	// Timer state
@@ -83,7 +84,7 @@ export function RunningTimerView({
 }: RunningTimerViewProps) {
 	const [isMuted, setIsMuted] = useState(false);
 	const [isFullscreen, setIsFullscreen] = useState(false);
-	const [escHoldStartTime, setEscHoldStartTime] = useState<number | null>(null);
+	const escHoldStartTimeRef = useRef<number | null>(null);
 
 	// Keep the screen awake while the timer is running (mobile support)
 	useWakeLock(state === "running");
@@ -185,8 +186,9 @@ export function RunningTimerView({
 					toggleFullscreen();
 					break;
 				case "Escape":
-					if (!escHoldStartTime) {
-						setEscHoldStartTime(Date.now());
+					// Prevent auto-repeat from starting multiple hold timers
+					if (!escHoldStartTimeRef.current) {
+						escHoldStartTimeRef.current = Date.now();
 						onHoldStart();
 					}
 					break;
@@ -195,7 +197,7 @@ export function RunningTimerView({
 
 		const handleKeyUp = (e: KeyboardEvent) => {
 			if (e.code === "Escape") {
-				setEscHoldStartTime(null);
+				escHoldStartTimeRef.current = null;
 				onHoldEnd();
 			}
 		};
@@ -217,8 +219,26 @@ export function RunningTimerView({
 		toggleFullscreen,
 		onHoldStart,
 		onHoldEnd,
-		escHoldStartTime,
 	]);
+
+	const handleHoldPointerDown = useCallback(
+		(e: ReactPointerEvent<HTMLButtonElement>) => {
+			// Only respond to primary button / primary touch contact
+			if (e.button !== 0) return;
+			e.preventDefault();
+			e.currentTarget.setPointerCapture?.(e.pointerId);
+			onHoldStart();
+		},
+		[onHoldStart],
+	);
+
+	const handleHoldPointerEnd = useCallback(
+		(e?: ReactPointerEvent<HTMLButtonElement>) => {
+			e?.preventDefault();
+			onHoldEnd();
+		},
+		[onHoldEnd],
+	);
 
 	return (
 		<>
@@ -259,11 +279,12 @@ export function RunningTimerView({
 
 					<div className="relative">
 						<Button
-							onMouseDown={onHoldStart}
-							onMouseUp={onHoldEnd}
-							onMouseLeave={onHoldEnd}
-							onTouchStart={onHoldStart}
-							onTouchEnd={onHoldEnd}
+							onPointerDown={handleHoldPointerDown}
+							onPointerUp={handleHoldPointerEnd}
+							onPointerLeave={handleHoldPointerEnd}
+							onPointerCancel={handleHoldPointerEnd}
+							onLostPointerCapture={handleHoldPointerEnd}
+							onContextMenu={(e) => e.preventDefault()}
 							variant="ghost"
 							className={`relative overflow-hidden rounded-lg border-2 px-6 py-3 text-sm font-medium transition-all duration-200 hover:bg-muted/80 ${
 								holdProgress > 0
