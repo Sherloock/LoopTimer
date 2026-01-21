@@ -4,7 +4,7 @@ import { AdvancedTimer } from "@/components/advanced-timer";
 import { Header } from "@/components/header";
 import { useTimers } from "@/hooks/use-timers";
 import { useNavigation } from "@/lib/navigation";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import { Suspense, useMemo, useState } from "react";
 
 export default function PlayTimerPage() {
@@ -42,9 +42,8 @@ function PlayTimerContent({
 	const timerId = searchParams.get("id");
 	const autoStart = searchParams.get("autoStart") === "true";
 	const { data: timers } = useTimers();
-	const router = useRouter();
-	const { goToMenu } = useNavigation();
-	const [showCompletion, setShowCompletion] = useState(false);
+	const { goToAdvancedTimer } = useNavigation();
+	const [, setShowCompletion] = useState(false);
 	// Initialize as minimalistic since we have autoStart
 	const [isMinimalisticView, setIsMinimalisticView] = useState(true);
 
@@ -54,10 +53,10 @@ function PlayTimerContent({
 	}, [timerId, timers]);
 
 	const handleExit = () => {
-		goToMenu();
+		goToAdvancedTimer();
 	};
 
-	const handleComplete = (timerName: string) => {
+	const handleComplete = (_timerName: string) => {
 		setShowCompletion(true);
 	};
 

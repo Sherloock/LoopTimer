@@ -5,8 +5,7 @@ alwaysApply: true
 
 ## Message preamble (always)
 - Start every assistant message with BOTH lines:
-  - `I understnad all the rules`
-  - `I understood the rules for project TIMER`
+  - `I understand all the rules`
 - Exception: if the message is a **commit summary**, omit the `I understood the rules for project TIMER` line.
 
 ## Rule application transparency
