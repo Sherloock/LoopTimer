@@ -28,7 +28,10 @@ import {
 import { StatCard } from "@/components/ui/stat-card";
 import { useTimerState } from "@/hooks/use-timer-state";
 import { useSaveTimer, useTimers, useUpdateTimer } from "@/hooks/use-timers";
-import { ADVANCED_TIMER_DEFAULT_COLORS } from "@/lib/constants/timers";
+import {
+	ADVANCED_TIMER_DEFAULT_COLORS,
+	TIMER_NAME_MAX_LENGTH,
+} from "@/lib/constants/timers";
 import { playSound, SOUND_OPTIONS, speakText } from "@/lib/sound-utils";
 import { formatTime, getProgress, timerToasts } from "@/lib/timer-utils";
 import {
@@ -188,14 +191,15 @@ export function AdvancedTimer({
 	// Update timer name when loadedTimer changes
 	useEffect(() => {
 		if (loadedTimer?.name) {
-			setTimerName(loadedTimer.name);
+			setTimerName(loadedTimer.name.slice(0, TIMER_NAME_MAX_LENGTH));
 		}
 	}, [loadedTimer?.name]);
 
 	// Notify parent component when timer name changes
 	const handleTimerNameChange = (name: string) => {
-		setTimerName(name);
-		onTimerNameChange?.(name);
+		const nextName = name.slice(0, TIMER_NAME_MAX_LENGTH);
+		setTimerName(nextName);
+		onTimerNameChange?.(nextName);
 	};
 
 	// Dialog state
@@ -1061,17 +1065,24 @@ export function AdvancedTimer({
 		return flattenedIntervals[currentItemIndex];
 	}, [flattenedIntervals, currentItemIndex]);
 
+	const currentIntervalColor = useMemo(() => {
+		if (!currentInterval) return undefined;
+		return currentInterval.color || config.colors[currentInterval.type];
+	}, [currentInterval, config.colors]);
+
 	// Compute nextInterval for preview
 	const nextInterval =
 		flattenedIntervals.length > 0 &&
 		currentItemIndex + 1 < flattenedIntervals.length
-			? {
-					name: flattenedIntervals[currentItemIndex + 1].name,
-					type: mapIntervalTypeToTimerType(
-						flattenedIntervals[currentItemIndex + 1].type,
-					),
-					duration: flattenedIntervals[currentItemIndex + 1].duration,
-				}
+			? (() => {
+					const next = flattenedIntervals[currentItemIndex + 1];
+					return {
+						name: next.name,
+						type: mapIntervalTypeToTimerType(next.type),
+						duration: next.duration,
+						color: next.color || config.colors[next.type],
+					};
+				})()
 			: undefined;
 
 	// Calculate current set and total sets for display
@@ -1677,6 +1688,7 @@ export function AdvancedTimer({
 							currentSet={currentLoopSet}
 							totalSets={totalLoopSets}
 							intervalType={getIntervalTypeForDisplay(currentType)}
+							intervalColor={currentIntervalColor}
 							currentIntervalName={getCurrentIntervalName()}
 							progress={getTimerProgress()}
 							overallProgress={overallProgress}
@@ -1767,6 +1779,8 @@ export function AdvancedTimer({
 												value={timerName}
 												onChange={(e) => handleTimerNameChange(e.target.value)}
 												placeholder=" "
+												maxLength={TIMER_NAME_MAX_LENGTH}
+												aria-describedby="timer-name-hint"
 											/>
 											<Label
 												htmlFor="timer-name"
@@ -1775,6 +1789,12 @@ export function AdvancedTimer({
 												Timer name
 											</Label>
 										</div>
+										<p
+											id="timer-name-hint"
+											className="mt-1 px-1 text-right text-xs text-muted-foreground"
+										>
+											{timerName.length}/{TIMER_NAME_MAX_LENGTH}
+										</p>
 									</div>
 									<div className="flex w-full flex-wrap items-center justify-center gap-4 md:w-auto md:justify-center">
 										<StatCard

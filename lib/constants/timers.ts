@@ -13,6 +13,8 @@ export const TIMER_LIST = {
 	},
 } as const;
 
+export const TIMER_NAME_MAX_LENGTH = 100;
+
 export const ADVANCED_TIMER_DEFAULT_COLORS = {
 	prepare: "#7c3aed", // violet-600
 	work: "#8b5cf6", // violet-500
