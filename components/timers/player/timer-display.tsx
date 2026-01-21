@@ -139,7 +139,7 @@ export function TimerDisplay({
 	return (
 		<>
 			{/* Primary layout: Centered vertical design for all screen sizes */}
-			<div className="mx-auto w-full max-w-xl space-y-6 px-2 text-center sm:max-w-2xl sm:space-y-8">
+			<div className="mx-auto w-full max-w-xl space-y-6 px-4 text-center sm:max-w-2xl sm:space-y-8 sm:px-2">
 				{/* Line 1: SET X/Y (reserve space even without sets to prevent layout shift) */}
 				<div className="flex min-h-12 items-center justify-center text-2xl font-semibold text-muted-foreground sm:min-h-16 sm:text-3xl">
 					{totalRounds > 1 ? (
@@ -277,7 +277,7 @@ function NextUp({
 	return (
 		<div
 			className={cn(
-				"mx-auto w-80 rounded-2xl border p-4 shadow-lg backdrop-blur-md transition-all duration-300 sm:w-96",
+				"mx-auto w-full max-w-80 rounded-2xl border p-4 shadow-lg backdrop-blur-md transition-all duration-300 sm:w-96",
 				getBackground(),
 			)}
 			style={
@@ -329,7 +329,7 @@ function FinalNextUpPlaceholder() {
 	const iconSize = 20;
 
 	return (
-		<div className="mx-auto w-80 rounded-2xl border bg-secondary p-4 shadow-lg backdrop-blur-md transition-all duration-300 sm:w-96">
+		<div className="mx-auto w-full max-w-80 rounded-2xl border bg-secondary p-4 shadow-lg backdrop-blur-md transition-all duration-300 sm:w-96">
 			<div className="grid grid-cols-2 items-center gap-4">
 				{/* Left column: icon + label */}
 				<div className="flex min-w-0 items-center gap-3">

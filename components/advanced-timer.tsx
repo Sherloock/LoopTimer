@@ -1011,10 +1011,11 @@ export function AdvancedTimer({
 	const handleHoldStart = useCallback(
 		() =>
 			baseHoldStart(() => {
-				stopTimer();
+				// Exit without resetting timer position
+				// This prevents the timer from resetting to the beginning when exiting
 				onExit?.();
 			}),
-		[baseHoldStart, stopTimer, onExit],
+		[baseHoldStart, onExit],
 	);
 
 	// Memoized calculations
