@@ -50,4 +50,3 @@ describe("computeTotalTime", () => {
 		expect(computeTotalTime(items)).toBe(2 * (5 + 3 * 10));
 	});
 });
-

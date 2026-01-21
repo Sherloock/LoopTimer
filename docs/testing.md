@@ -1,16 +1,19 @@
 # Testing
 
 ## What we test (layers)
+
 - **Unit tests (pure)**: `lib/`, `utils/` functions (no DOM, no network).
 - **Integration tests (server/data)**: Prisma + DB connectivity/CRUD, API routes with mocked auth.
 - **Component tests (DOM)**: React components rendering and user interactions (recommended).
 - **E2E tests (browser)**: full flows in a real browser (recommended).
 
 ## Current test setup
+
 - **Runner**: Jest (`jest.config.js`)
 - **Current coverage**: DB integration tests in `prisma/__tests__/db-connection.test.ts`
 
 ## Commands
+
 - `npm test`: run Jest tests
 - `npm run test:watch`: watch mode
 - `npm run test:coverage`: coverage
@@ -22,12 +25,16 @@
 ## Recommended additions (to keep refactors safe)
 
 ### Unit tests
+
 Target deterministic logic:
+
 - `utils/compute-total-time.ts`
 - `lib/timer-utils.ts` (formatting/progress calculations)
 
 ### Component tests (recommended)
+
 Add React Testing Library + jsdom environment to verify:
+
 - `components/timers/list/timers-list.tsx`:
   - loading skeleton state
   - empty state
@@ -41,6 +48,7 @@ Add React Testing Library + jsdom environment to verify:
   - fullscreen toggle (mock `document.fullscreenElement` / requests)
 
 ### Integration tests
+
 - API routes:
   - `app/api/timers/route.ts`
   - `app/api/timers/[id]/route.ts`
@@ -48,7 +56,9 @@ Add React Testing Library + jsdom environment to verify:
   - ownership checks (must not allow cross-user access)
 
 ### E2E tests (recommended)
+
 Use Playwright to validate user journeys end-to-end:
+
 - open timer list
 - create timer
 - start timer
@@ -56,8 +66,8 @@ Use Playwright to validate user journeys end-to-end:
 - stop
 
 ## Testing conventions
+
 - Don’t swallow errors in tests; assert on the error message and status codes.
 - Prefer constants for query keys and event names:
   - `QUERY_KEYS.*` (`lib/constants/query-keys.ts`)
   - `CUSTOM_EVENTS.*` (`lib/constants/custom-events.ts`)
-

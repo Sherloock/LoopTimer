@@ -20,7 +20,7 @@ const config = {
 			"ts-jest",
 			{
 				tsconfig: {
-							jsx: "react-jsx",
+					jsx: "react-jsx",
 				},
 			},
 		],

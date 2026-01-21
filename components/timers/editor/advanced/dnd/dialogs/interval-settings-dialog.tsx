@@ -8,17 +8,17 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { NumberInput } from "@/components/ui/number-input";
 import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
+	Select,
+	SelectContent,
+	SelectItem,
+	SelectTrigger,
+	SelectValue,
 } from "@/components/ui/select";
 import { SOUND_OPTIONS, playSound } from "@/lib/sound-utils";
 import {
-    ColorSettings,
-    IntervalStep,
-    getDefaultNameForType,
+	ColorSettings,
+	IntervalStep,
+	getDefaultNameForType,
 } from "@/types/advanced-timer";
 import { ChevronDown, ChevronUp } from "lucide-react";
 
