@@ -383,6 +383,180 @@ const EXAMPLES = `
   "defaultAlarm": "beep-3x"
 }
 \`\`\`
+
+### Example 4: 60-minute full-body strength workout (Duration calculation demonstration)
+\`\`\`json
+{
+  "items": [
+    {
+      "id": "1",
+      "name": "Warm-up",
+      "type": "prepare",
+      "duration": 600
+    },
+    {
+      "id": "2",
+      "items": [
+        {
+          "id": "3",
+          "name": "Push-ups",
+          "type": "work",
+          "duration": 45
+        },
+        {
+          "id": "4",
+          "name": "REST",
+          "type": "rest",
+          "duration": 30
+        }
+      ],
+      "loops": 4
+    },
+    {
+      "id": "5",
+      "items": [
+        {
+          "id": "6",
+          "name": "Squats",
+          "type": "work",
+          "duration": 45
+        },
+        {
+          "id": "7",
+          "name": "REST",
+          "type": "rest",
+          "duration": 30
+        }
+      ],
+      "loops": 4
+    },
+    {
+      "id": "8",
+      "items": [
+        {
+          "id": "9",
+          "name": "Plank",
+          "type": "work",
+          "duration": 60
+        },
+        {
+          "id": "10",
+          "name": "REST",
+          "type": "rest",
+          "duration": 30
+        }
+      ],
+      "loops": 3
+    },
+    {
+      "id": "11",
+      "items": [
+        {
+          "id": "12",
+          "name": "Lunges",
+          "type": "work",
+          "duration": 45
+        },
+        {
+          "id": "13",
+          "name": "REST",
+          "type": "rest",
+          "duration": 30
+        }
+      ],
+      "loops": 4
+    },
+    {
+      "id": "14",
+      "items": [
+        {
+          "id": "15",
+          "name": "Mountain climbers",
+          "type": "work",
+          "duration": 40
+        },
+        {
+          "id": "16",
+          "name": "REST",
+          "type": "rest",
+          "duration": 30
+        }
+      ],
+      "loops": 4
+    },
+    {
+      "id": "17",
+      "items": [
+        {
+          "id": "18",
+          "name": "Burpees",
+          "type": "work",
+          "duration": 40
+        },
+        {
+          "id": "19",
+          "name": "REST",
+          "type": "rest",
+          "duration": 30
+        }
+      ],
+      "loops": 4
+    },
+    {
+      "id": "20",
+      "items": [
+        {
+          "id": "21",
+          "name": "Pull-ups",
+          "type": "work",
+          "duration": 30
+        },
+        {
+          "id": "22",
+          "name": "REST",
+          "type": "rest",
+          "duration": 30
+        }
+      ],
+      "loops": 5
+    },
+    {
+      "id": "23",
+      "items": [
+        {
+          "id": "24",
+          "name": "Russian twists",
+          "type": "work",
+          "duration": 45
+        },
+        {
+          "id": "25",
+          "name": "REST",
+          "type": "rest",
+          "duration": 30
+        }
+      ],
+      "loops": 3
+    },
+    {
+      "id": "26",
+      "name": "Cool-down stretch",
+      "type": "rest",
+      "duration": 300
+    }
+  ],
+  "colors": {
+    "prepare": "#f97316",
+    "work": "#22c55e",
+    "rest": "#3b82f6",
+    "loop": "#8b5cf6",
+    "nestedLoop": "#f59e0b"
+  },
+  "defaultAlarm": "beep-2x",
+  "speakNames": true
+}
+\`\`\`
+Duration calculation: 600 + 4×(45+30) + 4×(45+30) + 3×(60+30) + 4×(45+30) + 4×(40+30) + 4×(40+30) + 5×(30+30) + 3×(45+30) + 300 = 600 + 300 + 300 + 270 + 300 + 280 + 280 + 300 + 225 + 300 = 3155 seconds ≈ 52.6 minutes. This needs adjustment for exactly 60 minutes!
 `;
 
 /**
@@ -426,33 +600,133 @@ ${currentStateSection}
 
 "${userPrompt}"
 
+## CRITICAL: Exercise Selection Guidelines
+
+You MUST choose exercises that match the workout type requested. Here are the exercise categories:
+
+### Strength Training Exercises
+- **Upper body**: Push-ups, pull-ups, dips, bench press, shoulder press, rows, bicep curls, tricep extensions
+- **Lower body**: Squats, lunges, deadlifts, leg press, calf raises, leg curls, leg extensions
+- **Core**: Planks, crunches, Russian twists, mountain climbers, leg raises, bicycle crunches
+
+### Cardio/HIIT Exercises
+- **High intensity**: Burpees, jumping jacks, high knees, mountain climbers, jump squats, box jumps
+- **Medium intensity**: Jogging in place, skipping, step-ups, jumping rope, shadow boxing
+
+### Stretch/Flexibility Exercises
+- **Hip & Lower body**: Hip flexor stretch, pigeon pose, butterfly stretch, seated forward fold, 90-90 stretch, supine twist, frog stretch
+  - **Unilateral stretches (need L/R)**: Hip flexor, pigeon pose, 90-90 stretch, side lunges, single leg forward fold
+  - **Bilateral stretches (both sides)**: Butterfly, forward fold, child's pose, frog stretch
+- **Upper body**: Lat stretch, shoulder stretch, tricep stretch, chest stretch, neck rolls
+  - **Unilateral (need L/R)**: Side neck stretch, single arm tricep stretch, lat side bend
+  - **Bilateral**: Chest opener, shoulder rolls, overhead reach
+- **Full body**: Cat-cow, child's pose, downward dog, cobra pose, spinal twist
+  - Most full-body stretches are bilateral or naturally alternate sides
+
+### Yoga/Mindfulness
+- Sun salutations, warrior poses, tree pose, triangle pose, seated meditation, breathing exercises
+
+**IMPORTANT**: If the user asks for "strength workout", do NOT use stretches. If they ask for "stretch routine", do NOT use burpees or squats. Match exercises to the workout type!
+
+## CRITICAL: Duration Calculation Requirements
+
+**YOU MUST ENSURE THE TOTAL WORKOUT DURATION MATCHES THE USER'S REQUEST.**
+
+### Step-by-step calculation process:
+
+1. **Identify target duration**: If user says "1 hour workout", target is 3600 seconds. If "20 minutes", target is 1200 seconds.
+
+2. **Calculate total time**:
+   - For each IntervalStep: duration
+   - For each LoopGroup: (sum of all item durations) × loops
+   - Nested loops multiply: outer_loops × inner_loops × item_duration
+   - Add warm-up and cooldown time
+
+3. **Verify your math**: The sum of ALL intervals must equal the requested duration (±5% tolerance is acceptable)
+
+### Example Calculation:
+User asks: "30 minute workout with 5 exercises"
+- Warm-up: 300 seconds (5 minutes)
+- 5 exercises × 3 loops × (40 work + 20 rest) = 5 × 3 × 60 = 900 seconds (15 minutes)
+- Cooldown: 300 seconds (5 minutes)
+- **Total: 1500 seconds ≠ 1800 seconds** ❌ THIS IS WRONG!
+
+Corrected:
+- Warm-up: 300 seconds (5 minutes)
+- 5 exercises × 4 loops × (45 work + 30 rest) = 5 × 4 × 75 = 1500 seconds (25 minutes)
+- **Total: 1800 seconds = 30 minutes** ✅ CORRECT!
+
+**COMMON MISTAKE**: Creating only 30 minutes of exercises when user asked for 60 minutes. Always verify your total duration!
+
 ## Instructions
 
 1. **Analyze the user's request carefully** - Understand the language, intent, duration, exercise count, and intensity level
-2. **Generate multiple exercises when requested** - If the user asks for "6 exercises" or "multiple stretches", create multiple loop groups, each representing a different exercise
-3. **Use loops appropriately** - For stretches and repeated exercises, create LoopGroups with work/rest pairs. Each exercise should typically be its own LoopGroup with appropriate loop count (3-6 loops for stretches, adjust based on duration)
-4. **Structure stretches properly**:
-   - Start with a warm-up interval if appropriate (type: "prepare" or "work")
-   - Create separate LoopGroups for each stretch exercise
-   - Each LoopGroup should contain: work interval (the stretch) + rest interval
+
+2. **Select appropriate exercises** - Based on workout type (strength/cardio/stretch/yoga), choose ONLY exercises from the matching category above. Use realistic exercise names that match the activity.
+
+3. **Calculate target duration FIRST** - Before generating, determine total seconds needed. Plan how to distribute time across exercises to match this target.
+
+4. **Generate multiple exercises when requested** - If the user asks for "6 exercises" or "multiple stretches", create multiple loop groups, each representing a different exercise
+
+5. **Use loops appropriately** - For stretches and repeated exercises, create LoopGroups with work/rest pairs. Each exercise should typically be its own LoopGroup with appropriate loop count (3-6 loops for stretches, adjust based on duration)
+
+6. **Structure workouts properly**:
+   - Start with a warm-up interval if appropriate (type: "prepare" or "work", 5-10 minutes for long workouts)
+   - Create separate LoopGroups for each different exercise
+   - Each LoopGroup should contain: work interval + rest interval
    - Use skipOnLastLoop: true for final rest periods when appropriate
    - Use skipOnLastLoop: false for rest periods between repetitions
-5. **Calculate total duration** - If user specifies total duration (e.g., "20 minutes"), distribute it across all exercises and loops
-6. **Exercise naming** - Use descriptive names for exercises. For stretches, use common names (e.g., "hipflexor", "pigeon pose", "lat stretch", "90-90 stretch")
-7. **Use default colors** - Always include the default ColorSettings object. Do NOT add color fields to individual IntervalStep items unless you need to override the default. The system will automatically apply the correct color from ColorSettings based on the interval type.
-8. **Ensure all IDs are unique strings** - Use sequential numbers: "1", "2", "3", etc.
-9. **Use "prepare" type** for warm-up/preparation phases
-10. **Use "work" type** for exercise/activity phases (including stretches)
-11. **Use "rest" type** for rest/recovery phases between exercises
-12. **Return ONLY the valid JSON object** - No markdown code blocks, no explanations, no additional text
+   - Add cooldown at the end for workouts over 30 minutes
 
-## Key Patterns for Stretch Routines
+7. **Verify total duration** - After structuring, mentally calculate total time. If it doesn't match the user's request, adjust loop counts or durations to reach the target.
 
+8. **Exercise naming** - Use specific, realistic names that match the workout type:
+   - ✅ Good: "Push-ups", "Squats", "Hip flexor stretch - SWITCH SIDES", "Jumping jacks"
+   - ✅ For unilateral stretches: "Pigeon pose - L/R alternate", "Hip flexor - SWITCH SIDES", "Single leg stretch - Switch"
+   - ❌ Bad: "Exercise 1", "Movement", "Activity"
+   - **Critical**: For stretches that work one side at a time, always indicate side switching in the name and use 6 loops (3 per side)
+
+9. **Use default colors** - Always include the default ColorSettings object. Do NOT add color fields to individual IntervalStep items unless you need to override the default.
+
+10. **Ensure all IDs are unique strings** - Use sequential numbers: "1", "2", "3", etc.
+
+11. **Use "prepare" type** for warm-up/preparation phases
+
+12. **Use "work" type** for exercise/activity phases (including stretches)
+
+13. **Use "rest" type** for rest/recovery phases between exercises
+
+14. **Return ONLY the valid JSON object** - No markdown code blocks, no explanations, no additional text
+
+## Key Patterns
+
+### For Stretch Routines:
 - **Multiple exercises**: Create multiple LoopGroups at the root level, each with a descriptive name
 - **Work/Rest pairs**: Each LoopGroup typically contains [work, rest] sequence
 - **Loop counts**: For stretches, use 3-6 loops per exercise depending on total duration
+  - **IMPORTANT**: For unilateral stretches (one side at a time), use 6 loops total (3 per side) and indicate side switching in the exercise name
+  - Example: "Hip flexor stretch - SWITCH SIDES" or "Pigeon pose - L/R alternate"
+  - The 6 loops ensure equal work for both left and right sides
 - **Rest durations**: 10-30 seconds for stretches, adjust based on intensity
 - **Work durations**: 20-60 seconds for stretches, adjust based on exercise type
+- **Bilateral vs Unilateral**:
+  - Bilateral (both sides): "Butterfly stretch", "Forward fold" - use 3-4 loops
+  - Unilateral (single side): "Hip flexor - SWITCH SIDES", "Pigeon L/R" - use 6 loops
+
+### For Strength/HIIT Workouts:
+- **Compound movements first**: Start with exercises like squats, push-ups, pull-ups
+- **Work/Rest ratio**: Typically 30-60 seconds work, 15-30 seconds rest
+- **Loop counts**: 3-5 sets per exercise for strength, 4-8 for HIIT
+- **Exercise progression**: Upper body → Lower body → Core, or alternate muscle groups
+
+### Duration Matching Strategy:
+1. **Subtract warm-up/cool-down**: Reserve 10-20% of total time for warm-up and cool-down
+2. **Distribute remaining time**: Divide equally among exercises
+3. **Calculate per exercise**: If 6 exercises share 40 minutes = ~6.67 minutes each
+4. **Convert to loops**: 6.67 min = 400 sec; if work=45s + rest=30s = 75s per loop, then 400÷75 ≈ 5 loops
+5. **Verify total**: Always recalculate and adjust if needed to match the exact requested duration
+
+**REMINDER**: If user asks for 60 minutes, generate 60 minutes of content. Not 30, not 45, but 60!
 
 Generate the workout configuration now:`;
 }
@@ -503,15 +777,18 @@ ${EXAMPLES}
 ## Critical Requirements
 
 1. Fix ALL validation errors listed above
-2. Ensure all required fields are present
-3. Ensure all data types are correct (numbers as numbers, not strings)
-4. Ensure all IDs are unique strings
-5. Ensure colors are valid hex format
-6. Ensure durations are between ${MIN_DURATION_SECONDS} and ${MAX_DURATION_SECONDS} seconds
-7. Ensure loop counts are between 1 and ${MAX_LOOPS_PER_GROUP}
-8. If the user requested multiple exercises (e.g., "6 exercises"), create multiple LoopGroups
-9. For stretches, structure each exercise as a LoopGroup with work/rest pairs
-10. Return ONLY valid JSON, no markdown code blocks, no explanations, no additional text
+2. **Choose appropriate exercises**: Match exercises to the workout type (strength/cardio/stretch/yoga) - use realistic exercise names
+3. **Calculate total duration**: Ensure the workout duration matches the user's request. If they asked for "1 hour", generate 60 minutes of content, NOT 30 minutes!
+4. Ensure all required fields are present
+5. Ensure all data types are correct (numbers as numbers, not strings)
+6. Ensure all IDs are unique strings
+7. Ensure colors are valid hex format
+8. Ensure durations are between ${MIN_DURATION_SECONDS} and ${MAX_DURATION_SECONDS} seconds
+9. Ensure loop counts are between 1 and ${MAX_LOOPS_PER_GROUP}
+10. If the user requested multiple exercises (e.g., "6 exercises"), create multiple LoopGroups
+11. For stretches, structure each exercise as a LoopGroup with work/rest pairs
+12. **Verify math**: Sum all intervals (accounting for loops) to confirm total duration matches request
+13. Return ONLY valid JSON, no markdown code blocks, no explanations, no additional text
 
 Generate the corrected workout configuration now:`;
 }
