@@ -249,31 +249,31 @@ export function TimersList() {
 									className="absolute inset-0 bg-gradient-to-r from-primary/10 via-transparent to-primary/5 opacity-0 transition-opacity group-hover:opacity-100"
 								/>
 
-								<div className="relative flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+								<div className="relative flex flex-row items-start justify-between gap-3">
 									<div className="flex min-w-0 items-start gap-3">
-										<div className="neon-glow mt-0.5 inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
+										<div className="neon-glow mt-0.5  h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary inline-flex">
 											<Timer size={16} />
 										</div>
 
 										<div className="min-w-0 flex-1">
-											<div className="flex items-start justify-between gap-3">
+											<div className="flex flex-col gap-1 sm:flex-row sm:items-start sm:justify-between sm:gap-3">
 												<p className="neon-text truncate font-semibold leading-tight">
 													{timer.name}
 												</p>
 												<Badge
 													variant="secondary"
-													className="shrink-0 rounded-lg border-primary/20 bg-primary/10 font-mono text-base text-primary"
+													className="shrink-0 grow-0 self-start rounded-lg border-primary/20 bg-primary/10 font-mono md:text-base text-xs text-primary w-13 md:w-16 text-center"
 												>
 													{formatTime(totalSeconds)}
 												</Badge>
 											</div>
 
-											<div className="mt-1 space-y-1">
+											<div className="mt-1 space-y-1 hidden md:block">
 												<p className="text-xs text-muted-foreground ">
 													{metaParts.join(TIMER_CARD_META.separator)}
 												</p>
 												{breakdownParts.length > 0 && (
-													<p className="text-xs text-muted-foreground hidden md:block">
+													<p className="text-xs text-muted-foreground ">
 														{breakdownParts.join(TIMER_CARD_META.separator)}
 													</p>
 												)}
@@ -281,7 +281,7 @@ export function TimersList() {
 										</div>
 									</div>
 
-									<div className="flex items-center justify-end gap-2 sm:shrink-0">
+									<div className="flex items-end justify-end gap-2  pt-0.5 self-center">
 										{/* Menu */}
 										<DropdownMenu>
 											<DropdownMenuTrigger asChild>
@@ -330,8 +330,8 @@ export function TimersList() {
 										aria-label="Start timer"
 									>
 										<Play size={16} />
-										{/* <span className="hidden md:inline">Start</span> */}
-										<span className="inline">Start</span>
+										<span className="hidden md:inline">Start</span>
+										{/* <span className="inline">Start</span> */}
 									</Button>
 									</div>
 								</div>
