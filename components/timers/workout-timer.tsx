@@ -1,8 +1,9 @@
 "use client";
 
-import { AdvancedTimer } from "@/components/advanced-timer";
-import { SavedTimers } from "@/components/saved-timers";
+import { AdvancedTimer } from "@/components/timers/editor/advanced/advanced-timer";
+import { SavedTimers } from "@/components/timers/saved/saved-timers";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { CUSTOM_EVENTS } from "@/lib/constants/custom-events";
 import { Bookmark, Settings } from "lucide-react";
 import { useEffect, useState } from "react";
 
@@ -19,13 +20,13 @@ export function WorkoutTimer() {
 		};
 
 		window.addEventListener(
-			"timerStateChange",
+			CUSTOM_EVENTS.TIMER_STATE_CHANGE,
 			handleTimerStateChange as EventListener,
 		);
 
 		return () => {
 			window.removeEventListener(
-				"timerStateChange",
+				CUSTOM_EVENTS.TIMER_STATE_CHANGE,
 				handleTimerStateChange as EventListener,
 			);
 		};

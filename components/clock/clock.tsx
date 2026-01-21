@@ -13,7 +13,7 @@ const DIGITS = {
 	"7": [1, 2, 3],
 	"8": [1, 2, 3, 4, 5, 6, 7],
 	"9": [1, 2, 3, 4, 6, 7],
-};
+} as const;
 
 function SevenSegmentDigit({ value }: { value: string }) {
 	const segments = DIGITS[value as keyof typeof DIGITS] || [];
@@ -68,11 +68,11 @@ export function Clock() {
 						<SevenSegmentDigit value={seconds[1]} />
 					</div>
 					{/* <div className="mt-8 font-mono text-muted-foreground/60">
-						{time.toLocaleDateString("en-GB", {
-							weekday: "long",
-							day: "numeric",
-							month: "long",
-							year: "numeric",
+						{time.toLocaleDateString(\"en-GB\", {
+							weekday: \"long\",
+							day: \"numeric\",
+							month: \"long\",
+							year: \"numeric\",
 						})}
 					</div> */}
 				</div>

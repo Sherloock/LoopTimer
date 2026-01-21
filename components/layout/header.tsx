@@ -1,6 +1,6 @@
 "use client";
 
-import { ClientOnly } from "@/components/client-only";
+import { ClientOnly } from "@/components/providers/client-only";
 import { Button } from "@/components/ui/button";
 import { SignedIn, SignedOut, UserButton } from "@clerk/nextjs";
 import { Moon, Sun, Timer } from "lucide-react";

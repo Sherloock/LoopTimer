@@ -1,4 +1,5 @@
 import { TimerInput } from "@/schema/timerSchema";
+import { QUERY_KEYS } from "@/lib/constants/query-keys";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 
@@ -36,7 +37,7 @@ async function postTimer(data: TimerInput) {
 
 export function useTimers() {
 	return useQuery({
-		queryKey: ["timers"],
+		queryKey: QUERY_KEYS.TIMERS,
 		queryFn: fetchTimers,
 		retry: (failureCount, error) => {
 			// Don't retry on authentication errors
@@ -54,7 +55,7 @@ export function useSaveTimer() {
 		mutationFn: postTimer,
 		onSuccess: (data) => {
 			toast.success("Timer saved!", { id: "save-timer" });
-			queryClient.invalidateQueries({ queryKey: ["timers"] });
+			queryClient.invalidateQueries({ queryKey: QUERY_KEYS.TIMERS });
 			return data;
 		},
 		onError: (error: Error) => {
@@ -77,7 +78,7 @@ export function useUpdateTimer() {
 		},
 		onSuccess: () => {
 			toast.success("Timer updated!", { id: "save-timer" });
-			queryClient.invalidateQueries({ queryKey: ["timers"] });
+			queryClient.invalidateQueries({ queryKey: QUERY_KEYS.TIMERS });
 		},
 		onError: (error: Error) => {
 			toast.error(error.message, { id: "save-timer" });
@@ -94,7 +95,7 @@ export function useDeleteTimer() {
 		},
 		onSuccess: () => {
 			toast.success("Timer deleted", { id: "save-timer" });
-			queryClient.invalidateQueries({ queryKey: ["timers"] });
+			queryClient.invalidateQueries({ queryKey: QUERY_KEYS.TIMERS });
 		},
 		onError: (error: Error) => toast.error(error.message),
 	});

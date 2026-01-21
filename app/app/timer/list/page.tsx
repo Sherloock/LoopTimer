@@ -1,6 +1,6 @@
 "use client";
 
-import { TimersList } from "@/components/timers-list";
+import { TimersList } from "@/components/timers/list/timers-list";
 import { Button } from "@/components/ui/button";
 import { useNavigation } from "@/lib/navigation";
 import { ArrowLeft } from "lucide-react";

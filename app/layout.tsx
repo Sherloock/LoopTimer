@@ -1,7 +1,7 @@
-import { ClientOnly } from "@/components/client-only";
-import { HydrationErrorBoundary } from "@/components/hydration-error-boundary";
-import { QueryProvider } from "@/components/query-provider";
-import { ThemeProvider } from "@/components/theme-provider";
+import { HydrationErrorBoundary } from "@/components/debug/hydration-error-boundary";
+import { ClientOnly } from "@/components/providers/client-only";
+import { QueryProvider } from "@/components/providers/query-provider";
+import { ThemeProvider } from "@/components/providers/theme-provider";
 import { Toaster } from "@/components/ui/sonner";
 import { clerkProviderProps } from "@/lib/clerk";
 import { ClerkProvider } from "@clerk/nextjs";

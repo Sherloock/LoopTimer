@@ -1,8 +1,8 @@
 "use client";
 
-import IntervalSettingsDialog from "@/components/advanced/dialogs/interval-settings-dialog";
-import LoopSettingsDialog from "@/components/advanced/dialogs/loop-settings-dialog";
-import { DroppableZone } from "@/components/advanced/droppable-zone";
+import IntervalSettingsDialog from "@/components/timers/editor/advanced/dnd/dialogs/interval-settings-dialog";
+import LoopSettingsDialog from "@/components/timers/editor/advanced/dnd/dialogs/loop-settings-dialog";
+import { DroppableZone } from "@/components/timers/editor/advanced/dnd/droppable-zone";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { NumberInput } from "@/components/ui/number-input";
@@ -179,12 +179,6 @@ export function SortableItem(props: Props) {
 								</Button>
 							</div>
 
-							{/* <Repeat
-								size={16}
-								style={{ color: borderColor }}
-								className="shrink-0"
-							/> */}
-
 							<div className="flex w-full flex-col gap-2">
 								{/* Desktop layout - Sets */}
 								<div className="hidden w-full items-center gap-1 sm:flex">
@@ -196,7 +190,6 @@ export function SortableItem(props: Props) {
 										className="w-[50px] min-w-0 flex-shrink"
 										placeholder="Sets"
 									/>
-									{/* <span className="text-xs text-muted-foreground">sets</span> */}
 								</div>
 
 								{/* Mobile layout - Line 2: Add Interval + Feature buttons */}

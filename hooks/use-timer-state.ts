@@ -1,3 +1,4 @@
+import { CUSTOM_EVENTS } from "@/lib/constants/custom-events";
 import { TimerState, timerToasts } from "@/lib/timer-utils";
 import { useRef, useState } from "react";
 
@@ -29,7 +30,9 @@ export function useTimerState() {
 		timerToasts.start(message);
 		// Dispatch event to parent
 		window.dispatchEvent(
-			new CustomEvent("timerStateChange", { detail: { isRunning: true } }),
+			new CustomEvent(CUSTOM_EVENTS.TIMER_STATE_CHANGE, {
+				detail: { isRunning: true },
+			}),
 		);
 	};
 
@@ -38,7 +41,9 @@ export function useTimerState() {
 		timerToasts.pause();
 		// Keep running state for UI purposes
 		window.dispatchEvent(
-			new CustomEvent("timerStateChange", { detail: { isRunning: true } }),
+			new CustomEvent(CUSTOM_EVENTS.TIMER_STATE_CHANGE, {
+				detail: { isRunning: true },
+			}),
 		);
 	};
 
@@ -48,7 +53,9 @@ export function useTimerState() {
 		timerToasts.reset();
 		// Dispatch event to parent
 		window.dispatchEvent(
-			new CustomEvent("timerStateChange", { detail: { isRunning: false } }),
+			new CustomEvent(CUSTOM_EVENTS.TIMER_STATE_CHANGE, {
+				detail: { isRunning: false },
+			}),
 		);
 	};
 
@@ -58,7 +65,9 @@ export function useTimerState() {
 		timerToasts.stop();
 		// Dispatch event to parent
 		window.dispatchEvent(
-			new CustomEvent("timerStateChange", { detail: { isRunning: false } }),
+			new CustomEvent(CUSTOM_EVENTS.TIMER_STATE_CHANGE, {
+				detail: { isRunning: false },
+			}),
 		);
 	};
 

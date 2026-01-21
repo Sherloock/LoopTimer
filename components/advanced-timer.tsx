@@ -1,11 +1,17 @@
 "use client";
 
-import { Checkbox } from "@/components/advanced/checkbox";
-import { DroppableZone } from "@/components/advanced/droppable-zone";
-import { MinimalisticContainer } from "@/components/minimalistic-container";
-import { RunningTimerView } from "@/components/running-timer-view";
-import { TimerCompletionScreen } from "@/components/timer-completion-screen";
-import { TimerControls } from "@/components/timer-controls";
+import { Checkbox } from "@/components/timers/editor/advanced/dnd/checkbox";
+import {
+	addItemToLoop,
+	findItemById,
+	removeItemById,
+} from "@/components/timers/editor/advanced/advanced-timer-tree";
+import { DroppableZone } from "@/components/timers/editor/advanced/dnd/droppable-zone";
+import { useIdGenerator } from "@/components/timers/editor/advanced/use-id-generator";
+import { MinimalisticContainer } from "@/components/timers/player/minimalistic-container";
+import { RunningTimerView } from "@/components/timers/player/running-timer-view";
+import { TimerCompletionScreen } from "@/components/timers/player/timer-completion-screen";
+import { TimerControls } from "@/components/timers/player/timer-controls";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { ColorPicker } from "@/components/ui/color-picker";
@@ -61,7 +67,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 
 // Externalised components
-import { SortableItem } from "@/components/advanced/sortable-item";
+import { SortableItem } from "@/components/timers/editor/advanced/dnd/sortable-item";
 import {
 	AdvancedConfig,
 	ColorSettings,
@@ -96,15 +102,7 @@ export function AdvancedTimer({
 	onComplete,
 	onMinimalisticViewChange,
 }: AdvancedTimerProps) {
-	const [nextId, setNextId] = useState(6); // Start from 6 since default items now use IDs 1-5
-
-	// Keep a ref in sync with nextId state to guarantee synchronous, unique ID generation
-	const nextIdRef = useRef(nextId);
-
-	// Ensure ref stays updated when state changes externally (e.g., when loading a saved timer)
-	useEffect(() => {
-		nextIdRef.current = nextId;
-	}, [nextId]);
+	const { setNextId, generateId } = useIdGenerator();
 
 	const [config, setConfig] = useState<AdvancedConfig>({
 		items: [
@@ -156,17 +154,7 @@ export function AdvancedTimer({
 			const maxId = ids.length ? Math.max(...ids) : 0;
 			setNextId(maxId + 1);
 		}
-	}, [loadedTimer]);
-
-	// Generate a unique string ID. Using the functional
-	// updater form guarantees each invocation within the same
-	// render gets an up-to-date value, avoiding duplicates.
-	const generateId = useCallback(() => {
-		const id = nextIdRef.current.toString();
-		nextIdRef.current += 1;
-		setNextId(nextIdRef.current); // keep state in sync for debugging & future loads
-		return id;
-	}, []);
+	}, [loadedTimer, setNextId]);
 
 	const [activeId, setActiveId] = useState<string | null>(null);
 	const [currentType, setCurrentType] = useState<TimerType>("prepare");
@@ -345,55 +333,6 @@ export function AdvancedTimer({
 		useSensor(KeyboardSensor, {
 			coordinateGetter: sortableKeyboardCoordinates,
 		}),
-	);
-
-	// Memoized utility functions
-	const findItemById = useCallback(
-		(items: WorkoutItem[], id: string): WorkoutItem | null => {
-			for (const item of items) {
-				if (item.id === id) return item;
-				if (isLoop(item)) {
-					const found = findItemById(item.items, id);
-					if (found) return found;
-				}
-			}
-			return null;
-		},
-		[],
-	);
-
-	const removeItemById = useCallback(
-		(items: WorkoutItem[], id: string): WorkoutItem[] => {
-			return items
-				.filter((item) => item.id !== id)
-				.map((item) => {
-					if (isLoop(item)) {
-						return { ...item, items: removeItemById(item.items, id) };
-					}
-					return item;
-				});
-		},
-		[],
-	);
-
-	const addItemToLoop = useCallback(
-		(
-			items: WorkoutItem[],
-			loopId: string,
-			newItem: WorkoutItem,
-		): WorkoutItem[] => {
-			return items.map((item) => {
-				if (item.id === loopId && isLoop(item)) {
-					// Allow adding any type of item (including loops) inside loops
-					return { ...item, items: [...item.items, newItem] };
-				}
-				if (isLoop(item)) {
-					return { ...item, items: addItemToLoop(item.items, loopId, newItem) };
-				}
-				return item;
-			});
-		},
-		[],
 	);
 
 	// Move to top/bottom functions
@@ -968,7 +907,7 @@ export function AdvancedTimer({
 				});
 			}
 		},
-		[addItemToLoop, config.items, findItemById],
+		[config.items],
 	);
 
 	// Initialize timer - only when state changes to idle
@@ -1221,18 +1160,15 @@ export function AdvancedTimer({
 				items: addItemToLoop(prev.items, loopId, newInterval),
 			}));
 		},
-		[addItemToLoop, generateId],
+		[generateId],
 	);
 
-	const removeItem = useCallback(
-		(id: string) => {
-			setConfig((prev) => ({
-				...prev,
-				items: removeItemById(prev.items, id),
-			}));
-		},
-		[removeItemById],
-	);
+	const removeItem = useCallback((id: string) => {
+		setConfig((prev) => ({
+			...prev,
+			items: removeItemById(prev.items, id),
+		}));
+	}, []);
 
 	const updateItem = useCallback((id: string, field: string, value: any) => {
 		const updateRecursive = (items: WorkoutItem[]): WorkoutItem[] => {

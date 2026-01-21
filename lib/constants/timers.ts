@@ -20,3 +20,5 @@ export const ADVANCED_TIMER_DEFAULT_COLORS = {
 	loop: "#c4b5fd", // violet-300
 	nestedLoop: "#ddd6fe", // violet-200
 } as const;
+
+export const ADVANCED_TIMER_DEFAULT_NEXT_ID = 6;

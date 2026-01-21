@@ -1,5 +1,5 @@
 import { Card, CardContent } from "@/components/ui/card";
-import { ReactNode } from "react";
+import type { ReactNode } from "react";
 
 interface MinimalisticContainerProps {
 	children: ReactNode;

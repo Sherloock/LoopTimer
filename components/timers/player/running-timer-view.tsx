@@ -1,6 +1,6 @@
 "use client";
 
-import { TimerDisplay } from "@/components/timer-display";
+import { TimerDisplay } from "@/components/timers/player/timer-display";
 import { Button } from "@/components/ui/button";
 import { useWakeLock } from "@/hooks/use-wake-lock";
 import { getMute, setMute } from "@/lib/sound-utils";

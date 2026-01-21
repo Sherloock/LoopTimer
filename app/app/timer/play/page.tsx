@@ -1,7 +1,7 @@
 "use client";
 
-import { AdvancedTimer } from "@/components/advanced-timer";
-import { Header } from "@/components/header";
+import { AdvancedTimer } from "@/components/timers/editor/advanced/advanced-timer";
+import { Header } from "@/components/layout/header";
 import { useTimers } from "@/hooks/use-timers";
 import { useNavigation } from "@/lib/navigation";
 import { useSearchParams } from "next/navigation";

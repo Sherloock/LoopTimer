@@ -1,6 +1,6 @@
 "use client";
 
-import { Clock } from "@/components/clock";
+import { Clock } from "@/components/clock/clock";
 import { Button } from "@/components/ui/button";
 import { useNavigation } from "@/lib/navigation";
 import { ArrowLeft, Maximize2, Minimize2 } from "lucide-react";

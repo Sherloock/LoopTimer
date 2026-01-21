@@ -1,6 +1,6 @@
 "use client";
 
-import { EditTimer } from "@/components/edit-timer";
+import { EditTimer } from "@/components/timers/editor/edit-timer";
 import { useTimers } from "@/hooks/use-timers";
 import { useNavigation } from "@/lib/navigation";
 import { useSearchParams } from "next/navigation";

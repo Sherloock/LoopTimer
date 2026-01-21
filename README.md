@@ -142,16 +142,18 @@ Modify CSS variables in `app/globals.css` to customize the color scheme:
 
 ### Timer Durations
 
-Default configurations can be modified in `components/workout-timer.tsx`:
+Default advanced timer configuration lives in `components/advanced-timer.tsx` (public import path: `components/timers/editor/advanced/advanced-timer.tsx`).
 
 ```typescript
-const [config, setConfig] = useState<TimerConfig>({
-	workoutTime: 45, // seconds
-	restTime: 15, // seconds
-	rounds: 8, // number of rounds
-	customTime: 300, // seconds
-});
+// See: components/advanced-timer.tsx
 ```
+
+## 📚 Documentation
+
+- `docs/project-map.md` - what is where
+- `docs/components.md` - component taxonomy and rules
+- `docs/data-flow.md` - UI -> hooks -> API -> actions -> Prisma
+- `docs/testing.md` - test layers and commands
 
 ## 🏗️ Project Structure
 
@@ -162,13 +164,16 @@ workout-timer/
 │   ├── layout.tsx         # Root layout with providers
 │   └── page.tsx           # Home page
 ├── components/            # React components
-│   ├── ui/               # Reusable UI components
-│   ├── header.tsx        # Header with theme toggle
-│   ├── workout-timer.tsx # Main timer component
-│   ├── theme-provider.tsx
-│   └── query-provider.tsx
-├── lib/                  # Utility functions
-│   └── utils.ts          # Class name utilities
+│   ├── ui/               # Design system primitives (shadcn)
+│   ├── providers/        # App-wide providers and client-only helpers
+│   ├── layout/           # Cross-route layout components
+│   ├── debug/            # Hydration/debug helpers
+│   ├── clock/            # Clock feature components
+│   └── timers/           # Timer feature (list/editor/player)
+├── actions/              # Server actions (DB + business logic)
+├── hooks/                # Client hooks (React Query, timer state)
+├── lib/                  # Cross-cutting utilities + constants
+├── prisma/               # Prisma schema, migrations, DB utilities/tests
 └── Configuration files...
 ```
 

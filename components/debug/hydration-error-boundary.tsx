@@ -1,6 +1,6 @@
 "use client";
 
-import { Component, ReactNode } from "react";
+import { Component, type ReactNode } from "react";
 
 interface Props {
 	children: ReactNode;
@@ -29,7 +29,7 @@ export class HydrationErrorBoundary extends Component<Props, State> {
 		return { hasError: false };
 	}
 
-	componentDidCatch(error: Error, errorInfo: any) {
+	componentDidCatch(error: Error, errorInfo: unknown) {
 		// Log the error for debugging
 		console.warn("Hydration error caught:", error, errorInfo);
 	}
