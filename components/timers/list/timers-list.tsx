@@ -21,7 +21,7 @@ import { useDeleteTimer, useSaveTimer, useTimers } from "@/hooks/use-timers";
 import { TIMER_LIST } from "@/lib/constants/timers";
 import { useNavigation } from "@/lib/navigation";
 import { formatTime } from "@/lib/timer-utils";
-import { computeTotalTime, type WorkoutItem } from "@/utils/compute-total-time";
+import { type LoopGroup, type WorkoutItem } from "@/utils/compute-total-time";
 import {
 	Copy,
 	Edit,
@@ -40,9 +40,79 @@ interface TimerListItem {
 	data: unknown;
 }
 
+interface WorkoutSummary {
+	totalSeconds: number;
+	intervalSteps: number;
+	loopGroups: number;
+	maxLoops: number;
+	workSeconds: number;
+	restSeconds: number;
+	prepareSeconds: number;
+}
+
+const TIMER_CARD_META = {
+	separator: " · ",
+	labels: {
+		steps: "Steps",
+		loops: "Loops",
+		work: "Work",
+		rest: "Rest",
+		prepare: "Prep",
+	},
+} as const;
+
 function getWorkoutItemsFromTimerData(data: unknown): WorkoutItem[] {
 	const maybeItems = (data as { items?: unknown } | null)?.items;
 	return Array.isArray(maybeItems) ? (maybeItems as WorkoutItem[]) : [];
+}
+
+function isLoopGroup(item: WorkoutItem): item is LoopGroup {
+	return (
+		typeof (item as { loops?: unknown }).loops === "number" &&
+		Array.isArray((item as { items?: unknown }).items)
+	);
+}
+
+function summarizeWorkoutItems(items: WorkoutItem[]): WorkoutSummary {
+	const summary: WorkoutSummary = {
+		totalSeconds: 0,
+		intervalSteps: 0,
+		loopGroups: 0,
+		maxLoops: 0,
+		workSeconds: 0,
+		restSeconds: 0,
+		prepareSeconds: 0,
+	};
+
+	const walk = (current: WorkoutItem[], multiplier: number) => {
+		for (const item of current) {
+			if (isLoopGroup(item)) {
+				summary.loopGroups += 1;
+				summary.maxLoops = Math.max(summary.maxLoops, item.loops);
+				walk(item.items, multiplier * item.loops);
+				continue;
+			}
+
+			summary.intervalSteps += 1;
+			const seconds = item.duration * multiplier;
+			summary.totalSeconds += seconds;
+
+			switch (item.type) {
+				case "work":
+					summary.workSeconds += seconds;
+					break;
+				case "rest":
+					summary.restSeconds += seconds;
+					break;
+				case "prepare":
+					summary.prepareSeconds += seconds;
+					break;
+			}
+		}
+	};
+
+	walk(items, 1);
+	return summary;
 }
 
 export function TimersList() {
@@ -79,14 +149,17 @@ export function TimersList() {
 					<p className="text-sm text-muted-foreground">{subtitle}</p>
 				</div>
 				{hasTimers && (
+				<div className="flex justify-end w-full">
 					<Button
 						variant="brand"
-						className="w-full gap-2 sm:w-auto"
+						size="sm"
+						className="w-full gap-2 "
 						onClick={() => goToEditTimer()}
 					>
 						<Plus size={16} />
 						New timer
 					</Button>
+				</div>
 				)}
 			</div>
 
@@ -136,6 +209,7 @@ export function TimersList() {
 					<CardFooter className="pt-0">
 						<Button
 							variant="brand"
+							size="sm"
 							className="w-full gap-2 sm:w-auto"
 							onClick={() => goToEditTimer()}
 						>
@@ -148,7 +222,25 @@ export function TimersList() {
 				<div className="space-y-3">
 					{timersList.map((timer) => {
 						const items = getWorkoutItemsFromTimerData(timer.data);
-						const totalSeconds = computeTotalTime(items);
+						const summary = summarizeWorkoutItems(items);
+						const totalSeconds = summary.totalSeconds;
+						const metaParts = [
+							`${TIMER_CARD_META.labels.steps} ${summary.intervalSteps}`,
+							summary.loopGroups > 0 && summary.maxLoops > 0
+								? `${TIMER_CARD_META.labels.loops} ×${summary.maxLoops}`
+								: null,
+						].filter((p): p is string => Boolean(p));
+						const breakdownParts = [
+							summary.workSeconds > 0
+								? `${TIMER_CARD_META.labels.work} ${formatTime(summary.workSeconds)}`
+								: null,
+							summary.restSeconds > 0
+								? `${TIMER_CARD_META.labels.rest} ${formatTime(summary.restSeconds)}`
+								: null,
+							summary.prepareSeconds > 0
+								? `${TIMER_CARD_META.labels.prepare} ${formatTime(summary.prepareSeconds)}`
+								: null,
+						].filter((p): p is string => Boolean(p));
 						return (
 							<div
 								key={timer.id}
@@ -160,28 +252,47 @@ export function TimersList() {
 								/>
 
 								<div className="relative flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-									<div className="flex items-start gap-3">
+									<div className="flex min-w-0 items-start gap-3">
 										<div className="neon-glow mt-0.5 inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
 											<Timer size={16} />
 										</div>
 
-										<div className="min-w-0">
-											<p className="truncate font-semibold leading-tight">
-												{timer.name}
-											</p>
-											<div className="mt-1 flex flex-wrap items-center gap-2">
-												<span className="inline-flex items-center rounded-lg bg-primary/10 px-2 py-0.5 font-mono text-xs text-primary ring-1 ring-primary/20">
+										<div className="min-w-0 flex-1">
+											<div className="flex items-start justify-between gap-3">
+												<p className="truncate font-semibold leading-tight">
+													{timer.name}
+												</p>
+												<Badge
+													variant="secondary"
+													className="shrink-0 rounded-lg border-primary/20 bg-primary/10 font-mono text-primary"
+												>
 													{formatTime(totalSeconds)}
-												</span>
+												</Badge>
+											</div>
+
+											<div className="mt-1 space-y-1">
+												<p className="text-xs text-muted-foreground">
+													{metaParts.join(TIMER_CARD_META.separator)}
+												</p>
+												{breakdownParts.length > 0 && (
+													<p className="hidden text-xs text-muted-foreground md:block">
+														{breakdownParts.join(TIMER_CARD_META.separator)}
+													</p>
+												)}
 											</div>
 										</div>
 									</div>
 
-									<div className="flex items-center justify-end gap-2">
+									<div className="flex items-center justify-end gap-2 sm:shrink-0">
 										{/* Menu */}
 										<DropdownMenu>
 											<DropdownMenuTrigger asChild>
-												<Button variant="ghost" size="icon" className="h-9 w-9">
+												<Button
+													variant="ghost"
+													size="icon"
+													className="h-9 w-9"
+													aria-label="Timer actions"
+												>
 													<MoreVertical size={16} />
 												</Button>
 											</DropdownMenuTrigger>
@@ -215,8 +326,8 @@ export function TimersList() {
 										{/* Play */}
 										<Button
 											variant="brand"
-											size="sm"
-											className="gap-2"
+											size="xs"
+											className="flex-1 gap-2 sm:flex-none"
 											onClick={() => goToPlayTimer(timer.id)}
 										>
 											<Play size={16} />

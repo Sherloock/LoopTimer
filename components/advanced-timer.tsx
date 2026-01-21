@@ -32,7 +32,7 @@ import {
 	ADVANCED_TIMER_DEFAULT_COLORS,
 	TIMER_NAME_MAX_LENGTH,
 } from "@/lib/constants/timers";
-import { playSound, SOUND_OPTIONS, speakText } from "@/lib/sound-utils";
+import { playSound, SOUND_OPTIONS, speakText, stopAllSounds } from "@/lib/sound-utils";
 import { formatTime, getProgress, timerToasts } from "@/lib/timer-utils";
 import {
 	getIntervalTypeForDisplay,
@@ -955,6 +955,7 @@ export function AdvancedTimer({
 
 			timerToasts.nextInterval(intervalName);
 		} else {
+			stopAllSounds();
 			playSound(config.defaultAlarm);
 			setCompleted("🎉 Advanced Workout Complete! Great job!");
 			// Call completion callback if provided
@@ -965,6 +966,7 @@ export function AdvancedTimer({
 		flattenedIntervals,
 		setCompleted,
 		config.defaultAlarm,
+		stopAllSounds,
 		onComplete,
 		timerName,
 	]);
@@ -1052,7 +1054,7 @@ export function AdvancedTimer({
 		}
 
 		return remaining;
-	}, [state, timeLeft, currentItemIndex, flattenedIntervals]);
+	}, [state, timeLeft, currentItemIndex, flattenedIntervals, stopAllSounds]);
 
 	// Current interval info
 	const currentInterval = useMemo(() => {
@@ -1298,6 +1300,8 @@ export function AdvancedTimer({
 	// Navigation functions
 	const fastForward = useCallback(() => {
 		if (state === "idle" || state === "completed") return;
+
+		stopAllSounds();
 
 		if (timeLeft > 0) {
 			setTimeLeft(0);

@@ -26,6 +26,7 @@ interface RunningTimerViewProps {
 	currentSet: number;
 	totalSets: number;
 	intervalType: "workout" | "rest" | "prepare";
+	intervalColor?: string;
 
 	// Display info
 	currentIntervalName: string;
@@ -47,6 +48,7 @@ interface RunningTimerViewProps {
 				name: string;
 				type: "workout" | "rest" | "prepare";
 				duration: number;
+				color?: string;
 		  }
 		| undefined;
 
@@ -65,6 +67,7 @@ export function RunningTimerView({
 	currentSet,
 	totalSets,
 	intervalType,
+	intervalColor,
 	currentIntervalName,
 	progress,
 	overallProgress,
@@ -335,19 +338,22 @@ export function RunningTimerView({
 
 			{/* Main timer display - perfectly centered */}
 			<div className="flex flex-1 items-center justify-center">
-				<TimerDisplay
-					timeLeft={timeLeft}
-					state={state}
-					currentIntervalName={currentIntervalName}
-					currentRound={currentSet}
-					totalRounds={totalSets}
-					progress={progress}
-					intervalType={intervalType}
-					showStepCounter={showStepCounter}
-					currentStep={currentStep}
-					totalSteps={totalSteps}
-					nextInterval={nextInterval}
-				/>
+				<div className="-translate-y-4 sm:-translate-y-6">
+					<TimerDisplay
+						timeLeft={timeLeft}
+						state={state}
+						currentIntervalName={currentIntervalName}
+						currentRound={currentSet}
+						totalRounds={totalSets}
+						progress={progress}
+						intervalType={intervalType}
+						intervalColor={intervalColor}
+						showStepCounter={showStepCounter}
+						currentStep={currentStep}
+						totalSteps={totalSteps}
+						nextInterval={nextInterval}
+					/>
+				</div>
 			</div>
 
 			{/* Play/Pause button in bottom right corner */}

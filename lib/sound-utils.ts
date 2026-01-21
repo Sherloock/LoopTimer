@@ -33,8 +33,73 @@ type SoundKey = (typeof SOUND_OPTIONS)[number]["value"];
 // Global mute state
 let isMuted = false;
 
+// Track scheduled speech start (Android/desktop delay) so we can cancel it on mute.
+let pendingSpeechTimeoutId: number | null = null;
+
+const scheduledSoundTimeouts: number[] = [];
+const activeOscillators = new Set<OscillatorNode>();
+
+const clearPendingSpeechTimeout = () => {
+	if (pendingSpeechTimeoutId === null) return;
+	clearTimeout(pendingSpeechTimeoutId);
+	pendingSpeechTimeoutId = null;
+};
+
+const scheduleSoundTimeout = (callback: () => void, delayMs: number) => {
+	const timeoutId = window.setTimeout(() => {
+		const index = scheduledSoundTimeouts.indexOf(timeoutId);
+		if (index >= 0) scheduledSoundTimeouts.splice(index, 1);
+		callback();
+	}, delayMs);
+	scheduledSoundTimeouts.push(timeoutId);
+	return timeoutId;
+};
+
+const trackOscillator = (oscillator: OscillatorNode) => {
+	activeOscillators.add(oscillator);
+	oscillator.addEventListener(
+		"ended",
+		() => {
+			activeOscillators.delete(oscillator);
+		},
+		{ once: true },
+	);
+};
+
+export const stopSpeech = () => {
+	clearPendingSpeechTimeout();
+
+	if (typeof window === "undefined" || !("speechSynthesis" in window)) return;
+
+	try {
+		window.speechSynthesis.cancel();
+	} catch (err) {
+		// eslint-disable-next-line no-console
+		console.warn("Failed to cancel speech synthesis", err);
+	}
+};
+
+export const stopAllSounds = () => {
+	stopSpeech();
+
+	scheduledSoundTimeouts.splice(0).forEach((timeoutId) => {
+		clearTimeout(timeoutId);
+	});
+
+	activeOscillators.forEach((oscillator) => {
+		try {
+			oscillator.stop();
+		} catch (err) {
+			// eslint-disable-next-line no-console
+			console.warn("Failed to stop oscillator", err);
+		}
+	});
+	activeOscillators.clear();
+};
+
 export const setMute = (muted: boolean) => {
 	isMuted = muted;
+	if (muted) stopSpeech();
 };
 
 export const getMute = () => isMuted;
@@ -85,6 +150,7 @@ const playTone = (
 
 		osc.connect(gain);
 		gain.connect(ctx.destination);
+		trackOscillator(osc);
 		osc.start();
 		osc.stop(ctx.currentTime + durationMs / 1000);
 	} catch (err) {
@@ -114,6 +180,7 @@ const playBeep = (duration = 300) => {
 
 	osc.connect(gain);
 	gain.connect(ctx.destination);
+	trackOscillator(osc);
 	osc.start();
 	osc.stop(now + duration / 1000);
 };
@@ -136,6 +203,7 @@ const playBeepShort = () => {
 
 	osc.connect(gain);
 	gain.connect(ctx.destination);
+	trackOscillator(osc);
 	osc.start();
 	osc.stop(now + 0.15);
 };
@@ -211,6 +279,9 @@ const playBell = () => {
 	gain3.connect(ctx.destination);
 
 	// Start and stop oscillators
+	trackOscillator(osc1);
+	trackOscillator(osc2);
+	trackOscillator(osc3);
 	osc1.start();
 	osc2.start();
 	osc3.start();
@@ -256,6 +327,8 @@ const playBellShort = () => {
 	gain1.connect(ctx.destination);
 	gain2.connect(ctx.destination);
 
+	trackOscillator(osc1);
+	trackOscillator(osc2);
 	osc1.start();
 	osc2.start();
 	osc1.stop(now + 0.4);
@@ -264,13 +337,19 @@ const playBellShort = () => {
 
 const playBellPattern = (count: number) => {
 	for (let i = 0; i < count; i++) {
-		setTimeout(() => playBell(), i * 600);
+		scheduleSoundTimeout(() => {
+			if (isMuted) return;
+			playBell();
+		}, i * 600);
 	}
 };
 
 const playBeepPattern = (count: number) => {
 	for (let i = 0; i < count; i++) {
-		setTimeout(() => playBeep(), i * 300);
+		scheduleSoundTimeout(() => {
+			if (isMuted) return;
+			playBeep();
+		}, i * 300);
 	}
 };
 
@@ -284,7 +363,10 @@ const playGong = (duration = 800) =>
 
 const playGongPattern = (count: number) => {
 	for (let i = 0; i < count; i++) {
-		setTimeout(() => playGong(), i * 900);
+		scheduleSoundTimeout(() => {
+			if (isMuted) return;
+			playGong();
+		}, i * 900);
 	}
 };
 
@@ -299,7 +381,10 @@ const playWhistle = (duration = 500) =>
 
 const playWhistlePattern = (count: number) => {
 	for (let i = 0; i < count; i++) {
-		setTimeout(() => playWhistle(), i * 600);
+		scheduleSoundTimeout(() => {
+			if (isMuted) return;
+			playWhistle();
+		}, i * 600);
 	}
 };
 
@@ -540,14 +625,23 @@ export const speakText = async (text?: string) => {
 			return;
 		}
 
+		// Ensure any delayed speech start can't fire later
+		clearPendingSpeechTimeout();
+
 		// Cancel any ongoing speech
 		window.speechSynthesis.cancel();
 
 		// Wait a bit for the cancel to take effect
 		await new Promise((resolve) => setTimeout(resolve, 100));
 
+		// Mute can be toggled while we're awaiting
+		if (isMuted) return;
+
 		// Wait for voices to be available (important on mobile)
 		const voices = await waitForVoices();
+
+		// Mute can be toggled while we're awaiting
+		if (isMuted) return;
 
 		const utterance = new SpeechSynthesisUtterance(text);
 
@@ -576,20 +670,22 @@ export const speakText = async (text?: string) => {
 			console.warn("Speech synthesis error:", event.error);
 		};
 
+		const speakNow = () => {
+			pendingSpeechTimeoutId = null;
+			if (isMuted) return;
+			window.speechSynthesis.speak(utterance);
+		};
+
 		// Enhanced mobile compatibility
 		if (isIOS) {
 			// iOS requires immediate speech start
-			window.speechSynthesis.speak(utterance);
+			speakNow();
 		} else if (isAndroid) {
 			// Android sometimes needs a small delay
-			setTimeout(() => {
-				window.speechSynthesis.speak(utterance);
-			}, 100);
+			pendingSpeechTimeoutId = window.setTimeout(speakNow, 100);
 		} else {
 			// Desktop browsers
-			setTimeout(() => {
-				window.speechSynthesis.speak(utterance);
-			}, 50);
+			pendingSpeechTimeoutId = window.setTimeout(speakNow, 50);
 		}
 	} catch (err) {
 		// eslint-disable-next-line no-console

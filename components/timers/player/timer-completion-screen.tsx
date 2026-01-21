@@ -16,30 +16,43 @@ export function TimerCompletionScreen({
 	timerName,
 }: TimerCompletionScreenProps) {
 	return (
-		<Card className="mx-auto max-w-md">
-			<CardContent className="space-y-6 pt-6 text-center">
-				<div className="space-y-4">
-					<div className="text-6xl">🎉</div>
-					<div className="space-y-2">
-						<h2 className="text-2xl font-bold text-green-600">Great Job!</h2>
-						{timerName && (
-							<p className="text-muted-foreground">You completed {timerName}</p>
-						)}
-						<p className="text-lg">Workout completed successfully!</p>
+		<div className="flex min-h-screen items-center justify-center px-4 py-8">
+			<Card className="mx-auto w-full max-w-lg">
+				<CardContent className="space-y-6 pt-6 text-center">
+					<div className="space-y-4">
+						<div className="text-6xl">🎉</div>
+						<div className="space-y-2">
+							<h2 className="text-2xl font-bold text-green-600">Great Job!</h2>
+							{timerName && (
+								<p className="text-muted-foreground break-words">
+									You completed{" "}
+									<span className="font-medium text-foreground">{timerName}</span>
+								</p>
+							)}
+							<p className="text-lg">Workout completed successfully!</p>
+						</div>
 					</div>
-				</div>
 
-				<div className="flex gap-3">
-					<Button variant="outline" onClick={onBack} className="flex-1 gap-2">
-						<ArrowLeft size={16} />
-						Back
-					</Button>
-					<Button variant="default" onClick={onAgain} className="flex-1 gap-2">
-						<RotateCcw size={16} />
-						Again
-					</Button>
-				</div>
-			</CardContent>
-		</Card>
+					<div className="flex flex-col gap-3 sm:flex-row">
+						<Button
+							variant="outline"
+							onClick={onBack}
+							className="w-full gap-2 sm:flex-1"
+						>
+							<ArrowLeft size={16} />
+							Back
+						</Button>
+						<Button
+							variant="default"
+							onClick={onAgain}
+							className="w-full gap-2 sm:flex-1"
+						>
+							<RotateCcw size={16} />
+							Again
+						</Button>
+					</div>
+				</CardContent>
+			</Card>
+		</div>
 	);
 }

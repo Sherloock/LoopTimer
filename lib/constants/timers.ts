@@ -16,11 +16,11 @@ export const TIMER_LIST = {
 export const TIMER_NAME_MAX_LENGTH = 100;
 
 export const ADVANCED_TIMER_DEFAULT_COLORS = {
-	prepare: "#7c3aed", // violet-600
-	work: "#8b5cf6", // violet-500
-	rest: "#d946ef", // fuchsia-500
-	loop: "#c4b5fd", // violet-300
-	nestedLoop: "#ddd6fe", // violet-200
+	prepare: "#d946ef", // fuchsia-500 (purple-leaning prepare)
+	work: "#8b5cf6", // violet-500 (purple-leaning work)
+	rest: "#6366f1", // indigo-500 (purple-leaning rest)
+	loop: "#a78bfa", // violet-400 (purple-leaning loop)
+	nestedLoop: "#c4b5fd", // violet-300 (purple-leaning nested loop)
 } as const;
 
 export const ADVANCED_TIMER_DEFAULT_NEXT_ID = 6;
