@@ -13,11 +13,11 @@ import { Dialog, DialogClose, DialogContent } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
+	Select,
+	SelectContent,
+	SelectItem,
+	SelectTrigger,
+	SelectValue,
 } from "@/components/ui/select";
 import { StatCard } from "@/components/ui/stat-card";
 import { useTimerState } from "@/hooks/use-timer-state";
@@ -26,36 +26,36 @@ import { ADVANCED_TIMER_DEFAULT_COLORS } from "@/lib/constants/timers";
 import { playSound, SOUND_OPTIONS, speakText } from "@/lib/sound-utils";
 import { formatTime, getProgress, timerToasts } from "@/lib/timer-utils";
 import {
-    getIntervalTypeForDisplay,
-    mapIntervalTypeToTimerType,
-    TimerType,
+	getIntervalTypeForDisplay,
+	mapIntervalTypeToTimerType,
+	TimerType,
 } from "@/utils/timer-shared";
 import {
-    closestCenter,
-    DndContext,
-    DragEndEvent,
-    DragOverlay,
-    DragStartEvent,
-    KeyboardSensor,
-    PointerSensor,
-    TouchSensor,
-    useDndMonitor,
-    useSensor,
-    useSensors,
+	closestCenter,
+	DndContext,
+	DragEndEvent,
+	DragOverlay,
+	DragStartEvent,
+	KeyboardSensor,
+	PointerSensor,
+	TouchSensor,
+	useDndMonitor,
+	useSensor,
+	useSensors,
 } from "@dnd-kit/core";
 import {
-    arrayMove,
-    SortableContext,
-    sortableKeyboardCoordinates,
-    verticalListSortingStrategy,
+	arrayMove,
+	SortableContext,
+	sortableKeyboardCoordinates,
+	verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
 import {
-    ArrowLeft,
-    Repeat,
-    Save as SaveIcon,
-    Settings,
-    Undo,
-    X,
+	ArrowLeft,
+	Repeat,
+	Save as SaveIcon,
+	Settings,
+	Undo,
+	X,
 } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
@@ -63,14 +63,14 @@ import { toast } from "sonner";
 // Externalised components
 import { SortableItem } from "@/components/advanced/sortable-item";
 import {
-    AdvancedConfig,
-    ColorSettings,
-    IntervalStep,
-    isInterval,
-    isLoop,
-    LoadedTimer,
-    LoopGroup,
-    WorkoutItem,
+	AdvancedConfig,
+	ColorSettings,
+	IntervalStep,
+	isInterval,
+	isLoop,
+	LoadedTimer,
+	LoopGroup,
+	WorkoutItem,
 } from "@/types/advanced-timer";
 
 interface AdvancedTimerProps {
