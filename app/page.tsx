@@ -41,9 +41,6 @@ export default async function LandingPage() {
 								<SignInButton mode="modal">
 									<Button variant="ghost">Sign In</Button>
 								</SignInButton>
-								<SignUpButton mode="modal">
-									<Button>Get Started</Button>
-								</SignUpButton>
 							</SignedOut>
 							<SignedIn>
 								<Link href={ROUTES.MENU}>
@@ -79,15 +76,6 @@ export default async function LandingPage() {
 										<ArrowRight size={20} className="ml-2" />
 									</Button>
 								</SignUpButton>
-								<SignInButton mode="modal">
-									<Button
-										variant="outline"
-										size="lg"
-										className="px-8 py-3 text-lg"
-									>
-										Sign In
-									</Button>
-								</SignInButton>
 							</SignedOut>
 							<SignedIn>
 								<Link href={ROUTES.MENU}>
@@ -117,10 +105,12 @@ export default async function LandingPage() {
 					<div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-3">
 						<Card className="border-0 bg-background/60 backdrop-blur-sm">
 							<CardHeader>
-								<div className="mb-4 flex h-12 w-12 items-center justify-center rounded-lg bg-primary/10">
-									<Clock size={24} className="text-primary" />
+								<div className="flex items-center gap-3">
+									<div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-primary/10">
+										<Clock size={24} className="text-primary" />
+									</div>
+									<CardTitle>Custom Intervals</CardTitle>
 								</div>
-								<CardTitle>Custom Intervals</CardTitle>
 								<CardDescription>
 									Create precise work and rest intervals tailored to your
 									specific workout needs.
@@ -129,10 +119,12 @@ export default async function LandingPage() {
 						</Card>
 						<Card className="border-0 bg-background/60 backdrop-blur-sm">
 							<CardHeader>
-								<div className="mb-4 flex h-12 w-12 items-center justify-center rounded-lg bg-primary/10">
-									<Zap size={24} className="text-primary" />
+								<div className="flex items-center gap-3">
+									<div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-primary/10">
+										<Zap size={24} className="text-primary" />
+									</div>
+									<CardTitle>Loop Control</CardTitle>
 								</div>
-								<CardTitle>Loop Control</CardTitle>
 								<CardDescription>
 									Set up complex workout routines with multiple loops and rounds
 									for advanced training.
@@ -141,10 +133,12 @@ export default async function LandingPage() {
 						</Card>
 						<Card className="border-0 bg-background/60 backdrop-blur-sm">
 							<CardHeader>
-								<div className="mb-4 flex h-12 w-12 items-center justify-center rounded-lg bg-primary/10">
-									<Play size={24} className="text-primary" />
+								<div className="flex items-center gap-3">
+									<div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-primary/10">
+										<Play size={24} className="text-primary" />
+									</div>
+									<CardTitle>Easy to Use</CardTitle>
 								</div>
-								<CardTitle>Easy to Use</CardTitle>
 								<CardDescription>
 									Intuitive interface that gets out of your way so you can focus
 									on your workout.
@@ -153,10 +147,12 @@ export default async function LandingPage() {
 						</Card>
 						<Card className="border-0 bg-background/60 backdrop-blur-sm">
 							<CardHeader>
-								<div className="mb-4 flex h-12 w-12 items-center justify-center rounded-lg bg-primary/10">
-									<Target size={24} className="text-primary" />
+								<div className="flex items-center gap-3">
+									<div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-primary/10">
+										<Target size={24} className="text-primary" />
+									</div>
+									<CardTitle>Precision Timing</CardTitle>
 								</div>
-								<CardTitle>Precision Timing</CardTitle>
 								<CardDescription>
 									Accurate to the second timing ensures you get the most out of
 									every workout session.
@@ -165,10 +161,12 @@ export default async function LandingPage() {
 						</Card>
 						<Card className="border-0 bg-background/60 backdrop-blur-sm">
 							<CardHeader>
-								<div className="mb-4 flex h-12 w-12 items-center justify-center rounded-lg bg-primary/10">
-									<BarChart3 size={24} className="text-primary" />
+								<div className="flex items-center gap-3">
+									<div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-primary/10">
+										<BarChart3 size={24} className="text-primary" />
+									</div>
+									<CardTitle>Progress Tracking</CardTitle>
 								</div>
-								<CardTitle>Progress Tracking</CardTitle>
 								<CardDescription>
 									Monitor your workout patterns and stay consistent with your
 									fitness goals.
@@ -177,10 +175,12 @@ export default async function LandingPage() {
 						</Card>
 						<Card className="border-0 bg-background/60 backdrop-blur-sm">
 							<CardHeader>
-								<div className="mb-4 flex h-12 w-12 items-center justify-center rounded-lg bg-primary/10">
-									<Users size={24} className="text-primary" />
+								<div className="flex items-center gap-3">
+									<div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-primary/10">
+										<Users size={24} className="text-primary" />
+									</div>
+									<CardTitle>Community Driven</CardTitle>
 								</div>
-								<CardTitle>Community Driven</CardTitle>
 								<CardDescription>
 									Built by fitness enthusiasts for fitness enthusiasts with
 									continuous improvements.
