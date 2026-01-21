@@ -1,11 +1,11 @@
 "use client";
 
-import { Checkbox } from "@/components/timers/editor/advanced/dnd/checkbox";
 import {
 	addItemToLoop,
 	findItemById,
 	removeItemById,
 } from "@/components/timers/editor/advanced/advanced-timer-tree";
+import { Checkbox } from "@/components/timers/editor/advanced/dnd/checkbox";
 import { DroppableZone } from "@/components/timers/editor/advanced/dnd/droppable-zone";
 import { useIdGenerator } from "@/components/timers/editor/advanced/use-id-generator";
 import { MinimalisticContainer } from "@/components/timers/player/minimalistic-container";

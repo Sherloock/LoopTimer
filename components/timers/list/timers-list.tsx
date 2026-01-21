@@ -30,7 +30,7 @@ import {
 	Plus,
 	Sparkles,
 	Timer,
-	Trash2,
+	Trash2
 } from "lucide-react";
 import { useState } from "react";
 
@@ -145,22 +145,20 @@ export function TimersList() {
 								{timersList.length}
 							</Badge>
 						)}
+						{hasTimers && (
+							<Button
+								variant="brand"
+								size="icon"
+								className="ml-auto h-8 w-8"
+								onClick={() => goToEditTimer()}
+								aria-label="New timer"
+							>
+								<Plus size={16} />
+							</Button>
+						)}
 					</div>
 					<p className="text-sm text-muted-foreground">{subtitle}</p>
 				</div>
-				{hasTimers && (
-					<div className="flex w-full justify-end">
-						<Button
-							variant="brand"
-							size="sm"
-							className="w-full gap-2"
-							onClick={() => goToEditTimer()}
-						>
-							<Plus size={16} />
-							New timer
-						</Button>
-					</div>
-				)}
 			</div>
 
 			{/* Content */}
@@ -259,23 +257,23 @@ export function TimersList() {
 
 										<div className="min-w-0 flex-1">
 											<div className="flex items-start justify-between gap-3">
-												<p className="truncate font-semibold leading-tight">
+												<p className="neon-text truncate font-semibold leading-tight">
 													{timer.name}
 												</p>
 												<Badge
 													variant="secondary"
-													className="shrink-0 rounded-lg border-primary/20 bg-primary/10 font-mono text-primary"
+													className="shrink-0 rounded-lg border-primary/20 bg-primary/10 font-mono text-base text-primary"
 												>
 													{formatTime(totalSeconds)}
 												</Badge>
 											</div>
 
 											<div className="mt-1 space-y-1">
-												<p className="text-xs text-muted-foreground">
+												<p className="text-xs text-muted-foreground ">
 													{metaParts.join(TIMER_CARD_META.separator)}
 												</p>
 												{breakdownParts.length > 0 && (
-													<p className="hidden text-xs text-muted-foreground md:block">
+													<p className="text-xs text-muted-foreground hidden md:block">
 														{breakdownParts.join(TIMER_CARD_META.separator)}
 													</p>
 												)}
@@ -323,16 +321,18 @@ export function TimersList() {
 											</DropdownMenuContent>
 										</DropdownMenu>
 
-										{/* Play */}
-										<Button
-											variant="brand"
-											size="xs"
-											className="flex-1 gap-2 sm:flex-none"
-											onClick={() => goToPlayTimer(timer.id)}
-										>
-											<Play size={16} />
-											Start
-										</Button>
+									{/* Play */}
+									<Button
+										variant="brand"
+										size="sm"
+										className="h-9 gap-2 px-2 md:px-3"
+										onClick={() => goToPlayTimer(timer.id)}
+										aria-label="Start timer"
+									>
+										<Play size={16} />
+										{/* <span className="hidden md:inline">Start</span> */}
+										<span className="inline">Start</span>
+									</Button>
 									</div>
 								</div>
 							</div>
