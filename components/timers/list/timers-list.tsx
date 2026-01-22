@@ -1,5 +1,6 @@
 "use client";
 
+import { ImportDialog } from "@/components/timers/import/import-dialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -21,10 +22,12 @@ import { useDeleteTimer, useSaveTimer, useTimers } from "@/hooks/use-timers";
 import { TIMER_LIST } from "@/lib/constants/timers";
 import { useNavigation } from "@/lib/navigation";
 import { formatTime } from "@/lib/timer-utils";
+import type { AdvancedConfig } from "@/types/advanced-timer";
 import { type LoopGroup, type WorkoutItem } from "@/utils/compute-total-time";
 import {
 	Copy,
 	Edit,
+	FileDown,
 	MoreVertical,
 	Play,
 	Plus,
@@ -119,8 +122,26 @@ export function TimersList() {
 	const { data: timers, isLoading, isError } = useTimers();
 	const { mutate: deleteTimer } = useDeleteTimer();
 	const { mutate: duplicateTimer } = useSaveTimer();
+	const { mutate: saveTimer } = useSaveTimer();
 	const [confirmId, setConfirmId] = useState<string | null>(null);
+	const [isImportDialogOpen, setIsImportDialogOpen] = useState(false);
 	const { goToEditTimer, goToPlayTimer } = useNavigation();
+
+	const handleImport = async (name: string, data: AdvancedConfig) => {
+		await new Promise<void>((resolve) => {
+			saveTimer(
+				{ name, data },
+				{
+					onSuccess: () => {
+						resolve();
+					},
+					onError: () => {
+						resolve();
+					},
+				},
+			);
+		});
+	};
 
 	const timersList = (timers as TimerListItem[] | undefined) ?? [];
 	const hasTimers = timersList.length > 0;
@@ -149,17 +170,28 @@ export function TimersList() {
 					<p className="text-sm text-muted-foreground">{subtitle}</p>
 				</div>
 				{hasTimers && (
-					<Button
-						variant="brand"
-						size="sm"
-						className="neon-hover-glow absolute right-0 top-0 h-9 gap-2 px-2 sm:relative sm:px-3 md:px-3"
-						onClick={() => goToEditTimer()}
-						aria-label="Add timer"
-					>
-						<Plus size={16} />
-						<span className="">Add</span>
-						<span className="hidden md:inline"> timer</span>
-					</Button>
+					<div className="flex gap-2">
+						<Button
+							variant="outline"
+							size="sm"
+							onClick={() => setIsImportDialogOpen(true)}
+							aria-label="Import timer"
+						>
+							<FileDown size={16} className="mr-2" />
+							<span className="hidden sm:inline">Import</span>
+						</Button>
+						<Button
+							variant="brand"
+							size="sm"
+							className="neon-hover-glow h-9 gap-2 px-2 sm:px-3 md:px-3"
+							onClick={() => goToEditTimer()}
+							aria-label="Add timer"
+						>
+							<Plus size={16} />
+							<span className="">Add</span>
+							<span className="hidden md:inline"> timer</span>
+						</Button>
+					</div>
 				)}
 			</div>
 
@@ -366,6 +398,13 @@ export function TimersList() {
 					</DialogContent>
 				</Dialog>
 			)}
+
+			{/* Import Dialog */}
+			<ImportDialog
+				open={isImportDialogOpen}
+				onOpenChange={setIsImportDialogOpen}
+				onImport={handleImport}
+			/>
 		</div>
 	);
 }

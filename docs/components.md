@@ -52,10 +52,13 @@ components/
 - **Sub-features**:
   - `list/`: timer list page UI (`TimersList`).
   - `saved/`: saved timers picker UI (`SavedTimers`).
+  - `templates/`: template library browser and cards.
   - `editor/`: creating/editing timers.
     - `advanced/`: advanced builder/editor.
       - `dnd/`: drag-and-drop builder pieces + dialogs.
   - `player/`: running timer UI (display, controls, completion, fullscreen).
+  - `import/`: import dialog with file/clipboard/QR scan.
+  - `share/`: share dialog with QR code generation.
 
 ## Naming conventions (enforced by convention + review)
 

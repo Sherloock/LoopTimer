@@ -17,5 +17,38 @@ model Timer {
   updatedAt DateTime @updatedAt
 
   @@index([userId])
-  @@map("timer") // database table name
+  @@map("timer")
+}
+
+model TimerTemplate {
+  id          String   @id @default(cuid())
+  userId      String
+  name        String
+  description String?
+  category    String   // "hiit", "tabata", "boxing", "yoga", "strength", "pomodoro", "custom"
+  data        Json     // AdvancedConfig
+  isPublic    Boolean  @default(false)
+  cloneCount  Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([userId])
+  @@index([category, isPublic])
+  @@index([isPublic, createdAt])
+  @@map("timer_template")
+}
+
+model SharedTimer {
+  id        String    @id @default(cuid())
+  userId    String
+  name      String?
+  data      Json      // AdvancedConfig
+  expiresAt DateTime?
+  viewCount Int       @default(0)
+  createdAt DateTime  @default(now())
+
+  @@index([id])
+  @@index([userId])
+  @@index([expiresAt])
+  @@map("shared_timer")
 }

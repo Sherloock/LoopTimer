@@ -35,7 +35,10 @@ flowchart TD
 ## Caching and invalidation
 
 - React Query keys are centralized in `lib/constants/query-keys.ts`.
-- Mutations invalidate `QUERY_KEYS.TIMERS` after create/update/delete.
+- Mutations invalidate relevant query keys after create/update/delete:
+  - `QUERY_KEYS.TIMERS` for timer mutations
+  - `QUERY_KEYS.TEMPLATES` for template mutations
+  - `QUERY_KEYS.SHARED_TIMERS` for shared timer operations
 
 ## Custom events
 

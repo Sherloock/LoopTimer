@@ -65,9 +65,12 @@ import {
 } from "@dnd-kit/sortable";
 import {
 	ArrowLeft,
+	Download,
+	Library,
 	Repeat,
 	Save as SaveIcon,
 	Settings,
+	Share2,
 	Undo,
 	Wand2,
 	X,
@@ -78,6 +81,8 @@ import { toast } from "sonner";
 // Externalised components
 import { SortableItem } from "@/components/timers/editor/advanced/dnd/sortable-item";
 import { AiPromptDialog } from "@/components/timers/editor/ai-prompt-dialog";
+import { SaveTemplateDialog } from "@/components/timers/editor/save-template-dialog";
+import { ShareDialog } from "@/components/timers/share/share-dialog";
 import {
 	AdvancedConfig,
 	ColorSettings,
@@ -172,6 +177,8 @@ export function AdvancedTimer({
 	const [currentItemIndex, setCurrentItemIndex] = useState(0);
 	const [showSettings, setShowSettings] = useState(false);
 	const [showAiDialog, setShowAiDialog] = useState(false);
+	const [showSaveTemplateDialog, setShowSaveTemplateDialog] = useState(false);
+	const [showShareDialog, setShowShareDialog] = useState(false);
 
 	const {
 		state,
@@ -1676,7 +1683,7 @@ export function AdvancedTimer({
 					<div className="py-2 text-sm text-muted-foreground">
 						You have unsaved changes. What would you like to do?
 					</div>
-					<div className="flex flex-col gap-2 pt-2 ">
+					<div className="flex flex-col gap-2 pt-2">
 						<Button
 							variant="outline"
 							onClick={() => setShowConfirmExit(false)}
@@ -1858,7 +1865,44 @@ export function AdvancedTimer({
 										className="flex-1 gap-2 sm:flex-initial"
 									>
 										<Wand2 size={16} />
-										AI Generate
+										<span className="hidden sm:inline">AI Generate</span>
+										<span className="sm:hidden">AI</span>
+									</Button>
+									<Button
+										onClick={() => setShowSaveTemplateDialog(true)}
+										variant="outline"
+										size="sm"
+										className="flex-1 gap-2 sm:flex-initial"
+									>
+										<Library size={16} />
+										<span className="hidden sm:inline">Save Template</span>
+										<span className="sm:hidden">Template</span>
+									</Button>
+									<Button
+										onClick={() => setShowShareDialog(true)}
+										variant="outline"
+										size="sm"
+										className="flex-1 gap-2 sm:flex-initial"
+									>
+										<Share2 size={16} />
+										<span className="hidden sm:inline">Share</span>
+										<span className="sm:hidden">Share</span>
+									</Button>
+									<Button
+										onClick={() => {
+											// Export as JSON
+											const {
+												downloadTimerAsJSON,
+											} = require("@/lib/export/timer-export");
+											downloadTimerAsJSON(timerName, config);
+										}}
+										variant="outline"
+										size="sm"
+										className="flex-1 gap-2 sm:flex-initial"
+									>
+										<Download size={16} />
+										<span className="hidden sm:inline">Export</span>
+										<span className="sm:hidden">Export</span>
 									</Button>
 									<Button
 										onClick={() => setShowSettings(true)}
@@ -1867,7 +1911,8 @@ export function AdvancedTimer({
 										className="flex-1 gap-2 sm:flex-initial"
 									>
 										<Settings size={16} />
-										Settings
+										<span className="hidden sm:inline">Settings</span>
+										<span className="sm:hidden">Settings</span>
 									</Button>
 									<Button
 										onClick={addLoop}
@@ -1876,7 +1921,8 @@ export function AdvancedTimer({
 										className="flex-1 gap-2 sm:flex-initial"
 									>
 										<Repeat size={16} />
-										Add Loop
+										<span className="hidden sm:inline">Add Loop</span>
+										<span className="sm:hidden">Loop</span>
 									</Button>
 								</div>
 							</div>
@@ -2090,6 +2136,22 @@ export function AdvancedTimer({
 				onOpenChange={setShowAiDialog}
 				onGenerated={handleAiGenerated}
 				currentConfig={config}
+			/>
+
+			{/* Save Template Dialog */}
+			<SaveTemplateDialog
+				open={showSaveTemplateDialog}
+				onOpenChange={setShowSaveTemplateDialog}
+				timerName={timerName}
+				timerData={config}
+			/>
+
+			{/* Share Dialog */}
+			<ShareDialog
+				open={showShareDialog}
+				onOpenChange={setShowShareDialog}
+				timerName={timerName}
+				timerData={config}
 			/>
 		</div>
 	);

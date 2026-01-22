@@ -1,7 +1,7 @@
 import { Header } from "@/components/layout/header";
 import { Button } from "@/components/ui/button";
 import { ROUTES } from "@/lib/constants/routes";
-import { Clock, Timer } from "lucide-react";
+import { Clock, Library, Timer } from "lucide-react";
 import Link from "next/link";
 
 export default function AppPage() {
@@ -43,6 +43,22 @@ export default function AppPage() {
 							/>
 							<span className="neon-text relative z-10 text-2xl font-semibold">
 								Advanced Timer
+							</span>
+						</Button>
+					</Link>
+					<Link href={ROUTES.TIMER_TEMPLATES} className="group w-full">
+						<Button
+							variant="outline"
+							className="neon-menu-button relative flex min-h-[200px] w-full flex-col items-center justify-center gap-6 overflow-hidden border-2 border-primary/30 bg-card/80 p-8 backdrop-blur-sm transition-all hover:border-primary/60 hover:bg-card/90"
+						>
+							<div className="neon-glow absolute inset-0 opacity-30 transition-opacity group-hover:opacity-60" />
+							<div className="neon-pulse absolute inset-0 opacity-0 transition-opacity group-hover:opacity-20" />
+							<Library
+								size={64}
+								className="relative z-10 text-primary transition-transform group-hover:scale-110 group-hover:drop-shadow-[0_0_20px_hsl(var(--primary)/0.8)]"
+							/>
+							<span className="neon-text relative z-10 text-2xl font-semibold">
+								Template Library
 							</span>
 						</Button>
 					</Link>

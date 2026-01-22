@@ -95,3 +95,35 @@ export function DialogClose({
 		</Button>
 	);
 }
+
+export function DialogHeader({ children }: { children: React.ReactNode }) {
+	return <div className="mb-4 space-y-1.5">{children}</div>;
+}
+
+export function DialogTitle({
+	children,
+	className = "",
+}: {
+	children: React.ReactNode;
+	className?: string;
+}) {
+	return (
+		<h2
+			className={`text-lg font-semibold leading-none tracking-tight ${className}`}
+		>
+			{children}
+		</h2>
+	);
+}
+
+export function DialogDescription({
+	children,
+	className = "",
+}: {
+	children: React.ReactNode;
+	className?: string;
+}) {
+	return (
+		<p className={`text-sm text-muted-foreground ${className}`}>{children}</p>
+	);
+}

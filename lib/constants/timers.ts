@@ -28,3 +28,28 @@ export const ADVANCED_TIMER_DEFAULT_COLORS = {
 } as const;
 
 export const ADVANCED_TIMER_DEFAULT_NEXT_ID = 6;
+
+export const TEMPLATE_CATEGORIES = {
+	HIIT: "hiit",
+	TABATA: "tabata",
+	BOXING: "boxing",
+	YOGA: "yoga",
+	STRENGTH: "strength",
+	POMODORO: "pomodoro",
+	CUSTOM: "custom",
+} as const;
+
+export type TemplateCategory =
+	(typeof TEMPLATE_CATEGORIES)[keyof typeof TEMPLATE_CATEGORIES];
+
+export const TEMPLATE_CATEGORY_LABELS: Record<TemplateCategory, string> = {
+	[TEMPLATE_CATEGORIES.HIIT]: "HIIT",
+	[TEMPLATE_CATEGORIES.TABATA]: "Tabata",
+	[TEMPLATE_CATEGORIES.BOXING]: "Boxing",
+	[TEMPLATE_CATEGORIES.YOGA]: "Yoga",
+	[TEMPLATE_CATEGORIES.STRENGTH]: "Strength",
+	[TEMPLATE_CATEGORIES.POMODORO]: "Pomodoro",
+	[TEMPLATE_CATEGORIES.CUSTOM]: "Custom",
+} as const;
+
+export const SYSTEM_USER_ID = "system";
