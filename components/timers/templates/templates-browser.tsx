@@ -27,13 +27,11 @@ interface Template {
 interface TemplatesBrowserProps {
 	templates: Template[];
 	onClone: (templateId: string) => Promise<void>;
-	onTryNow?: (templateId: string) => void;
 }
 
 export function TemplatesBrowser({
 	templates,
 	onClone,
-	onTryNow,
 }: TemplatesBrowserProps) {
 	const [searchQuery, setSearchQuery] = useState("");
 	const [selectedCategory, setSelectedCategory] = useState<string>("all");
@@ -80,14 +78,18 @@ export function TemplatesBrowser({
 				onValueChange={setSelectedCategory}
 				className="w-full"
 			>
-				<TabsList className="mb-6 grid w-full grid-cols-4 lg:grid-cols-8">
-					<TabsTrigger value="all">All ({templates.length})</TabsTrigger>
-					{Object.entries(TEMPLATE_CATEGORIES).map(([key, value]) => (
-						<TabsTrigger key={value} value={value}>
-							{TEMPLATE_CATEGORY_LABELS[value]} ({categoryCounts[value] || 0})
+				<div className="mb-6 overflow-x-auto lg:overflow-x-visible">
+					<TabsList className="inline-flex min-w-max flex-nowrap lg:grid lg:w-full lg:grid-cols-8">
+						<TabsTrigger value="all" className="whitespace-nowrap">
+							All ({templates.length})
 						</TabsTrigger>
-					))}
-				</TabsList>
+						{Object.entries(TEMPLATE_CATEGORIES).map(([key, value]) => (
+							<TabsTrigger key={value} value={value} className="whitespace-nowrap">
+								{TEMPLATE_CATEGORY_LABELS[value]} ({categoryCounts[value] || 0})
+							</TabsTrigger>
+						))}
+					</TabsList>
+				</div>
 
 				<TabsContent value={selectedCategory} className="mt-0">
 					{filteredTemplates.length === 0 ? (
@@ -110,7 +112,6 @@ export function TemplatesBrowser({
 									data={template.data}
 									cloneCount={template.cloneCount}
 									onClone={onClone}
-									onTryNow={onTryNow}
 								/>
 							))}
 						</div>

@@ -125,6 +125,62 @@ export function UserPreferencesDialog({
 					</div>
 				) : (
 					<div className="space-y-6">
+							{/* Sound Settings */}
+						<div className="space-y-4">
+							<Label>Default Alarm Sound</Label>
+							<div className="flex gap-2">
+								<Select
+									value={defaultAlarm}
+									onValueChange={(value) => {
+										setDefaultAlarm(value);
+										playSound(value);
+									}}
+								>
+									<SelectTrigger className="flex-1">
+										<SelectValue placeholder="Select sound" />
+									</SelectTrigger>
+									<SelectContent>
+										{SOUND_OPTIONS.map((opt) => (
+											<SelectItem key={opt.value} value={opt.value}>
+												{opt.label}
+											</SelectItem>
+										))}
+									</SelectContent>
+								</Select>
+								<Button
+									variant="outline"
+									size="icon"
+									onClick={() => playSound(defaultAlarm)}
+								>
+									▶
+								</Button>
+							</div>
+
+							<div className="flex items-center gap-2">
+								<Checkbox
+									id="isSound"
+									checked={isSound}
+									onCheckedChange={(checked) => setIsSound(checked === true)}
+								/>
+								<Label htmlFor="isSound" className="text-sm">
+									Enable sound (if disabled, timers start muted)
+								</Label>
+							</div>
+
+							<div className="flex items-center gap-2">
+								<Checkbox
+									id="isSpeakNames"
+									checked={isSpeakNames}
+									onCheckedChange={(checked) =>
+										setIsSpeakNames(checked === true)
+									}
+								/>
+								<Label htmlFor="isSpeakNames" className="text-sm">
+									Speak interval names
+								</Label>
+							</div>
+						</div>
+
 						{/* Color Scheme Selector */}
 						<div className="space-y-4">
 							<div className="space-y-2">
@@ -180,64 +236,6 @@ export function UserPreferencesDialog({
 							</div>
 						</div>
 
-						{/* Sound Settings */}
-						<div className="space-y-4">
-							<Label>Default Alarm Sound</Label>
-							<div className="flex gap-2">
-								<Select
-									value={defaultAlarm}
-									onValueChange={(value) => {
-										setDefaultAlarm(value);
-										playSound(value);
-									}}
-								>
-									<SelectTrigger className="flex-1">
-										<SelectValue placeholder="Select sound" />
-									</SelectTrigger>
-									<SelectContent>
-										{SOUND_OPTIONS.map((opt) => (
-											<SelectItem key={opt.value} value={opt.value}>
-												{opt.label}
-											</SelectItem>
-										))}
-									</SelectContent>
-								</Select>
-								<Button
-									variant="outline"
-									size="icon"
-									onClick={() => playSound(defaultAlarm)}
-								>
-									▶
-								</Button>
-							</div>
-						</div>
-
-						{/* Boolean Preferences */}
-						<div className="space-y-4">
-							<div className="flex items-center gap-2">
-								<Checkbox
-									id="isSound"
-									checked={isSound}
-									onCheckedChange={(checked) => setIsSound(checked === true)}
-								/>
-								<Label htmlFor="isSound" className="text-sm">
-									Enable sound (if disabled, timers start muted)
-								</Label>
-							</div>
-
-							<div className="flex items-center gap-2">
-								<Checkbox
-									id="isSpeakNames"
-									checked={isSpeakNames}
-									onCheckedChange={(checked) =>
-										setIsSpeakNames(checked === true)
-									}
-								/>
-								<Label htmlFor="isSpeakNames" className="text-sm">
-									Speak interval names
-								</Label>
-							</div>
-						</div>
 
 						{/* Actions */}
 						<div className="flex gap-2 pt-4">

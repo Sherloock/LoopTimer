@@ -62,12 +62,6 @@ export default function TemplatesPage() {
 		router.push(ROUTES.TIMER_LIST);
 	};
 
-	const handleTryNow = (templateId: string) => {
-		// For now, just clone and redirect
-		// In future, could load directly into player
-		handleClone(templateId);
-	};
-
 	if (isLoading) {
 		return (
 			<div className="container mx-auto px-4 py-8">
@@ -108,7 +102,6 @@ export default function TemplatesPage() {
 			<TemplatesBrowser
 				templates={templates}
 				onClone={handleClone}
-				onTryNow={handleTryNow}
 			/>
 		</div>
 	);

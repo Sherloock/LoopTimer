@@ -26,7 +26,7 @@
 		"// [CODE QUALITY]": "==============================================",
 		"lint": "next lint",
 		"lint:fix": "next lint --fix",
-		"lint2": "eslint . --ext .js,.jsx,.ts,.tsx",
+		"lint-eslint": "eslint . --ext .js,.jsx,.ts,.tsx",
 		"remove-unused": "npx eslint . --fix --quiet --rule \"unused-imports/no-unused-imports:error\"",
 		"format": "prettier --write .",
 		"format:check": "prettier --check .",
