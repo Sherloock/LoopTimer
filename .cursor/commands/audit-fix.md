@@ -49,3 +49,23 @@ Iteratively run `npm audit`, apply non-breaking fixes, and validate with `npm ru
 - `npm audit fix` only updates packages within their semver ranges (non-breaking)
 - Breaking changes require manual `package.json` updates
 - Some vulnerabilities may require dependency replacements or removals
+
+## Report
+
+At the end of execution, generate a summary report that includes:
+
+1. **Initial state**: Number of vulnerabilities found at start (from first `npm audit` output)
+2. **Iterations**: Total number of fix iterations performed
+3. **Final state**: Number of vulnerabilities remaining (from final `npm audit` output)
+4. **Packages updated**: List of packages that were updated during the process (from `npm audit fix` outputs)
+5. **Build status**: Whether the build passed after all fixes
+6. **Outcome**: 
+   - Success: All vulnerabilities resolved
+   - Partial: Some vulnerabilities remain (may require manual intervention)
+   - Failed: Build failed after a fix (manual intervention required)
+7. **Recommendations**: 
+   - If vulnerabilities remain, suggest next steps (manual updates, dependency replacements)
+   - If build failed, indicate which fix caused the failure
+   - If successful, confirm all dependencies are secure
+
+Format the report clearly with sections and use markdown formatting for readability.

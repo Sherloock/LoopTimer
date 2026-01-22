@@ -336,6 +336,7 @@ npm run db:down
    - Ensure both URLs include `?sslmode=require`
 
 3. **Deploy**:
+
    ```bash
    npm run deploy
    ```
