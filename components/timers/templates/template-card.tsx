@@ -70,7 +70,7 @@ export function TemplateCard({
 					</Badge>
 				</div>
 			</CardHeader>
-			<CardContent className="flex flex-1 flex-col space-y-4 justify-between">
+			<CardContent className="flex flex-1 flex-col justify-between space-y-4">
 				{/* Stats */}
 				<div className="flex items-center gap-4 text-sm text-muted-foreground">
 					<div className="flex items-center gap-1.5">

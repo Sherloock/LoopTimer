@@ -1516,14 +1516,6 @@ export function AdvancedTimer({
 
 		// If editing an existing timer
 		if (loadedTimer) {
-			const duplicate = existingTimers?.find(
-				(t: any) => t.name === timerName.trim() && t.id !== loadedTimer.id,
-			);
-			if (duplicate) {
-				toast.error("Timer name already exists");
-				return;
-			}
-
 			overwriteTimer(
 				{
 					id: loadedTimer.id,
@@ -1540,14 +1532,6 @@ export function AdvancedTimer({
 		}
 
 		// Creating a brand-new timer
-		const duplicate = existingTimers?.find(
-			(t: any) => t.name === timerName.trim(),
-		);
-		if (duplicate) {
-			toast.error("Timer name already exists");
-			return;
-		}
-
 		saveTimer(
 			{ name: timerName.trim(), data: config },
 			{
@@ -1682,14 +1666,6 @@ export function AdvancedTimer({
 		};
 		// If editing an existing timer
 		if (loadedTimer) {
-			const duplicate = existingTimers?.find(
-				(t: any) => t.name === timerName.trim() && t.id !== loadedTimer.id,
-			);
-			if (duplicate) {
-				toast.error("Timer name already exists", { id: "save-exit-duplicate" });
-				setPendingExit(false);
-				return;
-			}
 			overwriteTimer(
 				{
 					id: loadedTimer.id,
@@ -1700,14 +1676,6 @@ export function AdvancedTimer({
 			return;
 		}
 		// Creating a brand-new timer
-		const duplicate = existingTimers?.find(
-			(t: any) => t.name === timerName.trim(),
-		);
-		if (duplicate) {
-			toast.error("Timer name already exists", { id: "save-exit-duplicate" });
-			setPendingExit(false);
-			return;
-		}
 		saveTimer({ name: timerName.trim(), data: config }, { onSuccess });
 	}, [
 		timerName,

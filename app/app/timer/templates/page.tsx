@@ -99,10 +99,7 @@ export default function TemplatesPage() {
 			</div>
 
 			{/* Templates Browser */}
-			<TemplatesBrowser
-				templates={templates}
-				onClone={handleClone}
-			/>
+			<TemplatesBrowser templates={templates} onClone={handleClone} />
 		</div>
 	);
 }

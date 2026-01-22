@@ -59,11 +59,11 @@ At the end of execution, generate a summary report that includes:
 3. **Final state**: Number of vulnerabilities remaining (from final `npm audit` output)
 4. **Packages updated**: List of packages that were updated during the process (from `npm audit fix` outputs)
 5. **Build status**: Whether the build passed after all fixes
-6. **Outcome**: 
+6. **Outcome**:
    - Success: All vulnerabilities resolved
    - Partial: Some vulnerabilities remain (may require manual intervention)
    - Failed: Build failed after a fix (manual intervention required)
-7. **Recommendations**: 
+7. **Recommendations**:
    - If vulnerabilities remain, suggest next steps (manual updates, dependency replacements)
    - If build failed, indicate which fix caused the failure
    - If successful, confirm all dependencies are secure

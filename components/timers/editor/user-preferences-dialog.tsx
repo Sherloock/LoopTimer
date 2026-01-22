@@ -125,7 +125,7 @@ export function UserPreferencesDialog({
 					</div>
 				) : (
 					<div className="space-y-6">
-							{/* Sound Settings */}
+						{/* Sound Settings */}
 						<div className="space-y-4">
 							<Label>Default Alarm Sound</Label>
 							<div className="flex gap-2">
@@ -235,7 +235,6 @@ export function UserPreferencesDialog({
 								/>
 							</div>
 						</div>
-
 
 						{/* Actions */}
 						<div className="flex gap-2 pt-4">

@@ -84,7 +84,11 @@ export function TemplatesBrowser({
 							All ({templates.length})
 						</TabsTrigger>
 						{Object.entries(TEMPLATE_CATEGORIES).map(([key, value]) => (
-							<TabsTrigger key={value} value={value} className="whitespace-nowrap">
+							<TabsTrigger
+								key={value}
+								value={value}
+								className="whitespace-nowrap"
+							>
 								{TEMPLATE_CATEGORY_LABELS[value]} ({categoryCounts[value] || 0})
 							</TabsTrigger>
 						))}
