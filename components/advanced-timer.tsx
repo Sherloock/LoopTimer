@@ -65,12 +65,15 @@ import {
 } from "@dnd-kit/sortable";
 import {
 	ArrowLeft,
+	Check,
 	Download,
 	Library,
 	Repeat,
+	RotateCcw,
 	Save as SaveIcon,
 	Settings,
 	Share2,
+	Trash2,
 	Undo,
 	Wand2,
 	X,
@@ -82,7 +85,14 @@ import { toast } from "sonner";
 import { SortableItem } from "@/components/timers/editor/advanced/dnd/sortable-item";
 import { AiPromptDialog } from "@/components/timers/editor/ai-prompt-dialog";
 import { SaveTemplateDialog } from "@/components/timers/editor/save-template-dialog";
+import { UserPreferencesDialog } from "@/components/timers/editor/user-preferences-dialog";
 import { ShareDialog } from "@/components/timers/share/share-dialog";
+import { useUserPreferences } from "@/hooks/use-user-preferences";
+import { setMute } from "@/lib/sound-utils";
+import {
+	clearItemLevelColors,
+	mergeUserPreferences,
+} from "@/lib/workout-processing";
 import {
 	AdvancedConfig,
 	ColorSettings,
@@ -118,6 +128,7 @@ export function AdvancedTimer({
 	onMinimalisticViewChange,
 }: AdvancedTimerProps) {
 	const { setNextId, generateId } = useIdGenerator();
+	const { data: userPreferences } = useUserPreferences();
 
 	const [config, setConfig] = useState<AdvancedConfig>({
 		items: [
@@ -151,8 +162,33 @@ export function AdvancedTimer({
 				return data;
 			};
 
-			const normalized = sanitizeConfig(loadedTimer.data as AdvancedConfig);
-			setConfig(normalized);
+			const loadedData = sanitizeConfig(loadedTimer.data as AdvancedConfig);
+
+			// Merge user preferences if workout doesn't have colors (new format)
+			// or if user preferences are available
+			if (userPreferences) {
+				// If workout has items but no colors, merge preferences
+				if (
+					loadedData.items &&
+					(!loadedData.colors || Object.keys(loadedData.colors).length === 0)
+				) {
+					const merged = mergeUserPreferences(
+						{ items: loadedData.items },
+						userPreferences,
+					);
+					setConfig(merged);
+				} else {
+					// Keep existing colors but update defaultAlarm and speakNames from preferences
+					setConfig({
+						...loadedData,
+						defaultAlarm:
+							loadedData.defaultAlarm || userPreferences.defaultAlarm,
+						speakNames: loadedData.speakNames ?? userPreferences.isSpeakNames,
+					});
+				}
+			} else {
+				setConfig(loadedData);
+			}
 
 			// update next id to avoid collisions
 			const extractIds = (items: WorkoutItem[]): number[] => {
@@ -165,20 +201,23 @@ export function AdvancedTimer({
 				}, []);
 			};
 
-			const ids = extractIds(normalized.items ?? []);
+			const ids = extractIds(loadedData.items ?? []);
 			const maxId = ids.length ? Math.max(...ids) : 0;
 			setNextId(maxId + 1);
 		}
-	}, [loadedTimer, setNextId]);
+	}, [loadedTimer, setNextId, userPreferences]);
 
 	const [activeId, setActiveId] = useState<string | null>(null);
 	const [currentType, setCurrentType] = useState<TimerType>("prepare");
 	const [timeLeft, setTimeLeft] = useState(0);
 	const [currentItemIndex, setCurrentItemIndex] = useState(0);
 	const [showSettings, setShowSettings] = useState(false);
+	const [showColorHierarchy, setShowColorHierarchy] = useState(false);
 	const [showAiDialog, setShowAiDialog] = useState(false);
 	const [showSaveTemplateDialog, setShowSaveTemplateDialog] = useState(false);
 	const [showShareDialog, setShowShareDialog] = useState(false);
+	const [showUserPreferencesDialog, setShowUserPreferencesDialog] =
+		useState(false);
 
 	const {
 		state,
@@ -1006,10 +1045,13 @@ export function AdvancedTimer({
 		setCurrentItemIndex(0);
 	}, [setCurrentSet]);
 
-	const startTimer = useCallback(
-		() => baseStartTimer("Advanced Timer started!"),
-		[baseStartTimer],
-	);
+	const startTimer = useCallback(() => {
+		// Apply sound preference on timer start
+		if (userPreferences && !userPreferences.isSound) {
+			setMute(true);
+		}
+		baseStartTimer("Advanced Timer started!");
+	}, [baseStartTimer, userPreferences]);
 	const resetTimer = useCallback(
 		() => baseResetTimer(resetState),
 		[baseResetTimer, resetState],
@@ -2024,49 +2066,11 @@ export function AdvancedTimer({
 
 			{/* Settings Dialog */}
 			<Dialog open={showSettings} onOpenChange={setShowSettings}>
-				<DialogContent title="Color Settings" className="max-w-lg">
+				<DialogContent title="Settings" className="max-w-lg">
 					<DialogClose onClose={() => setShowSettings(false)} />
 
 					<div className="space-y-6">
-						<div className="space-y-4">
-							<h3 className="text-base font-medium">Interval Colors</h3>
-
-							<ColorPicker
-								label="Prepare Intervals"
-								value={config.colors.prepare}
-								onChange={(color) => updateColor("prepare", color)}
-							/>
-
-							<ColorPicker
-								label="Work Intervals"
-								value={config.colors.work}
-								onChange={(color) => updateColor("work", color)}
-							/>
-
-							<ColorPicker
-								label="Rest Intervals"
-								value={config.colors.rest}
-								onChange={(color) => updateColor("rest", color)}
-							/>
-						</div>
-
-						<div className="space-y-4">
-							<h3 className="text-base font-medium">Loop Colors</h3>
-
-							<ColorPicker
-								label="Main Loops"
-								value={config.colors.loop}
-								onChange={(color) => updateColor("loop", color)}
-							/>
-
-							<ColorPicker
-								label="Nested Loops"
-								value={config.colors.nestedLoop}
-								onChange={(color) => updateColor("nestedLoop", color)}
-							/>
-						</div>
-
-						{/* Alarm settings */}
+						{/* Sound settings */}
 						<div className="space-y-4">
 							<h3 className="text-base font-medium">Alarm Sound</h3>
 
@@ -2114,17 +2118,153 @@ export function AdvancedTimer({
 							</Label>
 						</div>
 
-						<div className="flex gap-2 pt-4">
-							<Button
-								onClick={resetColors}
-								variant="outline"
-								className="flex-1"
+						{/* Horizontal separator */}
+						<hr className="border-border" />
+
+						{/* Color settings */}
+						<div className="space-y-4">
+							<h3 className="text-base font-medium">Interval Colors</h3>
+
+							<ColorPicker
+								label="Prepare Intervals"
+								value={config.colors.prepare}
+								onChange={(color) => updateColor("prepare", color)}
+							/>
+
+							<ColorPicker
+								label="Work Intervals"
+								value={config.colors.work}
+								onChange={(color) => updateColor("work", color)}
+							/>
+
+							<ColorPicker
+								label="Rest Intervals"
+								value={config.colors.rest}
+								onChange={(color) => updateColor("rest", color)}
+							/>
+						</div>
+
+						<div className="space-y-4">
+							<h3 className="text-base font-medium">Loop Colors</h3>
+
+							<ColorPicker
+								label="Main Loops"
+								value={config.colors.loop}
+								onChange={(color) => updateColor("loop", color)}
+							/>
+
+							<ColorPicker
+								label="Nested Loops"
+								value={config.colors.nestedLoop}
+								onChange={(color) => updateColor("nestedLoop", color)}
+							/>
+						</div>
+
+						{/* Color Hierarchy Explanation */}
+						<div className="space-y-2 rounded-md border p-3">
+							<button
+								type="button"
+								onClick={() => setShowColorHierarchy(!showColorHierarchy)}
+								className="flex w-full items-center justify-between text-sm font-medium"
 							>
-								Reset to Defaults
-							</Button>
-							<Button onClick={() => setShowSettings(false)} className="flex-1">
-								Done
-							</Button>
+								<span>How colors work</span>
+								<span className="text-muted-foreground">
+									{showColorHierarchy ? "−" : "+"}
+								</span>
+							</button>
+							{showColorHierarchy && (
+								<div className="space-y-2 pt-2 text-xs text-muted-foreground">
+									<p className="font-medium text-foreground">
+										Color Priority (highest to lowest):
+									</p>
+									<ol className="ml-4 list-decimal space-y-1">
+										<li>
+											<strong>Item/Set Level</strong> - Set in individual
+											interval/loop settings dialogs
+										</li>
+										<li>
+											<strong>Workout Level</strong> - Set in this dialog
+										</li>
+										<li>
+											<strong>Your Defaults</strong> - Set in User Preferences
+										</li>
+										<li>
+											<strong>System Defaults</strong> - Built-in fallback
+											colors
+										</li>
+									</ol>
+								</div>
+							)}
+						</div>
+
+						{/* Reset Options */}
+						<div className="space-y-3 pt-4">
+							<div className="space-y-2">
+								<p className="text-sm font-medium">Color Actions</p>
+								<div className="flex flex-col gap-2">
+									{userPreferences && (
+										<Button
+											onClick={() => {
+												// Apply user preferences AND clear item-level colors
+												const clearedItems = clearItemLevelColors(config.items);
+												const merged = mergeUserPreferences(
+													{ items: clearedItems },
+													userPreferences,
+												);
+												setConfig(merged);
+												toast.success(
+													"Reset workout colors to your defaults and cleared item-level overrides",
+													{
+														id: "reset-to-defaults",
+													},
+												);
+											}}
+											variant="default"
+											className="w-full gap-2"
+										>
+											<RotateCcw size={16} />
+											Reset workout colors to my default
+										</Button>
+									)}
+									<Button
+										onClick={() => {
+											const clearedItems = clearItemLevelColors(config.items);
+											setConfig((prev) => ({
+												...prev,
+												items: clearedItems,
+											}));
+											toast.success("Deleted all item-level color overrides", {
+												id: "delete-item-colors",
+											});
+										}}
+										variant="destructive"
+										className="w-full gap-2"
+									>
+										<Trash2 size={16} />
+										Delete item colors
+									</Button>
+								</div>
+							</div>
+							<div className="flex gap-2 pt-2">
+								<Button
+									onClick={() => {
+										setShowSettings(false);
+										setShowUserPreferencesDialog(true);
+									}}
+									variant="outline"
+									className="flex-1 gap-2"
+								>
+									<Settings size={16} />
+									Manage My Defaults
+								</Button>
+								<Button
+									onClick={() => setShowSettings(false)}
+									className="flex-1 gap-2"
+								>
+									<Check size={16} />
+									Done
+								</Button>
+							</div>
 						</div>
 					</div>
 				</DialogContent>
@@ -2152,6 +2292,12 @@ export function AdvancedTimer({
 				onOpenChange={setShowShareDialog}
 				timerName={timerName}
 				timerData={config}
+			/>
+
+			{/* User Preferences Dialog */}
+			<UserPreferencesDialog
+				open={showUserPreferencesDialog}
+				onOpenChange={setShowUserPreferencesDialog}
 			/>
 		</div>
 	);

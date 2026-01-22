@@ -1,0 +1,275 @@
+"use client";
+
+import { Checkbox } from "@/components/timers/editor/advanced/dnd/checkbox";
+import { Button } from "@/components/ui/button";
+import { ColorPicker } from "@/components/ui/color-picker";
+import { Dialog, DialogClose, DialogContent } from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
+import {
+	Select,
+	SelectContent,
+	SelectItem,
+	SelectTrigger,
+	SelectValue,
+} from "@/components/ui/select";
+import {
+	useUpdateUserPreferences,
+	useUserPreferences,
+} from "@/hooks/use-user-preferences";
+import { COLOR_SCHEMES, getColorScheme } from "@/lib/constants/color-schemes";
+import { DEFAULT_USER_PREFERENCES } from "@/lib/constants/timers";
+import { SOUND_OPTIONS, playSound } from "@/lib/sound-utils";
+import type { ColorSettings } from "@/types/advanced-timer";
+import { Loader2, RotateCcw, Save } from "lucide-react";
+import { useEffect, useState } from "react";
+import { toast } from "sonner";
+
+interface UserPreferencesDialogProps {
+	open: boolean;
+	onOpenChange: (open: boolean) => void;
+}
+
+export function UserPreferencesDialog({
+	open,
+	onOpenChange,
+}: UserPreferencesDialogProps) {
+	const { data: preferences, isLoading } = useUserPreferences();
+	const updatePreferences = useUpdateUserPreferences();
+
+	const [selectedScheme, setSelectedScheme] = useState<string>("custom");
+	const [colors, setColors] = useState<ColorSettings>(
+		DEFAULT_USER_PREFERENCES.colors,
+	);
+	const [defaultAlarm, setDefaultAlarm] = useState<string>(
+		DEFAULT_USER_PREFERENCES.defaultAlarm,
+	);
+	const [isSound, setIsSound] = useState<boolean>(
+		DEFAULT_USER_PREFERENCES.isSound,
+	);
+	const [isSpeakNames, setIsSpeakNames] = useState<boolean>(
+		DEFAULT_USER_PREFERENCES.isSpeakNames,
+	);
+
+	// Load preferences when dialog opens
+	useEffect(() => {
+		if (open && preferences) {
+			setColors(preferences.colors);
+			setDefaultAlarm(preferences.defaultAlarm);
+			setIsSound(preferences.isSound);
+			setIsSpeakNames(preferences.isSpeakNames);
+
+			// Check if current colors match a preset
+			const matchingScheme = COLOR_SCHEMES.find((scheme) => {
+				return (
+					scheme.colors.prepare === preferences.colors.prepare &&
+					scheme.colors.work === preferences.colors.work &&
+					scheme.colors.rest === preferences.colors.rest &&
+					scheme.colors.loop === preferences.colors.loop &&
+					scheme.colors.nestedLoop === preferences.colors.nestedLoop
+				);
+			});
+
+			setSelectedScheme(matchingScheme ? matchingScheme.name : "custom");
+		}
+	}, [open, preferences]);
+
+	const handleSchemeChange = (schemeName: string) => {
+		setSelectedScheme(schemeName);
+		if (schemeName === "custom") {
+			return; // Keep current colors
+		}
+
+		const scheme = getColorScheme(schemeName);
+		if (scheme) {
+			setColors(scheme.colors);
+		}
+	};
+
+	const handleSave = async () => {
+		try {
+			await updatePreferences.mutateAsync({
+				colors,
+				defaultAlarm,
+				isSound,
+				isSpeakNames,
+			});
+			toast.success("Preferences saved", { id: "save-preferences" });
+			onOpenChange(false);
+		} catch (error) {
+			toast.error(
+				error instanceof Error ? error.message : "Failed to save preferences",
+				{ id: "save-preferences" },
+			);
+		}
+	};
+
+	const handleReset = () => {
+		setColors(DEFAULT_USER_PREFERENCES.colors);
+		setDefaultAlarm(DEFAULT_USER_PREFERENCES.defaultAlarm);
+		setIsSound(DEFAULT_USER_PREFERENCES.isSound);
+		setIsSpeakNames(DEFAULT_USER_PREFERENCES.isSpeakNames);
+		setSelectedScheme("default");
+	};
+
+	return (
+		<Dialog open={open} onOpenChange={onOpenChange}>
+			<DialogContent
+				title="User Preferences"
+				className="max-h-[90vh] max-w-2xl overflow-y-auto"
+			>
+				<DialogClose onClose={() => onOpenChange(false)} />
+
+				{isLoading ? (
+					<div className="py-8 text-center text-muted-foreground">
+						Loading preferences...
+					</div>
+				) : (
+					<div className="space-y-6">
+						{/* Color Scheme Selector */}
+						<div className="space-y-4">
+							<div className="space-y-2">
+								<Label>My Default Colors</Label>
+								<p className="text-xs text-muted-foreground">
+									These colors will be used as defaults for new workouts. Select
+									a preset or customize below.
+								</p>
+							</div>
+							<Select value={selectedScheme} onValueChange={handleSchemeChange}>
+								<SelectTrigger className="w-full">
+									<SelectValue placeholder="Select color scheme" />
+								</SelectTrigger>
+								<SelectContent>
+									{COLOR_SCHEMES.map((scheme) => (
+										<SelectItem key={scheme.name} value={scheme.name}>
+											{scheme.label}
+										</SelectItem>
+									))}
+									<SelectItem value="custom">Custom</SelectItem>
+								</SelectContent>
+							</Select>
+
+							{/* Color Pickers - Always visible */}
+							<div className="space-y-4 rounded-md border p-4">
+								<ColorPicker
+									label="Prepare Intervals"
+									value={colors.prepare}
+									onChange={(color) => setColors({ ...colors, prepare: color })}
+								/>
+								<ColorPicker
+									label="Work Intervals"
+									value={colors.work}
+									onChange={(color) => setColors({ ...colors, work: color })}
+								/>
+								<ColorPicker
+									label="Rest Intervals"
+									value={colors.rest}
+									onChange={(color) => setColors({ ...colors, rest: color })}
+								/>
+								<ColorPicker
+									label="Loop Groups"
+									value={colors.loop}
+									onChange={(color) => setColors({ ...colors, loop: color })}
+								/>
+								<ColorPicker
+									label="Nested Loops"
+									value={colors.nestedLoop}
+									onChange={(color) =>
+										setColors({ ...colors, nestedLoop: color })
+									}
+								/>
+							</div>
+						</div>
+
+						{/* Sound Settings */}
+						<div className="space-y-4">
+							<Label>Default Alarm Sound</Label>
+							<div className="flex gap-2">
+								<Select
+									value={defaultAlarm}
+									onValueChange={(value) => {
+										setDefaultAlarm(value);
+										playSound(value);
+									}}
+								>
+									<SelectTrigger className="flex-1">
+										<SelectValue placeholder="Select sound" />
+									</SelectTrigger>
+									<SelectContent>
+										{SOUND_OPTIONS.map((opt) => (
+											<SelectItem key={opt.value} value={opt.value}>
+												{opt.label}
+											</SelectItem>
+										))}
+									</SelectContent>
+								</Select>
+								<Button
+									variant="outline"
+									size="icon"
+									onClick={() => playSound(defaultAlarm)}
+								>
+									▶
+								</Button>
+							</div>
+						</div>
+
+						{/* Boolean Preferences */}
+						<div className="space-y-4">
+							<div className="flex items-center gap-2">
+								<Checkbox
+									id="isSound"
+									checked={isSound}
+									onCheckedChange={(checked) => setIsSound(checked === true)}
+								/>
+								<Label htmlFor="isSound" className="text-sm">
+									Enable sound (if disabled, timers start muted)
+								</Label>
+							</div>
+
+							<div className="flex items-center gap-2">
+								<Checkbox
+									id="isSpeakNames"
+									checked={isSpeakNames}
+									onCheckedChange={(checked) =>
+										setIsSpeakNames(checked === true)
+									}
+								/>
+								<Label htmlFor="isSpeakNames" className="text-sm">
+									Speak interval names
+								</Label>
+							</div>
+						</div>
+
+						{/* Actions */}
+						<div className="flex gap-2 pt-4">
+							<Button
+								variant="outline"
+								onClick={handleReset}
+								className="flex-1 gap-2"
+							>
+								<RotateCcw size={16} />
+								Reset to Defaults
+							</Button>
+							<Button
+								onClick={handleSave}
+								disabled={updatePreferences.isPending}
+								className="flex-1 gap-2"
+							>
+								{updatePreferences.isPending ? (
+									<>
+										<Loader2 size={16} className="animate-spin" />
+										Saving...
+									</>
+								) : (
+									<>
+										<Save size={16} />
+										Save Preferences
+									</>
+								)}
+							</Button>
+						</div>
+					</div>
+				)}
+			</DialogContent>
+		</Dialog>
+	);
+}

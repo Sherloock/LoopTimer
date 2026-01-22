@@ -34,10 +34,10 @@
 			"name": "timer",
 			"path": ".",
 		},
-		{
-			"name": "portfolio",
-			"path": "./../portfolio-single-page/",
-		},
+		// {
+		// 	"name": "portfolio",
+		// 	"path": "./../portfolio-single-page/",
+		// },
 		// {
 		// 	"name": "scrapeease",
 		// 	"path": "./../scrape-flow/",

@@ -162,7 +162,7 @@
 		"postcss": "^8",
 		"prettier": "^3.4.2",
 		"prettier-plugin-prisma": "^5.0.0",
-		"prettier-plugin-tailwindcss": "^0.6.11",
+		"prettier-plugin-tailwindcss": "^0.6.14",
 		"prisma": "^6.19.2",
 		"shadcn": "^3.7.0",
 		"tailwindcss": "^3.4.1",
@@ -170,19 +170,5 @@
 		"tsx": "^4.19.3",
 		"typescript": "^5.8.2",
 		"vercel": "^50.4.6"
-	},
-	"prettier": {
-		"useTabs": true,
-		"tabWidth": 2,
-		"plugins": [
-			"prettier-plugin-tailwindcss"
-		],
-		"singleQuote": false,
-		"trailingComma": "all",
-		"semi": true,
-		"endOfLine": "lf"
-	},
-	"vercel": {
-		"buildCommand": "npm run vercel-build"
 	}
 }

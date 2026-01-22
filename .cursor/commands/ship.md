@@ -1,7 +1,6 @@
----
-name: iterative-error-fix
-description: Iteratively fix errors, run tests, and build until the project passes all checks. Use when user provides errors or when fixing compilation/build issues.
----
+## ship — iteratively fix errors, run tests, and build
+
+Iteratively fix errors, run tests, and build until the project passes all checks. Use when user provides errors or when fixing compilation/build issues.
 
 ## Workflow
 

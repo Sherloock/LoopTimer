@@ -1,4 +1,5 @@
 import { checkAuth } from "@/actions/auth/authCheck";
+import { getUserPreferences } from "@/actions/user/preferences";
 import { validateAdvancedConfig } from "@/lib/ai/validate-workout";
 import {
 	buildInitialPrompt,
@@ -6,7 +7,11 @@ import {
 	buildRouterPrompt,
 } from "@/lib/ai/workout-prompt";
 import { AI_MAX_RETRIES, AI_MODEL, AI_TIMEOUT_MS } from "@/lib/constants/ai";
-import type { AdvancedConfig } from "@/types/advanced-timer";
+import {
+	mergeUserPreferences,
+	stripColorsAndSounds,
+} from "@/lib/workout-processing";
+import type { AdvancedConfig, WorkoutItem } from "@/types/advanced-timer";
 import Groq from "groq-sdk";
 import { NextResponse } from "next/server";
 
@@ -132,6 +137,14 @@ export async function POST(req: Request) {
 		// Sanitize prompt (basic XSS prevention)
 		const sanitizedPrompt = prompt.trim().slice(0, 1000);
 
+		// Strip colors/sounds from currentConfig before sending to AI
+		const strippedConfig = currentConfig
+			? stripColorsAndSounds(currentConfig)
+			: undefined;
+
+		// Fetch user preferences for post-processing
+		const userPreferences = await getUserPreferences();
+
 		let totalCost = 0;
 
 		// Step 1: Use AI router to validate exercise intent
@@ -187,10 +200,15 @@ export async function POST(req: Request) {
 		// Retry loop with detailed feedback
 		for (let attempt = 1; attempt <= AI_MAX_RETRIES; attempt++) {
 			try {
-				// Build appropriate prompt
+				// Build appropriate prompt (use stripped config)
 				const fullPrompt =
 					attempt === 1
-						? buildInitialPrompt(sanitizedPrompt, currentConfig)
+						? buildInitialPrompt(
+								sanitizedPrompt,
+								strippedConfig
+									? ({ items: strippedConfig.items } as AdvancedConfig)
+									: undefined,
+							)
 						: buildRetryPrompt(
 								sanitizedPrompt,
 								lastInvalidJson,
@@ -212,10 +230,10 @@ export async function POST(req: Request) {
 				const jsonString = extractJson(aiResponse.content);
 				lastInvalidJson = jsonString;
 
-				// Parse JSON
-				let parsedConfig: unknown;
+				// Parse JSON (AI now returns only { items: [...] })
+				let parsedItemsOnly: { items: unknown[] } | unknown;
 				try {
-					parsedConfig = JSON.parse(jsonString);
+					parsedItemsOnly = JSON.parse(jsonString);
 				} catch (parseError) {
 					lastErrors = [
 						`Invalid JSON syntax: ${(parseError as Error).message}`,
@@ -240,8 +258,41 @@ export async function POST(req: Request) {
 					continue; // Retry
 				}
 
-				// Validate against schema
-				const validation = validateAdvancedConfig(parsedConfig);
+				// Validate that we have items array
+				if (
+					!parsedItemsOnly ||
+					typeof parsedItemsOnly !== "object" ||
+					!("items" in parsedItemsOnly) ||
+					!Array.isArray((parsedItemsOnly as { items: unknown[] }).items)
+				) {
+					lastErrors = [
+						"AI output must contain 'items' array. Colors and sounds are not needed.",
+					];
+					if (attempt === AI_MAX_RETRIES) {
+						return NextResponse.json(
+							{
+								error: "Generated workout missing required 'items' array",
+								details: lastErrors,
+								attempt,
+								invalidJson: lastInvalidJson,
+							},
+							{ status: 400 },
+						);
+					}
+					console.log(
+						`[AI Workout Gen - Attempt ${attempt}] Missing items array, retrying...`,
+					);
+					continue; // Retry
+				}
+
+				// Merge user preferences with AI-generated items
+				const fullConfig = mergeUserPreferences(
+					parsedItemsOnly as { items: WorkoutItem[] },
+					userPreferences,
+				);
+
+				// Validate the complete config
+				const validation = validateAdvancedConfig(fullConfig);
 
 				if (validation.valid) {
 					// Success!
@@ -249,7 +300,7 @@ export async function POST(req: Request) {
 						`[AI Workout Gen] ✅ SUCCESS! Generated workout in ${attempt} attempt(s). Total cost: $${totalCost.toFixed(6)} (~${Math.floor(1 / totalCost)} requests per $1)`,
 					);
 					return NextResponse.json({
-						config: parsedConfig as AdvancedConfig,
+						config: fullConfig,
 						attempt,
 					});
 				}

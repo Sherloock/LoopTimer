@@ -109,8 +109,9 @@ const getCtx = () => {
 	const g = globalThis as any;
 	if (!g.__timer_audio_ctx) {
 		// @ts-ignore
-		g.__timer_audio_ctx = new (window.AudioContext ||
-			(window as any).webkitAudioContext)();
+		g.__timer_audio_ctx = new (
+			window.AudioContext || (window as any).webkitAudioContext
+		)();
 	}
 	return g.__timer_audio_ctx as AudioContext;
 };

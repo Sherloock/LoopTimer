@@ -43,16 +43,13 @@ Respond now:`;
 }
 
 const SCHEMA_SPECIFICATION = `
-## JSON Schema for AdvancedConfig
+## JSON Schema for Workout Structure
 
 The output MUST be a valid JSON object matching this exact structure:
 
 \`\`\`typescript
-interface AdvancedConfig {
+interface WorkoutOutput {
   items: WorkoutItem[];
-  colors: ColorSettings;
-  defaultAlarm: string;
-  speakNames: boolean;
 }
 
 type WorkoutItem = IntervalStep | LoopGroup;
@@ -62,9 +59,7 @@ interface IntervalStep {
   name: string;            // Display name (e.g., "WARM UP", "SQUATS")
   duration: number;        // Duration in seconds (${MIN_DURATION_SECONDS}-${MAX_DURATION_SECONDS})
   type: "prepare" | "work" | "rest";  // Interval type
-  color?: string;          // Optional hex color (e.g., "#FF0000")
   skipOnLastLoop?: boolean; // Optional: skip this on last loop iteration
-  sound?: string;          // Optional: sound identifier
 }
 
 interface LoopGroup {
@@ -72,53 +67,20 @@ interface LoopGroup {
   loops: number;           // Number of repetitions (1-${MAX_LOOPS_PER_GROUP})
   items: WorkoutItem[];    // Nested intervals or loops
   collapsed?: boolean;     // Optional: UI state
-  color?: string;          // Optional hex color
-}
-
-interface ColorSettings {
-  prepare: string;         // Hex color for prepare intervals
-  work: string;            // Hex color for work intervals
-  rest: string;            // Hex color for rest intervals
-  loop: string;            // Hex color for loops
-  nestedLoop: string;      // Hex color for nested loops
 }
 \`\`\`
 
 ## Validation Rules
 
-1. **Required fields**: items, colors, defaultAlarm, speakNames
+1. **Required fields**: items
 2. **items**: Must be a non-empty array of WorkoutItem objects
-3. **colors**: Must include all 5 color properties (prepare, work, rest, loop, nestedLoop) as valid hex colors
-4. **defaultAlarm**: Must be a non-empty string (e.g., "beep-1x", "beep-2x", "beep-3x")
-5. **speakNames**: Must be a boolean
-6. **IntervalStep.duration**: Must be a number between ${MIN_DURATION_SECONDS} and ${MAX_DURATION_SECONDS}
-7. **IntervalStep.type**: Must be exactly "prepare", "work", or "rest"
-8. **LoopGroup.loops**: Must be a number between 1 and ${MAX_LOOPS_PER_GROUP}
-9. **LoopGroup.items**: Must be a non-empty array
-10. **All IDs**: Must be unique strings
-11. **Colors**: Must be valid hex format (e.g., "#FF0000" or "#F00")
+3. **IntervalStep.duration**: Must be a number between ${MIN_DURATION_SECONDS} and ${MAX_DURATION_SECONDS}
+4. **IntervalStep.type**: Must be exactly "prepare", "work", or "rest"
+5. **LoopGroup.loops**: Must be a number between 1 and ${MAX_LOOPS_PER_GROUP}
+6. **LoopGroup.items**: Must be a non-empty array
+7. **All IDs**: Must be unique strings
 
-## Default Values
-
-**ALWAYS use these default colors in the ColorSettings object:**
-- colors.prepare: "#f97316" (orange) - for warm-up/preparation intervals
-- colors.work: "#22c55e" (green) - for work/exercise intervals
-- colors.rest: "#3b82f6" (blue) - for rest intervals
-- colors.loop: "#8b5cf6" (purple) - for loop groups
-- colors.nestedLoop: "#f59e0b" (amber) - for nested loops
-
-**Color Usage Rules:**
-- **DO NOT** add a \`color\` field to individual IntervalStep items unless you need to override the default
-- Individual intervals will automatically use the appropriate color from ColorSettings based on their \`type\`:
-  - \`type: "prepare"\` → uses colors.prepare
-  - \`type: "work"\` → uses colors.work
-  - \`type: "rest"\` → uses colors.rest
-- Only add \`color\` to an IntervalStep if you need a specific color different from the default
-- LoopGroups can optionally have a \`color\` field to override colors.loop
-
-**Other defaults:**
-- defaultAlarm: "beep-2x"
-- speakNames: true
+**IMPORTANT**: Do NOT include colors, sounds, or any UI preferences in your output. Only generate the workout structure (items array).
 `;
 
 const EXAMPLES = `
@@ -152,16 +114,7 @@ const EXAMPLES = `
         }
       ]
     }
-  ],
-  "colors": {
-    "prepare": "#f97316",
-    "work": "#22c55e",
-    "rest": "#3b82f6",
-    "loop": "#8b5cf6",
-    "nestedLoop": "#f59e0b"
-  },
-  "defaultAlarm": "beep-2x",
-  "speakNames": true
+  ]
 }
 \`\`\`
 
@@ -211,16 +164,7 @@ const EXAMPLES = `
         }
       ]
     }
-  ],
-  "colors": {
-    "prepare": "#f97316",
-    "work": "#22c55e",
-    "rest": "#3b82f6",
-    "loop": "#8b5cf6",
-    "nestedLoop": "#f59e0b"
-  },
-  "defaultAlarm": "beep-2x",
-  "speakNames": true
+  ]
 }
 \`\`\`
 
@@ -408,16 +352,7 @@ const EXAMPLES = `
       "loops": 4,
       "collapsed": false
     }
-  ],
-  "colors": {
-    "loop": "#8b5cf6",
-    "rest": "#3b82f6",
-    "work": "#22c55e",
-    "prepare": "#f97316",
-    "nestedLoop": "#f59e0b"
-  },
-  "speakNames": true,
-  "defaultAlarm": "beep-3x"
+  ]
 }
 \`\`\`
 
@@ -581,16 +516,7 @@ const EXAMPLES = `
       "type": "rest",
       "duration": 300
     }
-  ],
-  "colors": {
-    "prepare": "#f97316",
-    "work": "#22c55e",
-    "rest": "#3b82f6",
-    "loop": "#8b5cf6",
-    "nestedLoop": "#f59e0b"
-  },
-  "defaultAlarm": "beep-2x",
-  "speakNames": true
+  ]
 }
 \`\`\`
 Duration calculation: 600 + 4×(45+30) + 4×(45+30) + 3×(60+30) + 4×(45+30) + 4×(40+30) + 4×(40+30) + 5×(30+30) + 3×(45+30) + 300 = 600 + 300 + 300 + 270 + 300 + 280 + 280 + 300 + 225 + 300 = 3155 seconds ≈ 52.6 minutes. This needs adjustment for exactly 60 minutes!
@@ -609,10 +535,10 @@ export function buildInitialPrompt(
 
 The user is currently editing this workout:
 \`\`\`json
-${JSON.stringify(currentConfig, null, 2)}
+${JSON.stringify({ items: currentConfig.items }, null, 2)}
 \`\`\`
 
-Preserve the structure and modify according to the user's request.
+Preserve the structure and modify according to the user's request. Only return the items array structure.
 `
 		: "";
 
@@ -723,17 +649,15 @@ Corrected:
    - ❌ Bad: "Exercise 1", "Movement", "Activity"
    - **Critical**: For stretches that work one side at a time, always indicate side switching in the name and use 6 loops (3 per side)
 
-9. **Use default colors** - Always include the default ColorSettings object. Do NOT add color fields to individual IntervalStep items unless you need to override the default.
+9. **Ensure all IDs are unique strings** - Use sequential numbers: "1", "2", "3", etc.
 
-10. **Ensure all IDs are unique strings** - Use sequential numbers: "1", "2", "3", etc.
+10. **Use "prepare" type** for warm-up/preparation phases
 
-11. **Use "prepare" type** for warm-up/preparation phases
+11. **Use "work" type** for exercise/activity phases (including stretches)
 
-12. **Use "work" type** for exercise/activity phases (including stretches)
+12. **Use "rest" type** for rest/recovery phases between exercises
 
-13. **Use "rest" type** for rest/recovery phases between exercises
-
-14. **Return ONLY the valid JSON object** - No markdown code blocks, no explanations, no additional text
+13. **Return ONLY the valid JSON object** - No markdown code blocks, no explanations, no additional text. The output must be ONLY: { "items": [...] }
 
 ## Key Patterns
 
@@ -819,13 +743,12 @@ ${EXAMPLES}
 4. Ensure all required fields are present
 5. Ensure all data types are correct (numbers as numbers, not strings)
 6. Ensure all IDs are unique strings
-7. Ensure colors are valid hex format
-8. Ensure durations are between ${MIN_DURATION_SECONDS} and ${MAX_DURATION_SECONDS} seconds
-9. Ensure loop counts are between 1 and ${MAX_LOOPS_PER_GROUP}
-10. If the user requested multiple exercises (e.g., "6 exercises"), create multiple LoopGroups
-11. For stretches, structure each exercise as a LoopGroup with work/rest pairs
-12. **Verify math**: Sum all intervals (accounting for loops) to confirm total duration matches request
-13. Return ONLY valid JSON, no markdown code blocks, no explanations, no additional text
+7. Ensure durations are between ${MIN_DURATION_SECONDS} and ${MAX_DURATION_SECONDS} seconds
+8. Ensure loop counts are between 1 and ${MAX_LOOPS_PER_GROUP}
+9. If the user requested multiple exercises (e.g., "6 exercises"), create multiple LoopGroups
+10. For stretches, structure each exercise as a LoopGroup with work/rest pairs
+11. **Verify math**: Sum all intervals (accounting for loops) to confirm total duration matches request
+12. Return ONLY valid JSON with items array, no markdown code blocks, no explanations, no additional text
 
 Generate the corrected workout configuration now:`;
 }

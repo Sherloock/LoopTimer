@@ -36,9 +36,8 @@ export default async function SharedTimerPage({ params }: PageProps) {
 		const { userId } = await auth();
 		if (!userId) return;
 
-		const { cloneSharedTimer } = await import(
-			"@/actions/shared/getSharedTimer"
-		);
+		const { cloneSharedTimer } =
+			await import("@/actions/shared/getSharedTimer");
 		const { id: timerId } = await params;
 		const result = await cloneSharedTimer(timerId, userId);
 

@@ -339,6 +339,7 @@ npm run db:down
    ```bash
    npm run deploy
    ```
+
    - Vercel runs `vercel-build` script
    - Automatically applies migrations via `prisma migrate deploy`
    - Seeds database with default templates

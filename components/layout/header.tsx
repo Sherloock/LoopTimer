@@ -3,7 +3,7 @@
 import { ClientOnly } from "@/components/providers/client-only";
 import { Button } from "@/components/ui/button";
 import { SignedIn, SignedOut, UserButton } from "@clerk/nextjs";
-import { Moon, Sun, Timer } from "lucide-react";
+import { LogIn, Moon, Sun, Timer } from "lucide-react";
 import { useTheme } from "next-themes";
 import Link from "next/link";
 import { useEffect, useState } from "react";
@@ -49,7 +49,10 @@ export function Header() {
 							</SignedIn>
 							<SignedOut>
 								<Link href="/sign-in">
-									<Button variant="default">Sign in</Button>
+									<Button variant="default" className="gap-2">
+										<LogIn size={16} />
+										Sign in
+									</Button>
 								</Link>
 							</SignedOut>
 						</ClientOnly>

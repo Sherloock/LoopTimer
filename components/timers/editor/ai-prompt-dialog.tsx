@@ -184,8 +184,9 @@ export function AiPromptDialog({
 							variant="outline"
 							onClick={() => onOpenChange(false)}
 							disabled={isGenerating}
-							className="flex-1"
+							className="flex-1 gap-2"
 						>
+							<X size={16} />
 							Cancel
 						</Button>
 						<Button

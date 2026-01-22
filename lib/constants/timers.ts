@@ -53,3 +53,10 @@ export const TEMPLATE_CATEGORY_LABELS: Record<TemplateCategory, string> = {
 } as const;
 
 export const SYSTEM_USER_ID = "system";
+
+export const DEFAULT_USER_PREFERENCES = {
+	colors: ADVANCED_TIMER_DEFAULT_COLORS,
+	defaultAlarm: "beep-2x",
+	isSound: true,
+	isSpeakNames: true,
+} as const;

@@ -248,15 +248,18 @@ export function ImportDialog({
 							<Button
 								onClick={handleClipboardImport}
 								disabled={isImporting || !clipboardText.trim()}
-								className="flex-1"
+								className="flex-1 gap-2"
 							>
 								{isImporting ? (
 									<>
-										<Loader2 className="mr-2 h-4 w-4 animate-spin" />
+										<Loader2 className="h-4 w-4 animate-spin" />
 										Importing...
 									</>
 								) : (
-									<>Import</>
+									<>
+										<Upload className="h-4 w-4" />
+										Import
+									</>
 								)}
 							</Button>
 						</div>

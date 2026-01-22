@@ -1,5 +1,6 @@
 "use client";
 
+import { UserPreferencesDialog } from "@/components/timers/editor/user-preferences-dialog";
 import { ImportDialog } from "@/components/timers/import/import-dialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -27,13 +28,15 @@ import { type LoopGroup, type WorkoutItem } from "@/utils/compute-total-time";
 import {
 	Copy,
 	Edit,
-	FileDown,
+	Import,
 	MoreVertical,
 	Play,
 	Plus,
+	Settings,
 	Sparkles,
 	Timer,
 	Trash2,
+	X,
 } from "lucide-react";
 import { useState } from "react";
 
@@ -125,6 +128,8 @@ export function TimersList() {
 	const { mutate: saveTimer } = useSaveTimer();
 	const [confirmId, setConfirmId] = useState<string | null>(null);
 	const [isImportDialogOpen, setIsImportDialogOpen] = useState(false);
+	const [isUserPreferencesDialogOpen, setIsUserPreferencesDialogOpen] =
+		useState(false);
 	const { goToEditTimer, goToPlayTimer } = useNavigation();
 
 	const handleImport = async (name: string, data: AdvancedConfig) => {
@@ -152,20 +157,20 @@ export function TimersList() {
 	return (
 		<div className="space-y-6">
 			{/* Header */}
-			<div className="relative flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+			<div className="relative flex flex-row justify-between gap-4">
 				<div className="space-y-2">
 					<div className="flex flex-wrap items-center gap-2">
 						<h1 className="neon-text text-3xl font-semibold leading-none tracking-tight sm:text-4xl">
 							Timers
 						</h1>
-						{hasTimers && (
+						{/* {hasTimers && (
 							<Badge
 								variant="secondary"
 								className="border-primary/20 bg-primary/10 text-primary"
 							>
 								{timersList.length}
 							</Badge>
-						)}
+						)} */}
 					</div>
 					<p className="text-sm text-muted-foreground">{subtitle}</p>
 				</div>
@@ -174,22 +179,33 @@ export function TimersList() {
 						<Button
 							variant="outline"
 							size="sm"
+							className="gap-2"
+							onClick={() => setIsUserPreferencesDialogOpen(true)}
+							aria-label="User preferences"
+						>
+							<Settings size={16} />
+							<span className="hidden sm:inline">Preferences</span>
+						</Button>
+						<Button
+							variant="outline"
+							size="sm"
+							className="gap-2"
 							onClick={() => setIsImportDialogOpen(true)}
 							aria-label="Import timer"
 						>
-							<FileDown size={16} className="mr-2" />
+							<Import size={16} />
 							<span className="hidden sm:inline">Import</span>
 						</Button>
 						<Button
 							variant="brand"
 							size="sm"
-							className="neon-hover-glow h-9 gap-2 px-2 sm:px-3 md:px-3"
+							className="neon-hover-glow gap-2"
 							onClick={() => goToEditTimer()}
 							aria-label="Add timer"
 						>
 							<Plus size={16} />
-							<span className="">Add</span>
-							<span className="hidden md:inline"> timer</span>
+							{/* <span className="">Add</span> */}
+							<span className="hidden sm:inline">Add timer</span>
 						</Button>
 					</div>
 				)}
@@ -276,7 +292,7 @@ export function TimersList() {
 						return (
 							<div
 								key={timer.id}
-								className="group relative overflow-hidden rounded-lg border bg-card/40 p-4 shadow-sm backdrop-blur supports-[backdrop-filter]:bg-card/30 sm:p-5"
+								className="group relative overflow-hidden rounded-lg border bg-card/40 p-3 shadow-sm backdrop-blur supports-[backdrop-filter]:bg-card/30"
 							>
 								<div
 									aria-hidden
@@ -285,8 +301,8 @@ export function TimersList() {
 
 								<div className="relative flex flex-row items-start justify-between gap-3">
 									<div className="flex min-w-0 items-start gap-3">
-										<div className="neon-glow mt-0.5 inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
-											<Timer size={16} />
+										<div className="neon-glow mt-0.5 inline-flex size-12 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
+											<Timer size={20} />
 										</div>
 
 										<div className="min-w-0 flex-1">
@@ -296,13 +312,13 @@ export function TimersList() {
 												</p>
 												<Badge
 													variant="secondary"
-													className="w-13 shrink-0 grow-0 self-start rounded-lg border-primary/20 bg-primary/10 text-center font-mono text-xs text-primary sm:ml-auto md:ml-auto md:w-16 md:text-base"
+													className="w-13 md:w-18 shrink-0 grow-0 self-start rounded-lg border-primary/20 bg-primary/10 text-center font-mono text-xs text-primary sm:ml-auto md:ml-auto md:text-base"
 												>
 													{formatTime(totalSeconds)}
 												</Badge>
 											</div>
 
-											<div className="mt-1 hidden space-y-1 md:block">
+											<div className="mt-1 hidden space-y-1 sm:block">
 												<p className="text-xs text-muted-foreground">
 													{metaParts.join(TIMER_CARD_META.separator)}
 												</p>
@@ -381,7 +397,12 @@ export function TimersList() {
 					<DialogContent title="Delete timer?">
 						<p>Are you sure you want to delete this timer?</p>
 						<div className="flex justify-end gap-2 pt-4">
-							<Button variant="outline" onClick={() => setConfirmId(null)}>
+							<Button
+								variant="outline"
+								onClick={() => setConfirmId(null)}
+								className="gap-2"
+							>
+								<X size={16} />
 								Cancel
 							</Button>
 							<Button
@@ -391,7 +412,9 @@ export function TimersList() {
 										onSuccess: () => setConfirmId(null),
 									});
 								}}
+								className="gap-2"
 							>
+								<Trash2 size={16} />
 								Delete
 							</Button>
 						</div>
@@ -404,6 +427,12 @@ export function TimersList() {
 				open={isImportDialogOpen}
 				onOpenChange={setIsImportDialogOpen}
 				onImport={handleImport}
+			/>
+
+			{/* User Preferences Dialog */}
+			<UserPreferencesDialog
+				open={isUserPreferencesDialogOpen}
+				onOpenChange={setIsUserPreferencesDialogOpen}
 			/>
 		</div>
 	);

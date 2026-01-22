@@ -25,8 +25,8 @@ model TimerTemplate {
   userId      String
   name        String
   description String?
-  category    String   // "hiit", "tabata", "boxing", "yoga", "strength", "pomodoro", "custom"
-  data        Json     // AdvancedConfig
+  category    String // "hiit", "tabata", "boxing", "yoga", "strength", "pomodoro", "custom"
+  data        Json // AdvancedConfig
   isPublic    Boolean  @default(false)
   cloneCount  Int      @default(0)
   createdAt   DateTime @default(now())
@@ -42,7 +42,7 @@ model SharedTimer {
   id        String    @id @default(cuid())
   userId    String
   name      String?
-  data      Json      // AdvancedConfig
+  data      Json // AdvancedConfig
   expiresAt DateTime?
   viewCount Int       @default(0)
   createdAt DateTime  @default(now())
@@ -51,4 +51,18 @@ model SharedTimer {
   @@index([userId])
   @@index([expiresAt])
   @@map("shared_timer")
+}
+
+model UserPreferences {
+  id           String   @id @default(cuid())
+  userId       String   @unique
+  colors       Json // ColorSettings
+  defaultAlarm String
+  isSound      Boolean  @default(true)
+  isSpeakNames Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@index([userId])
+  @@map("user_preferences")
 }
