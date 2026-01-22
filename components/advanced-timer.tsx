@@ -1628,9 +1628,14 @@ export function AdvancedTimer({
 
 	// --- AI generation handler ---
 	const handleAiGenerated = useCallback(
-		(generatedConfig: AdvancedConfig) => {
+		(generatedConfig: AdvancedConfig, generatedName?: string) => {
 			// Update config with AI-generated workout
 			setConfig(generatedConfig);
+
+			// Update timer name if AI provided one
+			if (generatedName) {
+				handleTimerNameChange(generatedName);
+			}
 
 			// Update next ID to avoid collisions with generated IDs
 			const extractIds = (items: WorkoutItem[]): number[] => {
@@ -1651,7 +1656,7 @@ export function AdvancedTimer({
 				id: "ai-workout-applied",
 			});
 		},
-		[setNextId],
+		[setNextId, handleTimerNameChange],
 	);
 
 	// Intercept exit: if dirty, show dialog, else call onExit
@@ -2276,6 +2281,7 @@ export function AdvancedTimer({
 				onOpenChange={setShowAiDialog}
 				onGenerated={handleAiGenerated}
 				currentConfig={config}
+				currentName={timerName}
 			/>
 
 			{/* Save Template Dialog */}

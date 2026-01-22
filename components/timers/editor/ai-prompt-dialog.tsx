@@ -13,8 +13,9 @@ import { toast } from "sonner";
 interface AiPromptDialogProps {
 	open: boolean;
 	onOpenChange: (open: boolean) => void;
-	onGenerated: (config: AdvancedConfig) => void;
+	onGenerated: (config: AdvancedConfig, name?: string) => void;
 	currentConfig?: AdvancedConfig;
+	currentName?: string;
 }
 
 export function AiPromptDialog({
@@ -22,6 +23,7 @@ export function AiPromptDialog({
 	onOpenChange,
 	onGenerated,
 	currentConfig,
+	currentName,
 }: AiPromptDialogProps) {
 	const [prompt, setPrompt] = useState("");
 	const [isGenerating, setIsGenerating] = useState(false);
@@ -85,7 +87,7 @@ export function AiPromptDialog({
 				},
 			);
 
-			onGenerated(data.config);
+			onGenerated(data.config, data.name);
 			onOpenChange(false);
 
 			// Reset form

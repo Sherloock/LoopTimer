@@ -22,6 +22,7 @@ const groq = new Groq({
 interface GenerateWorkoutRequest {
 	prompt: string;
 	currentConfig?: AdvancedConfig;
+	currentName?: string;
 }
 
 /**
@@ -125,7 +126,7 @@ export async function POST(req: Request) {
 
 		// Parse request body
 		const body = (await req.json()) as GenerateWorkoutRequest;
-		const { prompt, currentConfig } = body;
+		const { prompt, currentConfig, currentName } = body;
 
 		if (!prompt || typeof prompt !== "string" || !prompt.trim()) {
 			return NextResponse.json(
@@ -208,12 +209,17 @@ export async function POST(req: Request) {
 								strippedConfig
 									? ({ items: strippedConfig.items } as AdvancedConfig)
 									: undefined,
+								currentName,
 							)
 						: buildRetryPrompt(
 								sanitizedPrompt,
 								lastInvalidJson,
 								lastErrors,
 								attempt,
+								strippedConfig
+									? ({ items: strippedConfig.items } as AdvancedConfig)
+									: undefined,
+								currentName,
 							);
 
 				// Call Groq API
@@ -230,10 +236,10 @@ export async function POST(req: Request) {
 				const jsonString = extractJson(aiResponse.content);
 				lastInvalidJson = jsonString;
 
-				// Parse JSON (AI now returns only { items: [...] })
-				let parsedItemsOnly: { items: unknown[] } | unknown;
+				// Parse JSON (AI now returns { name?: string, items: [...] })
+				let parsedResponse: { name?: string; items: unknown[] } | unknown;
 				try {
-					parsedItemsOnly = JSON.parse(jsonString);
+					parsedResponse = JSON.parse(jsonString);
 				} catch (parseError) {
 					lastErrors = [
 						`Invalid JSON syntax: ${(parseError as Error).message}`,
@@ -260,10 +266,10 @@ export async function POST(req: Request) {
 
 				// Validate that we have items array
 				if (
-					!parsedItemsOnly ||
-					typeof parsedItemsOnly !== "object" ||
-					!("items" in parsedItemsOnly) ||
-					!Array.isArray((parsedItemsOnly as { items: unknown[] }).items)
+					!parsedResponse ||
+					typeof parsedResponse !== "object" ||
+					!("items" in parsedResponse) ||
+					!Array.isArray((parsedResponse as { items: unknown[] }).items)
 				) {
 					lastErrors = [
 						"AI output must contain 'items' array. Colors and sounds are not needed.",
@@ -285,9 +291,13 @@ export async function POST(req: Request) {
 					continue; // Retry
 				}
 
+				// Extract name if provided (optional but recommended)
+				const generatedName =
+					(parsedResponse as { name?: string }).name || undefined;
+
 				// Merge user preferences with AI-generated items
 				const fullConfig = mergeUserPreferences(
-					parsedItemsOnly as { items: WorkoutItem[] },
+					{ items: (parsedResponse as { items: WorkoutItem[] }).items },
 					userPreferences,
 				);
 
@@ -301,6 +311,7 @@ export async function POST(req: Request) {
 					);
 					return NextResponse.json({
 						config: fullConfig,
+						name: generatedName, // Return generated name if provided
 						attempt,
 					});
 				}

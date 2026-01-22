@@ -49,6 +49,7 @@ The output MUST be a valid JSON object matching this exact structure:
 
 \`\`\`typescript
 interface WorkoutOutput {
+  name?: string;           // Optional: Workout name (e.g., "Tabata Classic", "HIIT Beginner", "Morning Stretch")
   items: WorkoutItem[];
 }
 
@@ -73,43 +74,72 @@ interface LoopGroup {
 ## Validation Rules
 
 1. **Required fields**: items
-2. **items**: Must be a non-empty array of WorkoutItem objects
-3. **IntervalStep.duration**: Must be a number between ${MIN_DURATION_SECONDS} and ${MAX_DURATION_SECONDS}
-4. **IntervalStep.type**: Must be exactly "prepare", "work", or "rest"
-5. **LoopGroup.loops**: Must be a number between 1 and ${MAX_LOOPS_PER_GROUP}
-6. **LoopGroup.items**: Must be a non-empty array
-7. **All IDs**: Must be unique strings
+2. **Optional fields**: name (recommended for new workouts, preserve when editing)
+3. **items**: Must be a non-empty array of WorkoutItem objects
+4. **IntervalStep.duration**: Must be a number between ${MIN_DURATION_SECONDS} and ${MAX_DURATION_SECONDS}
+5. **IntervalStep.type**: Must be exactly "prepare", "work", or "rest"
+6. **LoopGroup.loops**: Must be a number between 1 and ${MAX_LOOPS_PER_GROUP}
+7. **LoopGroup.items**: Must be a non-empty array
+8. **All IDs**: Must be unique strings
 
-**IMPORTANT**: Do NOT include colors, sounds, or any UI preferences in your output. Only generate the workout structure (items array).
+**IMPORTANT**: Do NOT include colors, sounds, or any UI preferences in your output. Only generate the workout structure (items array and optional name).
 `;
 
 const EXAMPLES = `
-## Valid Examples
+## High-Quality Workout Examples
 
-### Example 1: Simple workout
+### Example 1: Tabata Classic (8 rounds, 20s work / 10s rest)
 \`\`\`json
 {
+  "name": "Tabata Classic",
   "items": [
     {
-      "id": "1",
-      "name": "WARM UP",
+      "id": "loop-1",
+      "loops": 8,
+      "items": [
+        {
+          "id": "work-1",
+          "name": "Work",
+          "duration": 20,
+          "type": "work"
+        },
+        {
+          "id": "rest-1",
+          "name": "Rest",
+          "duration": 10,
+          "type": "rest"
+        }
+      ]
+    }
+  ]
+}
+\`\`\`
+
+### Example 2: HIIT Beginner (30s work / 30s rest, 10 rounds with warm-up)
+\`\`\`json
+{
+  "name": "HIIT Beginner",
+  "items": [
+    {
+      "id": "prepare-1",
+      "name": "Get Ready",
       "duration": 10,
       "type": "prepare"
     },
     {
-      "id": "2",
-      "loops": 3,
+      "id": "loop-1",
+      "loops": 10,
       "items": [
         {
-          "id": "3",
-          "name": "PUSH UPS",
+          "id": "work-1",
+          "name": "Work",
           "duration": 30,
           "type": "work"
         },
         {
-          "id": "4",
-          "name": "REST",
-          "duration": 15,
+          "id": "rest-1",
+          "name": "Rest",
+          "duration": 30,
           "type": "rest"
         }
       ]
@@ -118,49 +148,67 @@ const EXAMPLES = `
 }
 \`\`\`
 
-### Example 2: Complex nested workout
+### Example 3: Boxing Rounds (3min work / 1min rest, 12 rounds)
 \`\`\`json
 {
+  "name": "Boxing Rounds",
   "items": [
     {
-      "id": "1",
-      "name": "PREPARE",
-      "duration": 5,
+      "id": "prepare-1",
+      "name": "Warm Up",
+      "duration": 180,
       "type": "prepare"
     },
     {
-      "id": "2",
-      "loops": 2,
+      "id": "loop-1",
+      "loops": 12,
       "items": [
         {
-          "id": "3",
-          "name": "SQUATS",
+          "id": "work-1",
+          "name": "Round",
+          "duration": 180,
+          "type": "work"
+        },
+        {
+          "id": "rest-1",
+          "name": "Rest",
+          "duration": 60,
+          "type": "rest",
+          "skipOnLastLoop": true
+        }
+      ]
+    }
+  ]
+}
+\`\`\`
+
+### Example 4: Strength Circuit (45s work / 15s rest, 8 exercises)
+\`\`\`json
+{
+  "name": "Strength Circuit",
+  "items": [
+    {
+      "id": "prepare-1",
+      "name": "Warm Up",
+      "duration": 90,
+      "type": "prepare"
+    },
+    {
+      "id": "loop-1",
+      "loops": 8,
+      "items": [
+        {
+          "id": "work-1",
+          "name": "Exercise",
           "duration": 45,
           "type": "work"
         },
         {
-          "id": "4",
-          "name": "REST",
-          "duration": 20,
-          "type": "rest"
-        },
-        {
-          "id": "5",
-          "loops": 3,
-          "items": [
-            {
-              "id": "6",
-              "name": "LUNGES",
-              "duration": 30,
-              "type": "work"
-            },
-            {
-              "id": "7",
-              "name": "QUICK REST",
-              "duration": 10,
-              "type": "rest"
-            }
-          ]
+          "id": "rest-1",
+          "name": "Rest",
+          "duration": 15,
+          "type": "rest",
+          "skipOnLastLoop": true
         }
       ]
     }
@@ -168,358 +216,100 @@ const EXAMPLES = `
 }
 \`\`\`
 
-### Example 3: Comprehensive stretch routine with multiple exercises and loops
+### Example 5: Yoga Flow (5 poses × 1min, 30s transitions)
 \`\`\`json
 {
+  "name": "Yoga Flow",
   "items": [
     {
-      "id": "1",
-      "name": "Warm up",
-      "type": "work",
-      "duration": 180
-    },
-    {
-      "id": "2",
-      "name": "hipflexor",
+      "id": "loop-1",
+      "loops": 5,
       "items": [
         {
-          "id": "3",
-          "name": "hipflexor",
-          "type": "work",
-          "duration": 30
+          "id": "work-1",
+          "name": "Hold Pose",
+          "duration": 60,
+          "type": "work"
         },
         {
-          "id": "4",
-          "name": "REST",
-          "type": "rest",
-          "duration": 15,
-          "skipOnLastLoop": false
-        }
-      ],
-      "loops": 6,
-      "collapsed": false
-    },
-    {
-      "id": "5",
-      "name": "To knee",
-      "items": [
-        {
-          "id": "6",
-          "name": "To knee",
-          "type": "work",
-          "duration": 30
-        },
-        {
-          "id": "7",
-          "name": "REST",
-          "type": "rest",
-          "duration": 15,
-          "skipOnLastLoop": false
-        }
-      ],
-      "loops": 3,
-      "collapsed": false
-    },
-    {
-      "id": "8",
-      "name": "hipflexor",
-      "items": [
-        {
-          "id": "9",
-          "name": "Piegon",
-          "type": "work",
-          "duration": 30
-        },
-        {
-          "id": "10",
-          "name": "REST",
-          "type": "rest",
-          "duration": 15,
-          "skipOnLastLoop": false
-        }
-      ],
-      "loops": 6,
-      "collapsed": false
-    },
-    {
-      "id": "11",
-      "name": "To knee",
-      "items": [
-        {
-          "id": "12",
-          "name": "lat stretch",
-          "type": "work",
-          "duration": 30
-        },
-        {
-          "id": "13",
-          "name": "REST or cat",
-          "type": "rest",
-          "duration": 15,
-          "skipOnLastLoop": false
-        }
-      ],
-      "loops": 3,
-      "collapsed": false
-    },
-    {
-      "id": "14",
-      "name": "hipflexor",
-      "items": [
-        {
-          "id": "15",
-          "name": "sideway2, behind2, latside2",
-          "type": "work",
-          "duration": 30
-        },
-        {
-          "id": "16",
-          "name": "REST",
-          "type": "rest",
-          "duration": 7,
-          "skipOnLastLoop": false
-        }
-      ],
-      "loops": 6,
-      "collapsed": false
-    },
-    {
-      "id": "17",
-      "name": "To knee",
-      "items": [
-        {
-          "id": "18",
-          "name": "suppine twist",
-          "type": "work",
-          "duration": 30
-        },
-        {
-          "id": "19",
-          "name": "REST",
-          "type": "rest",
-          "duration": 15,
-          "skipOnLastLoop": false
-        }
-      ],
-      "loops": 2,
-      "collapsed": false
-    },
-    {
-      "id": "20",
-      "name": "hipflexor",
-      "items": [
-        {
-          "id": "21",
-          "name": "90 - 90 alter",
-          "type": "work",
-          "duration": 30
-        },
-        {
-          "id": "22",
-          "name": "REST",
-          "type": "rest",
-          "duration": 10,
-          "skipOnLastLoop": false
-        }
-      ],
-      "loops": 6,
-      "collapsed": false
-    },
-    {
-      "id": "23",
-      "name": "hipflexor",
-      "items": [
-        {
-          "id": "24",
-          "name": "PREPARE",
-          "type": "prepare",
-          "duration": 10
-        },
-        {
-          "id": "25",
-          "name": "front split",
-          "type": "work",
-          "duration": 30
-        },
-        {
-          "id": "26",
-          "name": "REST",
-          "type": "rest",
+          "id": "rest-1",
+          "name": "Transition",
           "duration": 30,
+          "type": "rest",
           "skipOnLastLoop": true
         }
-      ],
-      "loops": 4,
-      "collapsed": false
+      ]
     }
   ]
 }
 \`\`\`
 
-### Example 4: 60-minute full-body strength workout (Duration calculation demonstration)
+### Example 6: HIIT Advanced (60s work / 20s rest, 12 rounds)
 \`\`\`json
 {
+  "name": "HIIT Advanced",
   "items": [
     {
-      "id": "1",
-      "name": "Warm-up",
-      "type": "prepare",
-      "duration": 600
+      "id": "prepare-1",
+      "name": "Warm Up",
+      "duration": 120,
+      "type": "prepare"
     },
     {
-      "id": "2",
+      "id": "loop-1",
+      "loops": 12,
       "items": [
         {
-          "id": "3",
-          "name": "Push-ups",
-          "type": "work",
-          "duration": 45
+          "id": "work-1",
+          "name": "Work",
+          "duration": 60,
+          "type": "work"
         },
         {
-          "id": "4",
-          "name": "REST",
-          "type": "rest",
-          "duration": 30
+          "id": "rest-1",
+          "name": "Rest",
+          "duration": 20,
+          "type": "rest"
         }
-      ],
-      "loops": 4
-    },
-    {
-      "id": "5",
-      "items": [
-        {
-          "id": "6",
-          "name": "Squats",
-          "type": "work",
-          "duration": 45
-        },
-        {
-          "id": "7",
-          "name": "REST",
-          "type": "rest",
-          "duration": 30
-        }
-      ],
-      "loops": 4
-    },
-    {
-      "id": "8",
-      "items": [
-        {
-          "id": "9",
-          "name": "Plank",
-          "type": "work",
-          "duration": 60
-        },
-        {
-          "id": "10",
-          "name": "REST",
-          "type": "rest",
-          "duration": 30
-        }
-      ],
-      "loops": 3
-    },
-    {
-      "id": "11",
-      "items": [
-        {
-          "id": "12",
-          "name": "Lunges",
-          "type": "work",
-          "duration": 45
-        },
-        {
-          "id": "13",
-          "name": "REST",
-          "type": "rest",
-          "duration": 30
-        }
-      ],
-      "loops": 4
-    },
-    {
-      "id": "14",
-      "items": [
-        {
-          "id": "15",
-          "name": "Mountain climbers",
-          "type": "work",
-          "duration": 40
-        },
-        {
-          "id": "16",
-          "name": "REST",
-          "type": "rest",
-          "duration": 30
-        }
-      ],
-      "loops": 4
-    },
-    {
-      "id": "17",
-      "items": [
-        {
-          "id": "18",
-          "name": "Burpees",
-          "type": "work",
-          "duration": 40
-        },
-        {
-          "id": "19",
-          "name": "REST",
-          "type": "rest",
-          "duration": 30
-        }
-      ],
-      "loops": 4
-    },
-    {
-      "id": "20",
-      "items": [
-        {
-          "id": "21",
-          "name": "Pull-ups",
-          "type": "work",
-          "duration": 30
-        },
-        {
-          "id": "22",
-          "name": "REST",
-          "type": "rest",
-          "duration": 30
-        }
-      ],
-      "loops": 5
-    },
-    {
-      "id": "23",
-      "items": [
-        {
-          "id": "24",
-          "name": "Russian twists",
-          "type": "work",
-          "duration": 45
-        },
-        {
-          "id": "25",
-          "name": "REST",
-          "type": "rest",
-          "duration": 30
-        }
-      ],
-      "loops": 3
-    },
-    {
-      "id": "26",
-      "name": "Cool-down stretch",
-      "type": "rest",
-      "duration": 300
+      ]
     }
   ]
 }
 \`\`\`
-Duration calculation: 600 + 4×(45+30) + 4×(45+30) + 3×(60+30) + 4×(45+30) + 4×(40+30) + 4×(40+30) + 5×(30+30) + 3×(45+30) + 300 = 600 + 300 + 300 + 270 + 300 + 280 + 280 + 300 + 225 + 300 = 3155 seconds ≈ 52.6 minutes. This needs adjustment for exactly 60 minutes!
+
+### Example 7: Pomodoro Classic (25min work / 5min rest, 4 rounds + long break)
+\`\`\`json
+{
+  "name": "Pomodoro Classic",
+  "items": [
+    {
+      "id": "loop-1",
+      "loops": 4,
+      "items": [
+        {
+          "id": "work-1",
+          "name": "Focus",
+          "duration": 1500,
+          "type": "work"
+        },
+        {
+          "id": "rest-1",
+          "name": "Break",
+          "duration": 300,
+          "type": "rest",
+          "skipOnLastLoop": true
+        }
+      ]
+    },
+    {
+      "id": "rest-2",
+      "name": "Long Break",
+      "duration": 900,
+      "type": "rest"
+    }
+  ]
+}
+\`\`\`
 `;
 
 /**
@@ -528,21 +318,38 @@ Duration calculation: 600 + 4×(45+30) + 4×(45+30) + 3×(60+30) + 4×(45+30) + 
 export function buildInitialPrompt(
 	userPrompt: string,
 	currentConfig?: AdvancedConfig,
+	currentName?: string,
 ): string {
 	const currentStateSection = currentConfig
 		? `
 ## Current Workout State
 
-The user is currently editing this workout:
+The user is currently editing an existing workout. You can either:
+- **Modify the existing workout** based on their request (preserve structure, adjust durations, change exercises, etc.)
+- **Generate a completely new workout** if the user explicitly asks for a new one or wants a major overhaul
+
+**Original Workout Name**: "${currentName || "Untitled Workout"}"
+
+**Current Workout Structure**:
 \`\`\`json
 ${JSON.stringify({ items: currentConfig.items }, null, 2)}
 \`\`\`
 
-Preserve the structure and modify according to the user's request. Only return the items array structure.
+**IMPORTANT**: 
+- If the user asks for tweaks, modifications, or adjustments, preserve the overall structure and make targeted changes
+- If the user asks for a new workout or complete rewrite, generate a fresh workout structure
+- When editing, you can update the workout name if the user's request suggests a new name, or preserve the original name if it still fits
+- Always return BOTH the name field (updated or preserved) AND the items array
 `
 		: "";
 
 	return `You are a workout timer generator AI. Your task is to generate a valid JSON configuration for a workout timer based on the user's natural language request.
+
+**You can do TWO things:**
+1. **Generate a new workout** from scratch when the user describes what they want
+2. **Edit an existing workout** when the user provides modifications, tweaks, or adjustments to their current workout
+
+${currentStateSection ? currentStateSection : "**This is a NEW workout generation** - the user is creating a workout from scratch."}
 
 ## Language Support
 
@@ -657,7 +464,10 @@ Corrected:
 
 12. **Use "rest" type** for rest/recovery phases between exercises
 
-13. **Return ONLY the valid JSON object** - No markdown code blocks, no explanations, no additional text. The output must be ONLY: { "items": [...] }
+13. **Return the valid JSON object** - No markdown code blocks, no explanations, no additional text. The output must be:
+    - For NEW workouts: { "name": "Descriptive Workout Name", "items": [...] }
+    - For EDITED workouts: { "name": "Updated or Original Name", "items": [...] }
+    - The name field should be descriptive and match the workout type (e.g., "Tabata Classic", "HIIT Beginner", "Morning Stretch", "Boxing Rounds")
 
 ## Key Patterns
 
@@ -700,7 +510,24 @@ export function buildRetryPrompt(
 	invalidJson: string,
 	errors: string[],
 	attempt: number,
+	currentConfig?: AdvancedConfig,
+	currentName?: string,
 ): string {
+	const currentStateSection = currentConfig
+		? `
+## Current Workout State (Being Edited)
+
+**Original Workout Name**: "${currentName || "Untitled Workout"}"
+
+**Current Workout Structure**:
+\`\`\`json
+${JSON.stringify({ items: currentConfig.items }, null, 2)}
+\`\`\`
+
+Remember: You can modify the existing workout or generate a new one based on the user's request. Always return both name and items.
+`
+		: "";
+
 	return `RETRY ATTEMPT ${attempt}/3
 
 Your previous response failed validation. Please fix the following issues:
@@ -715,6 +542,8 @@ You MUST understand and process requests in MULTIPLE languages, including:
 ## Original User Request
 
 "${userPrompt}"
+
+${currentStateSection}
 
 ## Your Previous Invalid JSON
 
@@ -748,7 +577,9 @@ ${EXAMPLES}
 9. If the user requested multiple exercises (e.g., "6 exercises"), create multiple LoopGroups
 10. For stretches, structure each exercise as a LoopGroup with work/rest pairs
 11. **Verify math**: Sum all intervals (accounting for loops) to confirm total duration matches request
-12. Return ONLY valid JSON with items array, no markdown code blocks, no explanations, no additional text
+12. **Return valid JSON with name and items**: { "name": "Workout Name", "items": [...] }
+13. The name field is required - use a descriptive name that matches the workout type
+14. No markdown code blocks, no explanations, no additional text - ONLY the JSON object
 
 Generate the corrected workout configuration now:`;
 }
