@@ -1,10 +1,3 @@
-import type {
-	AdvancedConfig,
-	ColorSettings,
-	IntervalStep,
-	LoopGroup,
-	WorkoutItem,
-} from "@/types/advanced-timer";
 import {
 	MAX_DURATION_SECONDS,
 	MAX_LOOPS_PER_GROUP,
@@ -296,52 +289,6 @@ function validateWorkoutItem(
 }
 
 /**
- * Validates ColorSettings object
- */
-function validateColorSettings(
-	colors: unknown,
-	path: string,
-	errors: ValidationError[],
-): boolean {
-	if (typeof colors !== "object" || colors === null) {
-		errors.push({
-			path,
-			message: "Must be an object",
-			expected: "ColorSettings object",
-			received: typeof colors,
-		});
-		return false;
-	}
-
-	const colorObj = colors as Record<string, unknown>;
-	let isValid = true;
-
-	const requiredColors = ["prepare", "work", "rest", "loop", "nestedLoop"];
-
-	for (const colorKey of requiredColors) {
-		if (typeof colorObj[colorKey] !== "string") {
-			errors.push({
-				path: `${path}.${colorKey}`,
-				message: "Missing required field",
-				expected: "hex color string",
-				received: typeof colorObj[colorKey],
-			});
-			isValid = false;
-		} else if (!isValidHexColor(colorObj[colorKey] as string)) {
-			errors.push({
-				path: `${path}.${colorKey}`,
-				message: "Invalid hex color format",
-				expected: "hex color (e.g., #FF0000)",
-				received: String(colorObj[colorKey]),
-			});
-			isValid = false;
-		}
-	}
-
-	return isValid;
-}
-
-/**
  * Main validation function for AdvancedConfig
  */
 export function validateAdvancedConfig(data: unknown): ValidationResult {
@@ -394,38 +341,6 @@ export function validateAdvancedConfig(data: unknown): ValidationResult {
 				validateWorkoutItem(config.items[i], `items[${i}]`, errors);
 			}
 		}
-	}
-
-	// Validate colors
-	if (!config.colors) {
-		errors.push({
-			path: "colors",
-			message: "Missing required field",
-			expected: "ColorSettings object",
-			received: typeof config.colors,
-		});
-	} else {
-		validateColorSettings(config.colors, "colors", errors);
-	}
-
-	// Validate defaultAlarm
-	if (typeof config.defaultAlarm !== "string" || !config.defaultAlarm) {
-		errors.push({
-			path: "defaultAlarm",
-			message: "Missing or invalid defaultAlarm",
-			expected: "non-empty string",
-			received: typeof config.defaultAlarm,
-		});
-	}
-
-	// Validate speakNames
-	if (typeof config.speakNames !== "boolean") {
-		errors.push({
-			path: "speakNames",
-			message: "Missing or invalid speakNames",
-			expected: "boolean",
-			received: typeof config.speakNames,
-		});
 	}
 
 	// Format error messages for display
