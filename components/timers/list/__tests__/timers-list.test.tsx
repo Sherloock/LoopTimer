@@ -20,6 +20,10 @@ jest.mock("@/lib/navigation", () => ({
 	}),
 }));
 
+jest.mock("@/components/timers/editor/user-preferences-dialog", () => ({
+	UserPreferencesDialog: () => null,
+}));
+
 describe("TimersList", () => {
 	beforeEach(() => {
 		useTimersMock.mockReset();

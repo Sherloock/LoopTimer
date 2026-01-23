@@ -1,0 +1,20 @@
+echo "🔍 Running pre-commit checks..."
+echo ""
+
+echo "📝 Formatting staged files..."
+npx lint-staged || { echo "❌ Formatting failed"; exit 1; }
+
+echo ""
+echo "🔍 Running linter..."
+npm run lint || { echo "❌ Linting failed"; exit 1; }
+
+echo ""
+echo "🧪 Running tests..."
+npm test || { echo "❌ Tests failed - check output above for details"; exit 1; }
+
+echo ""
+echo "🏗️  Running build check..."
+npm run build || { echo "❌ Build failed"; exit 1; }
+
+echo ""
+echo "✅ All pre-commit checks passed!"

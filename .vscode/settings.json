@@ -5,10 +5,9 @@
 	"files.eol": "\n",
 	"editor.formatOnSave": true,
 	"editor.defaultFormatter": "esbenp.prettier-vscode",
-	"prettier-eslint.enable": false,
 	"prettier.requireConfig": false,
 	"prettier.useEditorConfig": false,
-	"prettier.prettierPath": "./node_modules/prettier",
+	"prettier.resolveGlobalModules": false,
 	"prettier.useTabs": true,
 	"prettier.tabWidth": 2,
 	"prettier.endOfLine": "lf",
@@ -19,9 +18,6 @@
 		"editor.defaultFormatter": "esbenp.prettier-vscode"
 	},
 	"[javascript]": {
-		"editor.defaultFormatter": "esbenp.prettier-vscode"
-	},
-	"[javascriptreact]": {
 		"editor.defaultFormatter": "esbenp.prettier-vscode"
 	},
 	"[json]": {
