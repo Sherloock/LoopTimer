@@ -237,7 +237,7 @@ export function UserPreferencesDialog({
 						</div>
 
 						{/* Actions */}
-						<div className="flex gap-2 pt-4">
+						<div className="flex flex-col gap-2 pt-4 sm:flex-row">
 							<Button
 								variant="outline"
 								onClick={handleReset}

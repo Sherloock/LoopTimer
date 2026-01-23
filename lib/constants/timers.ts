@@ -52,6 +52,26 @@ export const TEMPLATE_CATEGORY_LABELS: Record<TemplateCategory, string> = {
 	[TEMPLATE_CATEGORIES.CUSTOM]: "Custom",
 } as const;
 
+export const TIMER_CATEGORY_ICONS: Record<TemplateCategory, string> = {
+	[TEMPLATE_CATEGORIES.HIIT]: "Activity",
+	[TEMPLATE_CATEGORIES.TABATA]: "Flame",
+	[TEMPLATE_CATEGORIES.BOXING]: "Target",
+	[TEMPLATE_CATEGORIES.YOGA]: "Heart",
+	[TEMPLATE_CATEGORIES.STRENGTH]: "Dumbbell",
+	[TEMPLATE_CATEGORIES.POMODORO]: "Clock",
+	[TEMPLATE_CATEGORIES.CUSTOM]: "Timer",
+} as const;
+
+export const TIMER_CATEGORY_COLORS: Record<TemplateCategory, string> = {
+	[TEMPLATE_CATEGORIES.HIIT]: "#ef4444", // red-500
+	[TEMPLATE_CATEGORIES.TABATA]: "#f97316", // orange-500
+	[TEMPLATE_CATEGORIES.BOXING]: "#dc2626", // red-600
+	[TEMPLATE_CATEGORIES.YOGA]: "#ec4899", // pink-500
+	[TEMPLATE_CATEGORIES.STRENGTH]: "#8b5cf6", // violet-500
+	[TEMPLATE_CATEGORIES.POMODORO]: "#3b82f6", // blue-500
+	[TEMPLATE_CATEGORIES.CUSTOM]: "#a855f7", // purple-500
+} as const;
+
 export const SYSTEM_USER_ID = "system";
 
 export const DEFAULT_USER_PREFERENCES = {

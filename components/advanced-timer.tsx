@@ -16,6 +16,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { ColorPicker } from "@/components/ui/color-picker";
 import { Dialog, DialogClose, DialogContent } from "@/components/ui/dialog";
+import { FloatLabel } from "@/components/ui/float-label";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
@@ -30,7 +31,11 @@ import { useTimerState } from "@/hooks/use-timer-state";
 import { useSaveTimer, useTimers, useUpdateTimer } from "@/hooks/use-timers";
 import {
 	ADVANCED_TIMER_DEFAULT_COLORS,
+	TEMPLATE_CATEGORIES,
+	TEMPLATE_CATEGORY_LABELS,
+	TIMER_CATEGORY_ICONS,
 	TIMER_NAME_MAX_LENGTH,
+	type TemplateCategory,
 } from "@/lib/constants/timers";
 import {
 	playSound,
@@ -64,27 +69,42 @@ import {
 	verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
 import {
+	Activity,
 	ArrowLeft,
 	Check,
+	Clock,
 	Download,
+	Dumbbell,
+	Flame,
+	Heart,
 	Library,
 	Repeat,
 	RotateCcw,
 	Save as SaveIcon,
 	Settings,
 	Share2,
+	Target,
+	Timer,
 	Trash2,
 	Undo,
 	Wand2,
 	X,
+	type LucideIcon,
 } from "lucide-react";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import React, {
+	useCallback,
+	useEffect,
+	useMemo,
+	useRef,
+	useState,
+} from "react";
 import { toast } from "sonner";
 
 // Externalised components
 import { SortableItem } from "@/components/timers/editor/advanced/dnd/sortable-item";
 import { AiPromptDialog } from "@/components/timers/editor/ai-prompt-dialog";
 import { SaveTemplateDialog } from "@/components/timers/editor/save-template-dialog";
+import { TimelinePreview } from "@/components/timers/editor/timeline-preview";
 import { UserPreferencesDialog } from "@/components/timers/editor/user-preferences-dialog";
 import { ShareDialog } from "@/components/timers/share/share-dialog";
 import { useUserPreferences } from "@/hooks/use-user-preferences";
@@ -103,6 +123,16 @@ import {
 	LoopGroup,
 	WorkoutItem,
 } from "@/types/advanced-timer";
+
+const ICON_MAP: Record<string, LucideIcon> = {
+	Activity,
+	Clock,
+	Dumbbell,
+	Flame,
+	Heart,
+	Target,
+	Timer,
+};
 
 interface AdvancedTimerProps {
 	loadedTimer?: LoadedTimer;
@@ -241,13 +271,34 @@ export function AdvancedTimer({
 
 	// Timer name handling
 	const [timerName, setTimerName] = useState<string>(loadedTimer?.name || "");
+	const [timerCategory, setTimerCategory] = useState<string>(
+		loadedTimer?.category || TEMPLATE_CATEGORIES.CUSTOM,
+	);
+	const [timerIcon, setTimerIcon] = useState<string | null>(
+		loadedTimer?.icon || null,
+	);
 
-	// Update timer name when loadedTimer changes
+	// Normalize category to handle old timers without category
+	const normalizedCategory = timerCategory || TEMPLATE_CATEGORIES.CUSTOM;
+	const [timerColor, setTimerColor] = useState<string | null>(
+		loadedTimer?.color || null,
+	);
+
+	// Update timer fields when loadedTimer changes
 	useEffect(() => {
 		if (loadedTimer?.name) {
 			setTimerName(loadedTimer.name.slice(0, TIMER_NAME_MAX_LENGTH));
 		}
-	}, [loadedTimer?.name]);
+		if (loadedTimer?.category) {
+			setTimerCategory(loadedTimer.category);
+		}
+		if (loadedTimer?.icon) {
+			setTimerIcon(loadedTimer.icon);
+		}
+		if (loadedTimer?.color) {
+			setTimerColor(loadedTimer.color);
+		}
+	}, [loadedTimer]);
 
 	// Notify parent component when timer name changes
 	const handleTimerNameChange = (name: string) => {
@@ -1519,7 +1570,13 @@ export function AdvancedTimer({
 			overwriteTimer(
 				{
 					id: loadedTimer.id,
-					data: { name: timerName.trim(), data: config },
+					data: {
+						name: timerName.trim(),
+						data: config,
+						category: normalizedCategory as TemplateCategory,
+						icon: timerIcon,
+						color: timerColor,
+					},
 				},
 				{
 					onSuccess: (updated) => {
@@ -1533,7 +1590,13 @@ export function AdvancedTimer({
 
 		// Creating a brand-new timer
 		saveTimer(
-			{ name: timerName.trim(), data: config },
+			{
+				name: timerName.trim(),
+				data: config,
+				category: normalizedCategory as TemplateCategory,
+				icon: timerIcon,
+				color: timerColor,
+			},
 			{
 				onSuccess: () => {
 					if (onSaved) {
@@ -1669,16 +1732,34 @@ export function AdvancedTimer({
 			overwriteTimer(
 				{
 					id: loadedTimer.id,
-					data: { name: timerName.trim(), data: config },
+					data: {
+						name: timerName.trim(),
+						data: config,
+						category: normalizedCategory as TemplateCategory,
+						icon: timerIcon,
+						color: timerColor,
+					},
 				},
 				{ onSuccess },
 			);
 			return;
 		}
 		// Creating a brand-new timer
-		saveTimer({ name: timerName.trim(), data: config }, { onSuccess });
+		saveTimer(
+			{
+				name: timerName.trim(),
+				data: config,
+				category: normalizedCategory as TemplateCategory,
+				icon: timerIcon,
+				color: timerColor,
+			},
+			{ onSuccess },
+		);
 	}, [
 		timerName,
+		timerCategory,
+		timerIcon,
+		timerColor,
 		config,
 		loadedTimer,
 		existingTimers,
@@ -1814,7 +1895,7 @@ export function AdvancedTimer({
 
 							<Button
 								onClick={handleSave}
-								variant="default"
+								variant="brand"
 								size="sm"
 								className="gap-2"
 								disabled={isSavingOrUpdating}
@@ -1832,9 +1913,9 @@ export function AdvancedTimer({
 						<CardContent className="space-y-6 p-1 pb-24 pt-2 md:p-6">
 							{/* Timer Name, Stats, and Actions - Responsive Row/Column */}
 							<div className="flex flex-col gap-4">
-								{/* Row 1: Name + Stats (side by side on md+) */}
-								<div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between md:gap-4">
-									<div className="w-full md:w-auto">
+								{/* Row 1: Timer name, Category, Icon (3 input fields on md+) */}
+								<div className="flex flex-col gap-4 md:flex-row md:gap-3">
+									<div className="w-full md:flex-1">
 										<div className="relative">
 											<Input
 												id="timer-name"
@@ -1851,33 +1932,120 @@ export function AdvancedTimer({
 											>
 												Timer name
 											</Label>
+											<span
+												id="timer-name-hint"
+												className="pointer-events-none absolute bottom-1 right-3 z-10 text-[10px] leading-none text-muted-foreground"
+											>
+												{timerName.length}/{TIMER_NAME_MAX_LENGTH}
+											</span>
 										</div>
-										<p
-											id="timer-name-hint"
-											className="mt-1 px-1 text-right text-xs text-muted-foreground"
-										>
-											{timerName.length}/{TIMER_NAME_MAX_LENGTH}
-										</p>
 									</div>
-									<div className="flex w-full flex-wrap items-center justify-center gap-4 md:w-auto md:justify-center">
-										<StatCard
-											label="Total Session Time"
-											value={formatTime(totalSessionTime)}
-										/>
-										<StatCard
-											label="Total Steps"
-											value={flattenedIntervals.length.toString()}
-											valueClassName="text-2xl font-bold"
-										/>
+									{/* Category and Icon Selection */}
+									<div className="flex w-full flex-col gap-3 sm:flex-row md:flex-1 md:gap-3">
+										<div className="flex-1">
+											<FloatLabel
+												label="Category"
+												htmlFor="timer-category"
+												hasValue={!!normalizedCategory}
+											>
+												<Select
+													value={normalizedCategory}
+													onValueChange={setTimerCategory}
+												>
+													<SelectTrigger id="timer-category" className="w-full">
+														<SelectValue />
+													</SelectTrigger>
+													<SelectContent>
+														{Object.entries(TEMPLATE_CATEGORIES).map(
+															([key, value]) => (
+																<SelectItem key={value} value={value}>
+																	{TEMPLATE_CATEGORY_LABELS[value]}
+																</SelectItem>
+															),
+														)}
+													</SelectContent>
+												</Select>
+											</FloatLabel>
+										</div>
+										<div className="flex-1">
+											<FloatLabel
+												label="Icon"
+												htmlFor="timer-icon"
+												hasValue={timerIcon !== null && timerIcon !== "auto"}
+											>
+												<Select
+													value={timerIcon || "auto"}
+													onValueChange={(value) =>
+														setTimerIcon(value === "auto" ? null : value)
+													}
+												>
+													<SelectTrigger id="timer-icon" className="w-full">
+														{timerIcon &&
+														timerIcon !== "auto" &&
+														ICON_MAP[timerIcon] ? (
+															<div className="flex items-center gap-2">
+																{React.createElement(ICON_MAP[timerIcon], {
+																	size: 16,
+																	className: "shrink-0",
+																})}
+																<span>{timerIcon}</span>
+															</div>
+														) : (
+															<SelectValue placeholder="Auto (by category)" />
+														)}
+													</SelectTrigger>
+													<SelectContent>
+														<SelectItem value="auto">
+															Auto (by category)
+														</SelectItem>
+														{Object.values(TIMER_CATEGORY_ICONS).map(
+															(iconName) => {
+																const IconComponent = ICON_MAP[iconName];
+																return (
+																	<SelectItem key={iconName} value={iconName}>
+																		<div className="flex items-center gap-2">
+																			{IconComponent && (
+																				<IconComponent
+																					size={16}
+																					className="shrink-0"
+																				/>
+																			)}
+																			<span>{iconName}</span>
+																		</div>
+																	</SelectItem>
+																);
+															},
+														)}
+													</SelectContent>
+												</Select>
+											</FloatLabel>
+										</div>
 									</div>
 								</div>
-								{/* Row 2: Buttons (responsive layout) */}
-								<div className="flex w-full flex-row flex-wrap gap-2 sm:justify-end">
+								{/* Row 2: Total Session Time and Total Steps (on md+) */}
+								<div className="flex w-full flex-wrap items-center justify-center gap-4 md:justify-start">
+									<StatCard
+										label="Total Session Time"
+										value={formatTime(totalSessionTime)}
+									/>
+									<StatCard
+										label="Total Steps"
+										value={flattenedIntervals.length.toString()}
+										valueClassName="text-2xl font-bold"
+									/>
+								</div>
+								{/* Timeline Preview */}
+								<div className="w-full">
+									<Label className="mb-2 text-xs">Timeline Preview</Label>
+									<TimelinePreview config={config} />
+								</div>
+								{/* Buttons: Fixed column count grid by screen width */}
+								<div className="grid w-full grid-cols-2 gap-2 sm:grid-cols-3 md:grid-cols-3 lg:grid-cols-6">
 									<Button
 										onClick={() => setShowAiDialog(true)}
 										variant="default"
 										size="sm"
-										className="flex-1 gap-2 sm:flex-initial"
+										className="gap-2"
 									>
 										<Wand2 size={16} />
 										<span className="hidden sm:inline">AI Generate</span>
@@ -1887,7 +2055,7 @@ export function AdvancedTimer({
 										onClick={() => setShowSaveTemplateDialog(true)}
 										variant="outline"
 										size="sm"
-										className="flex-1 gap-2 sm:flex-initial"
+										className="gap-2"
 									>
 										<Library size={16} />
 										<span className="hidden sm:inline">Save Template</span>
@@ -1897,7 +2065,7 @@ export function AdvancedTimer({
 										onClick={() => setShowShareDialog(true)}
 										variant="outline"
 										size="sm"
-										className="flex-1 gap-2 sm:flex-initial"
+										className="gap-2"
 									>
 										<Share2 size={16} />
 										<span className="hidden sm:inline">Share</span>
@@ -1913,7 +2081,7 @@ export function AdvancedTimer({
 										}}
 										variant="outline"
 										size="sm"
-										className="flex-1 gap-2 sm:flex-initial"
+										className="gap-2"
 									>
 										<Download size={16} />
 										<span className="hidden sm:inline">Export</span>
@@ -1923,7 +2091,7 @@ export function AdvancedTimer({
 										onClick={() => setShowSettings(true)}
 										variant="control"
 										size="sm"
-										className="flex-1 gap-2 sm:flex-initial"
+										className="gap-2"
 									>
 										<Settings size={16} />
 										<span className="hidden sm:inline">Settings</span>
@@ -1933,7 +2101,7 @@ export function AdvancedTimer({
 										onClick={addLoop}
 										variant="control"
 										size="sm"
-										className="flex-1 gap-2 sm:flex-initial"
+										className="gap-2"
 									>
 										<Repeat size={16} />
 										<span className="hidden sm:inline">Add Loop</span>

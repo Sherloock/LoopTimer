@@ -15,6 +15,7 @@ import { computeTotalTime } from "@/utils/compute-total-time";
 import { Clock, Copy, Users } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
+import { TimelinePreview } from "@/components/timers/editor/timeline-preview";
 
 interface TemplateCardProps {
 	id: string;
@@ -70,7 +71,10 @@ export function TemplateCard({
 					</Badge>
 				</div>
 			</CardHeader>
-			<CardContent className="flex flex-1 flex-col justify-between space-y-4">
+			<CardContent className="flex flex-1 flex-col justify-end space-y-4">
+				{/* Timeline Preview */}
+				<TimelinePreview config={data} />
+
 				{/* Stats */}
 				<div className="flex items-center gap-4 text-sm text-muted-foreground">
 					<div className="flex items-center gap-1.5">

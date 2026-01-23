@@ -40,6 +40,9 @@ export function useNavigation() {
 			router.push(url);
 		},
 
+		// Navigate to templates page
+		goToTemplates: () => router.push(ROUTES.TIMER_TEMPLATES),
+
 		// Navigate to home page
 		goToHome: () => router.push(ROUTES.HOME),
 

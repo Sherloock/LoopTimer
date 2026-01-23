@@ -71,3 +71,11 @@ export function getColorScheme(name: string): ColorScheme | undefined {
 export function getDefaultColorScheme(): ColorScheme {
 	return COLOR_SCHEMES[0]!; // Default scheme
 }
+
+// Semantic colors for UI elements (badges, status indicators, etc.)
+export const SEMANTIC_COLORS = {
+	success: "#10B981", // green-500
+	warning: "#F59E0B", // amber-500
+	error: "#EF4444", // red-500
+	neutral: "#6B7280", // gray-500
+} as const;

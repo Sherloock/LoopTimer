@@ -21,7 +21,7 @@ export default function TimersListPage() {
 			<Button
 				variant="outline"
 				size="icon"
-				className="fixed bottom-6 left-6 z-50 h-12 w-12 rounded-lg bg-background/80 shadow-lg backdrop-blur supports-[backdrop-filter]:bg-background/60 md:hidden"
+				className="fixed bottom-6 left-6 z-50 h-12 w-12 rounded-full bg-background/80 shadow-lg backdrop-blur supports-[backdrop-filter]:bg-background/60 md:hidden"
 				onClick={goToMenu}
 			>
 				<ArrowLeft size={20} />

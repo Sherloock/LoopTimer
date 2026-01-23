@@ -533,6 +533,16 @@
 	touch-action: none;
 }
 
+/* Hide scrollbar utility */
+.scrollbar-hide {
+	scrollbar-width: none;
+	-ms-overflow-style: none;
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+	display: none;
+}
+
 /* Improve touch target size for mobile drag handles */
 @media (max-width: 768px) {
 	[role="button"][aria-roledescription*="sortable"] {

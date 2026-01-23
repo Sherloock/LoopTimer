@@ -20,23 +20,37 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useDeleteTimer, useSaveTimer, useTimers } from "@/hooks/use-timers";
-import { TIMER_LIST } from "@/lib/constants/timers";
+import {
+	TIMER_LIST,
+	TIMER_CATEGORY_ICONS,
+	TIMER_CATEGORY_COLORS,
+	TEMPLATE_CATEGORIES,
+	type TemplateCategory,
+} from "@/lib/constants/timers";
 import { useNavigation } from "@/lib/navigation";
-import { formatTime } from "@/lib/timer-utils";
+import { formatTime, formatTimeMinutes } from "@/lib/timer-utils";
 import type { AdvancedConfig } from "@/types/advanced-timer";
 import { type LoopGroup, type WorkoutItem } from "@/utils/compute-total-time";
 import {
+	Activity,
+	Clock,
 	Copy,
+	Dumbbell,
 	Edit,
+	Flame,
+	Heart,
 	Import,
+	Library,
 	MoreVertical,
 	Play,
 	Plus,
 	Settings,
 	Sparkles,
+	Target,
 	Timer,
 	Trash2,
 	X,
+	type LucideIcon,
 } from "lucide-react";
 import { useState } from "react";
 
@@ -44,6 +58,9 @@ interface TimerListItem {
 	id: string;
 	name: string;
 	data: unknown;
+	category?: string | null;
+	icon?: string | null;
+	color?: string | null;
 }
 
 interface WorkoutSummary {
@@ -66,6 +83,46 @@ const TIMER_CARD_META = {
 		prepare: "Prep",
 	},
 } as const;
+
+const ICON_MAP: Record<string, LucideIcon> = {
+	Activity,
+	Clock,
+	Dumbbell,
+	Flame,
+	Heart,
+	Target,
+	Timer,
+};
+
+function getTimerIcon(
+	category: string | null | undefined,
+	icon: string | null | undefined,
+): LucideIcon {
+	if (icon && ICON_MAP[icon]) {
+		return ICON_MAP[icon]!;
+	}
+	const categoryKey =
+		(category as TemplateCategory) || TEMPLATE_CATEGORIES.CUSTOM;
+	const iconName =
+		TIMER_CATEGORY_ICONS[categoryKey] ||
+		TIMER_CATEGORY_ICONS[TEMPLATE_CATEGORIES.CUSTOM]!;
+	return ICON_MAP[iconName] || Timer;
+}
+
+function getTimerColor(
+	category: string | null | undefined,
+	color: string | null | undefined,
+): string {
+	if (color) {
+		return color;
+	}
+	const categoryKey =
+		(category as TemplateCategory) || TEMPLATE_CATEGORIES.CUSTOM;
+	return (
+		TIMER_CATEGORY_COLORS[categoryKey] ||
+		TIMER_CATEGORY_COLORS[TEMPLATE_CATEGORIES.CUSTOM]!
+	);
+}
 
 function getWorkoutItemsFromTimerData(data: unknown): WorkoutItem[] {
 	const maybeItems = (data as { items?: unknown } | null)?.items;
@@ -130,7 +187,7 @@ export function TimersList() {
 	const [isImportDialogOpen, setIsImportDialogOpen] = useState(false);
 	const [isUserPreferencesDialogOpen, setIsUserPreferencesDialogOpen] =
 		useState(false);
-	const { goToEditTimer, goToPlayTimer } = useNavigation();
+	const { goToEditTimer, goToPlayTimer, goToTemplates } = useNavigation();
 
 	const handleImport = async (name: string, data: AdvancedConfig) => {
 		await new Promise<void>((resolve) => {
@@ -158,21 +215,18 @@ export function TimersList() {
 		<div className="space-y-6">
 			{/* Header */}
 			<div className="relative flex flex-row justify-between gap-4">
-				<div className="space-y-2">
-					<div className="flex flex-wrap items-center gap-2">
-						<h1 className="neon-text text-3xl font-semibold leading-none tracking-tight sm:text-4xl">
-							Timers
-						</h1>
-						{/* {hasTimers && (
-							<Badge
-								variant="secondary"
-								className="border-primary/20 bg-primary/10 text-primary"
-							>
-								{timersList.length}
-							</Badge>
-						)} */}
-					</div>
-					<p className="text-sm text-muted-foreground">{subtitle}</p>
+				<div className="flex flex-wrap items-center gap-2">
+					<h1 className="neon-text text-3xl font-semibold leading-none tracking-tight sm:text-4xl">
+						Timers
+					</h1>
+					{/* {hasTimers && (
+						<Badge
+							variant="secondary"
+							className="border-primary/20 bg-primary/10 text-primary"
+						>
+							{timersList.length}
+						</Badge>
+					)} */}
 				</div>
 				{hasTimers && (
 					<div className="flex gap-2">
@@ -185,6 +239,16 @@ export function TimersList() {
 						>
 							<Settings size={16} />
 							<span className="hidden sm:inline">Preferences</span>
+						</Button>
+						<Button
+							variant="outline"
+							size="sm"
+							className="gap-2"
+							onClick={() => goToTemplates()}
+							aria-label="Template library"
+						>
+							<Library size={16} />
+							<span className="hidden sm:inline">Templates</span>
 						</Button>
 						<Button
 							variant="outline"
@@ -210,6 +274,9 @@ export function TimersList() {
 					</div>
 				)}
 			</div>
+
+			{/* Subtitle */}
+			<p className="text-sm text-muted-foreground">{subtitle}</p>
 
 			{/* Content */}
 			{isLoading ? (
@@ -289,10 +356,14 @@ export function TimersList() {
 								? `${TIMER_CARD_META.labels.prepare} ${formatTime(summary.prepareSeconds)}`
 								: null,
 						].filter((p): p is string => Boolean(p));
+
+						const TimerIcon = getTimerIcon(timer.category, timer.icon);
+						const timerColor = getTimerColor(timer.category, timer.color);
+
 						return (
 							<div
 								key={timer.id}
-								className="group relative overflow-hidden rounded-lg border bg-card/40 p-3 shadow-sm backdrop-blur supports-[backdrop-filter]:bg-card/30"
+								className="group relative overflow-hidden rounded-lg border bg-card/40 p-2.5 shadow-sm backdrop-blur supports-[backdrop-filter]:bg-card/30"
 							>
 								<div
 									aria-hidden
@@ -301,22 +372,26 @@ export function TimersList() {
 
 								<div className="relative flex flex-row items-start justify-between gap-3">
 									<div className="flex min-w-0 items-start gap-3">
-										<div className="neon-glow mt-0.5 inline-flex size-12 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
-											<Timer size={20} />
+										<div
+											className="neon-glow mt-0.5 inline-flex size-12 shrink-0 items-center justify-center rounded-lg text-primary"
+											style={{
+												backgroundColor: `${timerColor}20`,
+												color: timerColor,
+											}}
+										>
+											<TimerIcon size={20} />
 										</div>
 
 										<div className="min-w-0 flex-1">
-											<div className="flex flex-col gap-1 sm:flex-row sm:items-start sm:justify-between sm:gap-3">
-												<p className="neon-text truncate font-semibold leading-tight">
-													{timer.name}
-												</p>
-												<Badge
-													variant="secondary"
-													className="w-13 md:w-18 shrink-0 grow-0 self-start rounded-lg border-primary/20 bg-primary/10 text-center font-mono text-xs text-primary sm:ml-auto md:ml-auto md:text-base"
-												>
-													{formatTime(totalSeconds)}
-												</Badge>
-											</div>
+											<p className="neon-text truncate font-semibold leading-tight">
+												{timer.name}
+											</p>
+											<Badge
+												variant="secondary"
+												className="mt-1 w-fit shrink-0 rounded-lg border-primary/30 bg-primary/20 text-center font-mono text-xs font-semibold text-foreground md:text-base"
+											>
+												{formatTimeMinutes(totalSeconds)}
+											</Badge>
 
 											<div className="mt-1 hidden space-y-1 sm:block">
 												<p className="text-xs text-muted-foreground">
@@ -338,10 +413,10 @@ export function TimersList() {
 												<Button
 													variant="ghost"
 													size="icon"
-													className="h-9 w-9"
+													className="h-11 w-11"
 													aria-label="Timer actions"
 												>
-													<MoreVertical size={16} />
+													<MoreVertical size={18} />
 												</Button>
 											</DropdownMenuTrigger>
 											<DropdownMenuContent align="end">
@@ -375,13 +450,12 @@ export function TimersList() {
 										<Button
 											variant="brand"
 											size="sm"
-											className="neon-hover-glow h-9 gap-2 px-2 md:px-3"
+											className="neon-hover-glow h-11 gap-2 px-3 md:px-4"
 											onClick={() => goToPlayTimer(timer.id)}
 											aria-label="Start timer"
 										>
-											<Play size={16} />
+											<Play size={18} />
 											<span className="hidden md:inline">Start</span>
-											{/* <span className="inline">Start</span> */}
 										</Button>
 									</div>
 								</div>

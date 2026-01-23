@@ -13,10 +13,14 @@ model Timer {
   userId    String
   name      String
   data      Json
+  category  String?  @default("custom")
+  icon      String?
+  color     String?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   @@index([userId])
+  @@index([category])
   @@map("timer")
 }
 

@@ -15,6 +15,9 @@ export async function createTimer(formData: unknown) {
 			userId,
 			name: parsed.name,
 			data: parsed.data,
+			category: parsed.category ?? "custom",
+			icon: parsed.icon ?? null,
+			color: parsed.color ?? null,
 		},
 	});
 

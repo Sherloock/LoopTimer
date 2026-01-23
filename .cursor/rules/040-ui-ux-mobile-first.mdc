@@ -10,6 +10,7 @@ alwaysApply: false
 - Prefer `w-full sm:w-auto` for toolbar buttons and actions.
 - Avoid horizontal scrolling; use `flex-wrap` or vertical stacking.
 - Standard radius: `rounded-lg` (avoid `rounded-full` unless truly needed).
+- **Floating buttons (mandatory)**: All floating action buttons (buttons with `fixed` positioning, typically mobile thumb-reachable buttons) must use `rounded-full` for consistent circular appearance. Pattern: `fixed bottom-6 left-6 z-50 h-12 w-12 rounded-full ...`
 
 ## Icons and images
 - Use Lucide icons sized with `size={20}` / `size={16}` / `size={12}` only.
@@ -22,6 +23,23 @@ alwaysApply: false
 ## Inputs (mobile UX)
 - For time/number inputs use `inputMode=\"numeric\"` and `pattern=\"[0-9:]*\"` when appropriate.
 - Prefer wider inputs and larger touch targets on mobile.
+
+## FloatLabel (mandatory)
+- **Always use `FloatLabel` component** for all form inputs (`Input`, `Select`, etc.) instead of separate `Label` components.
+- FloatLabel provides consistent floating label animation that improves UX and saves vertical space.
+- Pattern: Wrap the input/select with `<FloatLabel label="Label text" hasValue={boolean}>...</FloatLabel>`
+- The `hasValue` prop determines if the label should be floating (true) or in-place (false).
+- Example:
+  ```tsx
+  <FloatLabel label="Category" htmlFor="category" hasValue={!!value}>
+    <Select value={value} onValueChange={setValue}>
+      <SelectTrigger id="category">
+        <SelectValue />
+      </SelectTrigger>
+      <SelectContent>...</SelectContent>
+    </Select>
+  </FloatLabel>
+  ```
 
 ## Accessibility (WCAG AA compliance - mandatory)
 - **Color contrast**: Text must meet WCAG AA contrast ratios:

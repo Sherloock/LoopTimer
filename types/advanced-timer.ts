@@ -38,6 +38,9 @@ export interface LoadedTimer {
 	id: string;
 	name: string;
 	data: any;
+	category?: string | null;
+	icon?: string | null;
+	color?: string | null;
 }
 
 export const isLoop = (item: WorkoutItem): item is LoopGroup => {

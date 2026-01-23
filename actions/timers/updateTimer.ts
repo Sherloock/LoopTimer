@@ -15,6 +15,9 @@ export async function updateTimer(id: string, formData: unknown) {
 		data: {
 			name: parsed.name,
 			data: parsed.data,
+			category: parsed.category ?? undefined,
+			icon: parsed.icon ?? undefined,
+			color: parsed.color ?? undefined,
 		},
 	});
 
