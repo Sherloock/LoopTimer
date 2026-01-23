@@ -22,3 +22,36 @@ alwaysApply: false
 ## Inputs (mobile UX)
 - For time/number inputs use `inputMode=\"numeric\"` and `pattern=\"[0-9:]*\"` when appropriate.
 - Prefer wider inputs and larger touch targets on mobile.
+
+## Accessibility (WCAG AA compliance - mandatory)
+- **Color contrast**: Text must meet WCAG AA contrast ratios:
+  - Normal text (≤18pt or ≤14pt bold): minimum 4.5:1 contrast ratio
+  - Large text (>18pt or >14pt bold): minimum 3:1 contrast ratio
+  - Interactive elements (buttons, links): minimum 3:1 contrast ratio
+- **Keyboard navigation**: All interactive elements must be keyboard accessible:
+  - Use semantic HTML (`<button>`, `<a>`, `<input>`) instead of `<div>` with onClick
+  - Ensure logical tab order
+  - Provide visible focus indicators (use `focus-visible` utilities)
+- **Focus management**: 
+  - Focus must be visible (use `focus-visible:ring-2 focus-visible:ring-offset-2`)
+  - Trap focus in modals/dialogs
+  - Return focus to trigger element when closing dialogs
+- **ARIA labels**: 
+  - Use `aria-label` for icon-only buttons and interactive elements without visible text
+  - Use `aria-describedby` for form inputs with error messages
+  - Use `aria-live` regions for dynamic content updates
+- **Form accessibility**:
+  - All inputs must have associated `<label>` elements (use Shadcn `Label` component)
+  - Error messages must be associated with inputs via `aria-describedby`
+  - Required fields must have `aria-required="true"` or `required` attribute
+- **Images**: 
+  - All `Image` components must have descriptive `alt` text
+  - Decorative images should use `alt=""` (empty string)
+- **Semantic HTML**: 
+  - Use proper heading hierarchy (`h1` → `h2` → `h3`, etc.)
+  - Use semantic elements (`<nav>`, `<main>`, `<header>`, `<footer>`, `<section>`)
+  - Use `<button>` for actions, `<a>` for navigation
+- **Screen reader support**:
+  - Provide text alternatives for all non-text content
+  - Ensure all functionality is available via keyboard
+  - Use `role` attributes only when semantic HTML is insufficient
