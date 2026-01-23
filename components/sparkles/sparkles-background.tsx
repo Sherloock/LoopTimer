@@ -1,7 +1,7 @@
 "use client";
 
 import { Sparkles, Star } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { HeroOrbit } from "./hero-orbit";
 
 interface Sparkle {
@@ -17,7 +17,7 @@ interface Sparkle {
 export const SparklesBackground = () => {
 	const [sparkles, setSparkles] = useState<Sparkle[]>([]);
 
-	const calculateDistance = () => {
+	const calculateDistance = useCallback(() => {
 		// Get viewport dimensions
 		const width = window.innerWidth;
 		const height = window.innerHeight;
@@ -27,9 +27,9 @@ export const SparklesBackground = () => {
 		const minDistance = diagonal * 0.3;
 		const maxDistance = diagonal * 0.8;
 		return { minDistance, maxDistance };
-	};
+	}, []);
 
-	const generateSparkles = () => {
+	const generateSparkles = useCallback(() => {
 		const { minDistance, maxDistance } = calculateDistance();
 		const distanceRange = maxDistance - minDistance;
 
@@ -72,7 +72,7 @@ export const SparklesBackground = () => {
 				spinDuration,
 			};
 		});
-	};
+	}, [calculateDistance]);
 
 	useEffect(() => {
 		setSparkles(generateSparkles());
@@ -84,7 +84,7 @@ export const SparklesBackground = () => {
 
 		window.addEventListener("resize", handleResize);
 		return () => window.removeEventListener("resize", handleResize);
-	}, []);
+	}, [generateSparkles]);
 
 	return (
 		<>

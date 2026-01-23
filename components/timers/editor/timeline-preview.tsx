@@ -3,6 +3,7 @@
 import { cn } from "@/lib/utils";
 import type { AdvancedConfig, WorkoutItem } from "@/types/advanced-timer";
 import { isLoop } from "@/types/advanced-timer";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 interface TimelinePreviewProps {
 	config: AdvancedConfig;
@@ -11,6 +12,9 @@ interface TimelinePreviewProps {
 
 export function TimelinePreview({ config, className }: TimelinePreviewProps) {
 	const items = config.items || [];
+	const scrollContainerRef = useRef<HTMLDivElement>(null);
+	const [isDragging, setIsDragging] = useState(false);
+	const dragStartRef = useRef({ x: 0, scrollLeft: 0 });
 
 	const renderTimeline = (items: WorkoutItem[], depth = 0): JSX.Element[] => {
 		const blocks: JSX.Element[] = [];
@@ -81,6 +85,54 @@ export function TimelinePreview({ config, className }: TimelinePreviewProps) {
 
 	const timelineBlocks = renderTimeline(items);
 
+	const handleMouseDown = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
+		if (!scrollContainerRef.current) return;
+		// Only handle left mouse button
+		if (e.button !== 0) return;
+
+		setIsDragging(true);
+		const rect = scrollContainerRef.current.getBoundingClientRect();
+		dragStartRef.current = {
+			x: e.clientX - rect.left,
+			scrollLeft: scrollContainerRef.current.scrollLeft,
+		};
+		e.preventDefault();
+	}, []);
+
+	const handleMouseMove = useCallback(
+		(e: MouseEvent) => {
+			if (!isDragging || !scrollContainerRef.current) return;
+
+			const rect = scrollContainerRef.current.getBoundingClientRect();
+			const x = e.clientX - rect.left;
+			const walk = x - dragStartRef.current.x;
+			scrollContainerRef.current.scrollLeft =
+				dragStartRef.current.scrollLeft - walk;
+		},
+		[isDragging],
+	);
+
+	const handleMouseUp = useCallback(() => {
+		setIsDragging(false);
+	}, []);
+
+	// Add global mouse event listeners for drag
+	useEffect(() => {
+		if (isDragging) {
+			document.addEventListener("mousemove", handleMouseMove);
+			document.addEventListener("mouseup", handleMouseUp);
+			document.body.style.userSelect = "none";
+			document.body.style.cursor = "grabbing";
+
+			return () => {
+				document.removeEventListener("mousemove", handleMouseMove);
+				document.removeEventListener("mouseup", handleMouseUp);
+				document.body.style.userSelect = "";
+				document.body.style.cursor = "";
+			};
+		}
+	}, [isDragging, handleMouseMove, handleMouseUp]);
+
 	if (timelineBlocks.length === 0) {
 		return (
 			<div
@@ -96,10 +148,14 @@ export function TimelinePreview({ config, className }: TimelinePreviewProps) {
 
 	return (
 		<div
+			ref={scrollContainerRef}
+			onMouseDown={handleMouseDown}
 			className={cn(
 				"scrollbar-hide max-w-full overflow-x-auto rounded-lg border bg-card/40 p-2 sm:p-3",
+				isDragging ? "cursor-grabbing select-none" : "cursor-grab",
 				className,
 			)}
+			style={{ userSelect: isDragging ? "none" : "auto" }}
 		>
 			<div className="flex min-w-max items-center gap-1 sm:gap-2">
 				{timelineBlocks.map((block, index) => (

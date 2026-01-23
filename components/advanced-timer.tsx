@@ -285,11 +285,14 @@ export function AdvancedTimer({
 	}, [loadedTimer, userPreferences]);
 
 	// Notify parent component when timer name changes
-	const handleTimerNameChange = (name: string) => {
-		const nextName = name.slice(0, TIMER_NAME_MAX_LENGTH);
-		setTimerName(nextName);
-		onTimerNameChange?.(nextName);
-	};
+	const handleTimerNameChange = useCallback(
+		(name: string) => {
+			const nextName = name.slice(0, TIMER_NAME_MAX_LENGTH);
+			setTimerName(nextName);
+			onTimerNameChange?.(nextName);
+		},
+		[onTimerNameChange],
+	);
 
 	// Dialog state
 	const [saveOpen, setSaveOpen] = useState(false);
@@ -1055,7 +1058,6 @@ export function AdvancedTimer({
 		flattenedIntervals,
 		setCompleted,
 		timerDefaultAlarm,
-		stopAllSounds,
 		onComplete,
 		timerName,
 	]);
@@ -1147,7 +1149,7 @@ export function AdvancedTimer({
 		}
 
 		return remaining;
-	}, [state, timeLeft, currentItemIndex, flattenedIntervals, stopAllSounds]);
+	}, [state, timeLeft, currentItemIndex, flattenedIntervals]);
 
 	// Current interval info
 	const currentInterval = useMemo(() => {
@@ -1741,7 +1743,6 @@ export function AdvancedTimer({
 		);
 	}, [
 		timerName,
-		timerCategory,
 		timerIcon,
 		timerColor,
 		timerColors,
@@ -1750,10 +1751,10 @@ export function AdvancedTimer({
 		timerDescription,
 		config,
 		loadedTimer,
-		existingTimers,
 		overwriteTimer,
 		saveTimer,
 		onExit,
+		normalizedCategory,
 	]);
 
 	return (
@@ -1900,7 +1901,7 @@ export function AdvancedTimer({
 
 						<CardContent className="space-y-6 p-1 pb-24 pt-2 md:p-6">
 							{/* Timer Name, Stats, and Actions - Responsive Row/Column */}
-							<div className="flex flex-col gap-4">
+							<div className="flex flex-col gap-4 md:w-full md:flex-row md:justify-between">
 								{/* Row 1: Timer name, Category, Icon (3 input fields on md+) */}
 								<div className="flex flex-col gap-4 md:flex-row md:gap-3">
 									<div className="w-full md:flex-1">
@@ -1929,10 +1930,10 @@ export function AdvancedTimer({
 										</div>
 									</div>
 								</div>
-								{/* Row 2: Total Session Time and Total Steps (on md+) */}
-								<div className="flex w-full flex-wrap items-center justify-center gap-4 md:flex-row md:flex-nowrap md:justify-start">
+								{/* Row 2: Total Time and Total Steps (on md+) */}
+								<div className="flex w-full flex-wrap items-center justify-center gap-4 md:w-auto md:flex-row md:flex-nowrap md:justify-start">
 									<StatCard
-										label="Total Session Time"
+										label="Total Time"
 										value={formatTime(totalSessionTime)}
 										className="flex-1 md:flex-none"
 									/>
@@ -1943,6 +1944,9 @@ export function AdvancedTimer({
 										className="flex-1 md:flex-none"
 									/>
 								</div>
+							</div>
+
+							<div className="flex flex-col gap-4">
 								{/* Timeline Preview */}
 								<div className="w-full">
 									<Label className="mb-2 text-xs">Timeline Preview</Label>

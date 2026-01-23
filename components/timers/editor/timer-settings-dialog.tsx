@@ -4,7 +4,6 @@ import { Checkbox } from "@/components/timers/editor/advanced/dnd/checkbox";
 import { Button } from "@/components/ui/button";
 import { ColorPicker } from "@/components/ui/color-picker";
 import { Dialog, DialogClose, DialogContent } from "@/components/ui/dialog";
-import { FloatLabel } from "@/components/ui/float-label";
 import { Label } from "@/components/ui/label";
 import {
 	Select,
@@ -13,6 +12,7 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "@/components/ui/select";
+import { useUserPreferences } from "@/hooks/use-user-preferences";
 import {
 	ADVANCED_TIMER_DEFAULT_COLORS,
 	TEMPLATE_CATEGORIES,
@@ -20,10 +20,7 @@ import {
 	TIMER_CATEGORY_ICONS,
 } from "@/lib/constants/timers";
 import { playSound, SOUND_OPTIONS } from "@/lib/sound-utils";
-import {
-	clearItemLevelColors,
-	mergeUserPreferences,
-} from "@/lib/workout-processing";
+import { clearItemLevelColors } from "@/lib/workout-processing";
 import type {
 	ColorSettings,
 	LoadedTimer,
@@ -31,21 +28,20 @@ import type {
 } from "@/types/advanced-timer";
 import {
 	Activity,
-	Check,
 	Clock,
 	Dumbbell,
 	Flame,
 	Heart,
 	RotateCcw,
-	Settings,
+	Save,
 	Target,
 	Timer,
 	Trash2,
+	X,
 	type LucideIcon,
 } from "lucide-react";
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { toast } from "sonner";
-import { useUserPreferences } from "@/hooks/use-user-preferences";
 
 const ICON_MAP: Record<string, LucideIcon> = {
 	Activity,
@@ -82,6 +78,12 @@ export function TimerSettingsDialog({
 }: TimerSettingsDialogProps) {
 	const { data: userPreferences } = useUserPreferences();
 	const [showColorHierarchy, setShowColorHierarchy] = useState(false);
+	const [showResetWorkoutColorsConfirm, setShowResetWorkoutColorsConfirm] =
+		useState(false);
+	const [
+		showDeleteItemColorOverridesConfirm,
+		setShowDeleteItemColorOverridesConfirm,
+	] = useState(false);
 
 	// Timer metadata
 	const [category, setCategory] = useState<string>(
@@ -144,25 +146,22 @@ export function TimerSettingsDialog({
 		onOpenChange(false);
 	};
 
-	const handleResetColors = () => {
+	const handleResetWorkoutColorsToDefaults = () => {
 		if (userPreferences) {
-			const clearedItems = clearItemLevelColors(workoutItems);
-			mergeUserPreferences({ items: clearedItems }, userPreferences);
 			setColors(userPreferences.colors);
-			toast.success(
-				"Reset workout colors to your defaults and cleared item-level overrides",
-				{
-					id: "reset-to-defaults",
-				},
-			);
+			toast.success("Reset workout colors to your defaults", {
+				id: "reset-workout-colors-to-defaults",
+			});
 		}
+		setShowResetWorkoutColorsConfirm(false);
 	};
 
-	const handleDeleteItemColors = () => {
+	const handleDeleteItemColorOverrides = () => {
 		clearItemLevelColors(workoutItems);
 		toast.success("Deleted all item-level color overrides", {
-			id: "delete-item-colors",
+			id: "delete-item-color-overrides",
 		});
+		setShowDeleteItemColorOverridesConfirm(false);
 	};
 
 	const normalizedCategory = category || TEMPLATE_CATEGORIES.CUSTOM;
@@ -397,46 +396,114 @@ export function TimerSettingsDialog({
 					<div className="space-y-3 pt-4">
 						<div className="space-y-2">
 							<p className="text-sm font-medium">Color Actions</p>
-							<div className="flex flex-col gap-2">
+							<div className="flex flex-col gap-3">
 								{userPreferences && (
+									<div className="space-y-1">
+										<Button
+											onClick={() => setShowResetWorkoutColorsConfirm(true)}
+											variant="default"
+											className="w-full gap-2"
+										>
+											<RotateCcw size={16} />
+											Reset workout colors to defaults
+										</Button>
+									</div>
+								)}
+								<div className="space-y-1">
 									<Button
-										onClick={handleResetColors}
-										variant="default"
+										onClick={() => setShowDeleteItemColorOverridesConfirm(true)}
+										variant="destructive"
 										className="w-full gap-2"
 									>
-										<RotateCcw size={16} />
-										Reset workout colors to my default
+										<Trash2 size={16} />
+										Remove item-level color overrides
 									</Button>
-								)}
-								<Button
-									onClick={handleDeleteItemColors}
-									variant="destructive"
-									className="w-full gap-2"
-								>
-									<Trash2 size={16} />
-									Delete item colors
-								</Button>
+								</div>
 							</div>
 						</div>
-						<div className="flex gap-2 pt-2">
-							<Button
-								onClick={() => {
-									onOpenChange(false);
-									// Note: This will need to be handled by parent to open user preferences
-								}}
-								variant="outline"
-								className="flex-1 gap-2"
-							>
-								<Settings size={16} />
-								Manage My Defaults
-							</Button>
-							<Button onClick={handleSave} className="flex-1 gap-2">
-								<Check size={16} />
-								Done
-							</Button>
-						</div>
+					</div>
+
+					{/* Horizontal separator */}
+					<hr className="border-border" />
+
+					{/* Save button */}
+					<div className="pt-2">
+						<Button
+							onClick={handleSave}
+							variant="brand"
+							className="w-full gap-2"
+						>
+							<Save size={16} />
+							Save
+						</Button>
 					</div>
 				</div>
+
+				{/* Reset workout colors confirmation dialog */}
+				{showResetWorkoutColorsConfirm && (
+					<Dialog
+						open={showResetWorkoutColorsConfirm}
+						onOpenChange={setShowResetWorkoutColorsConfirm}
+					>
+						<DialogContent title="Reset workout colors to defaults?">
+							<p className="text-sm text-muted-foreground">
+								This will reset all workout-level colors to your user defaults.
+								Item-level color overrides will remain unchanged.
+							</p>
+							<div className="flex justify-end gap-2 pt-4">
+								<Button
+									variant="outline"
+									onClick={() => setShowResetWorkoutColorsConfirm(false)}
+									className="gap-2"
+								>
+									<X size={16} />
+									Cancel
+								</Button>
+								<Button
+									variant="default"
+									onClick={handleResetWorkoutColorsToDefaults}
+									className="gap-2"
+								>
+									<RotateCcw size={16} />
+									Reset workout colors
+								</Button>
+							</div>
+						</DialogContent>
+					</Dialog>
+				)}
+
+				{/* Delete item color overrides confirmation dialog */}
+				{showDeleteItemColorOverridesConfirm && (
+					<Dialog
+						open={showDeleteItemColorOverridesConfirm}
+						onOpenChange={setShowDeleteItemColorOverridesConfirm}
+					>
+						<DialogContent title="Remove item-level color overrides?">
+							<p className="text-sm text-muted-foreground">
+								This will remove all item-level color overrides from intervals
+								and loops, they will use workout-level colors instead.
+							</p>
+							<div className="flex justify-end gap-2 pt-4">
+								<Button
+									variant="outline"
+									onClick={() => setShowDeleteItemColorOverridesConfirm(false)}
+									className="gap-2"
+								>
+									<X size={16} />
+									Cancel
+								</Button>
+								<Button
+									variant="destructive"
+									onClick={handleDeleteItemColorOverrides}
+									className="gap-2"
+								>
+									<Trash2 size={16} />
+									Remove overrides
+								</Button>
+							</div>
+						</DialogContent>
+					</Dialog>
+				)}
 			</DialogContent>
 		</Dialog>
 	);

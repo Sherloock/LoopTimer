@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import Image from "next/image";
 import {
 	Dialog,
 	DialogContent,
@@ -207,9 +208,11 @@ export function ShareDialog({
 								<div className="space-y-2">
 									<Label>QR Code</Label>
 									<div className="flex flex-col items-center gap-2 rounded-lg border bg-white p-4">
-										<img
+										<Image
 											src={qrCodeDataUrl}
 											alt="QR Code"
+											width={250}
+											height={250}
 											className="h-[250px] w-[250px]"
 										/>
 										<Button
