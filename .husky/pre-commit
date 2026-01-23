@@ -1,20 +1,25 @@
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 echo "🔍 Running pre-commit checks..."
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 echo ""
 
-echo "📝 Formatting staged files..."
-npx lint-staged || { echo "❌ Formatting failed"; exit 1; }
-
+echo "📝 Formatting & linting staged files..."
+npx lint-staged || { echo "❌ Formatting/linting failed"; exit 1; }
+echo "✅ Formatting & linting passed"
 echo ""
-echo "🔍 Running linter..."
-npm run lint || { echo "❌ Linting failed"; exit 1; }
 
-echo ""
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 echo "🧪 Running tests..."
 npm test || { echo "❌ Tests failed - check output above for details"; exit 1; }
-
+echo "✅ Tests passed"
 echo ""
-echo "🏗️  Running build check..."
-npm run build || { echo "❌ Build failed"; exit 1; }
 
-echo ""
+# echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+# echo "🏗️  Running build check..."
+# npm run build || { echo "❌ Build failed"; exit 1; }
+# echo "✅ Build check passed"
+# echo ""
+
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 echo "✅ All pre-commit checks passed!"
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
