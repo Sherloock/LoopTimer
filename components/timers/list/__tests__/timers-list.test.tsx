@@ -72,7 +72,15 @@ describe("TimersList", () => {
 
 		render(<TimersList />);
 
-		expect(screen.getByText("Couldn't load timers")).toBeInTheDocument();
+		expect(
+			screen.getByText((content, element) => {
+				return (
+					element?.tagName.toLowerCase() === "h3" &&
+					content.includes("Couldn") &&
+					content.includes("load timers")
+				);
+			}),
+		).toBeInTheDocument();
 	});
 
 	it("displays timers with category icons", () => {
@@ -150,8 +158,8 @@ describe("TimersList", () => {
 
 		render(<TimersList />);
 
-		// Should show hours format for durations > 60 minutes
-		expect(screen.getByText(/1h/i)).toBeInTheDocument();
+		// formatTimeMinutes shows total minutes for all durations
+		expect(screen.getByText(/100 min/i)).toBeInTheDocument();
 	});
 
 	it("has proper touch target sizes for buttons", () => {

@@ -4,20 +4,22 @@ Iteratively fix errors, run tests, and build until the project passes all checks
 
 ## Workflow
 
-1. **Receive errors**: User provides errors (compilation, lint, test, or build errors)
-2. **Fix errors**: Analyze and fix all provided errors
-3. **Run tests**: Execute `npm test` to verify fixes
-4. **Build project**: Execute `npm run build` to verify build passes
-5. **Iterate**: If errors remain, repeat steps 2-4 until all pass
+1. **Stop dev server**: If the project is served through `npm run dev`, stop it first
+2. **Receive errors**: User provides errors (compilation, lint, test, or build errors)
+3. **Fix errors**: Analyze and fix all provided errors
+4. **Run tests**: Execute `npm test` to verify fixes
+5. **Build project**: Execute `npm run build` to verify build passes
+6. **Iterate**: If errors remain, repeat steps 3-5 until all pass
 
 ## Execution order
 
-1. Fix all provided errors in code
-2. Run `npm test` (capture output)
-3. If tests fail, fix test errors and repeat from step 2
-4. Run `npm run build` (capture output)
-5. If build fails, fix build errors and repeat from step 2
-6. Continue until both tests and build pass
+1. Stop dev server if running (`npm run dev` process)
+2. Fix all provided errors in code
+3. Run `npm test` (capture output)
+4. If tests fail, fix test errors and repeat from step 3
+5. Run `npm run build` (capture output)
+6. If build fails, fix build errors and repeat from step 3
+7. Continue until both tests and build pass
 
 ## Error sources to check
 
