@@ -10,6 +10,8 @@ export interface UpdateTemplateParams {
 	name?: string;
 	description?: string;
 	category?: string;
+	icon?: string | null;
+	color?: string | null;
 	data?: AdvancedConfig;
 	isPublic?: boolean;
 }
@@ -18,7 +20,8 @@ export async function updateTemplate(params: UpdateTemplateParams) {
 	try {
 		const userId = await checkAuth();
 
-		const { id, name, description, category, data, isPublic } = params;
+		const { id, name, description, category, icon, color, data, isPublic } =
+			params;
 
 		// Fetch existing template
 		const existing = await db.timerTemplate.findUnique({
@@ -59,6 +62,8 @@ export async function updateTemplate(params: UpdateTemplateParams) {
 		if (description !== undefined)
 			updateData.description = description?.trim() || null;
 		if (category !== undefined) updateData.category = category;
+		if (icon !== undefined) updateData.icon = icon;
+		if (color !== undefined) updateData.color = color;
 		if (data !== undefined) updateData.data = data as any;
 		if (isPublic !== undefined) updateData.isPublic = isPublic;
 

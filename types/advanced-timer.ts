@@ -29,9 +29,6 @@ export interface ColorSettings {
 
 export interface AdvancedConfig {
 	items: WorkoutItem[];
-	colors: ColorSettings;
-	defaultAlarm: string;
-	speakNames: boolean;
 }
 
 export interface LoadedTimer {
@@ -41,6 +38,10 @@ export interface LoadedTimer {
 	category?: string | null;
 	icon?: string | null;
 	color?: string | null;
+	colors?: ColorSettings | null;
+	isSpeakNames?: boolean | null;
+	defaultAlarm?: string | null;
+	description?: string | null;
 }
 
 export const isLoop = (item: WorkoutItem): item is LoopGroup => {

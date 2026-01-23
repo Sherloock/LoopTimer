@@ -64,6 +64,9 @@ export interface UserPreferences {
 /**
  * Merges user preferences into a minimal workout config (items only).
  * Returns complete AdvancedConfig with preferences applied.
+ * NOTE: This function is deprecated - colors/defaultAlarm/speakNames are now
+ * stored at the timer level, not in the config. This is kept for backward compatibility
+ * during migration.
  */
 export function mergeUserPreferences(
 	config: { items: WorkoutItem[] },
@@ -71,9 +74,6 @@ export function mergeUserPreferences(
 ): AdvancedConfig {
 	return {
 		items: config.items,
-		colors: preferences.colors,
-		defaultAlarm: preferences.defaultAlarm,
-		speakNames: preferences.isSpeakNames,
 	};
 }
 

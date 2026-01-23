@@ -70,11 +70,10 @@ export function TimeInput({
 	};
 
 	return (
-		<div className={`flex items-center gap-[1px] ${className}`}>
+		<div className="flex items-center gap-[1px]">
 			<Button
 				variant="control"
-				// Match input height for UX consistency (see NumberInput)
-				className="px-3 py-3"
+				className="p-2"
 				onClick={handleDecrement}
 				disabled={disabled || value <= min}
 				type="button"
@@ -99,8 +98,7 @@ export function TimeInput({
 			/>
 			<Button
 				variant="control"
-				// Match input height for UX consistency (see NumberInput)
-				className="px-3 py-3"
+				className="p-2"
 				onClick={handleIncrement}
 				disabled={disabled}
 				type="button"

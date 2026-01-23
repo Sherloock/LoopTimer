@@ -28,6 +28,7 @@ interface ShareDialogProps {
 	onOpenChange: (open: boolean) => void;
 	timerName: string;
 	timerData: AdvancedConfig;
+	timerDescription?: string | null;
 }
 
 export function ShareDialog({
@@ -35,6 +36,7 @@ export function ShareDialog({
 	onOpenChange,
 	timerName,
 	timerData,
+	timerDescription,
 }: ShareDialogProps) {
 	const [isCreating, setIsCreating] = useState(false);
 	const [shareUrl, setShareUrl] = useState<string | null>(null);
@@ -127,6 +129,15 @@ export function ShareDialog({
 				</DialogHeader>
 
 				<div className="space-y-4">
+					{/* Timer Description */}
+					{timerDescription && (
+						<div className="space-y-2 rounded-md border bg-muted/50 p-3">
+							<Label className="text-xs text-muted-foreground">
+								Description
+							</Label>
+							<p className="text-sm">{timerDescription}</p>
+						</div>
+					)}
 					{!shareUrl ? (
 						<>
 							{/* Expiration Settings */}

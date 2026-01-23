@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { ColorPicker } from "@/components/ui/color-picker";
 import { Dialog, DialogClose, DialogContent } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
 	Select,
 	SelectContent,
@@ -120,8 +121,21 @@ export function UserPreferencesDialog({
 				<DialogClose onClose={() => onOpenChange(false)} />
 
 				{isLoading ? (
-					<div className="py-8 text-center text-muted-foreground">
-						Loading preferences...
+					<div className="space-y-6">
+						<div className="space-y-4">
+							<Skeleton className="h-6 w-32" />
+							<div className="space-y-3">
+								<Skeleton className="h-10 w-full rounded-md" />
+								<Skeleton className="h-10 w-full rounded-md" />
+							</div>
+						</div>
+						<div className="space-y-4">
+							<Skeleton className="h-6 w-40" />
+							<div className="space-y-3">
+								<Skeleton className="h-10 w-full rounded-md" />
+								<Skeleton className="h-10 w-full rounded-md" />
+							</div>
+						</div>
 					</div>
 				) : (
 					<div className="space-y-6">

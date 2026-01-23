@@ -3,6 +3,8 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import { useState } from "react";
+import { LoadingProvider } from "@/components/providers/loading-context";
+import { NavigationTracker } from "@/components/providers/navigation-tracker";
 
 export function QueryProvider({ children }: { children: React.ReactNode }) {
 	const [queryClient] = useState(
@@ -19,7 +21,10 @@ export function QueryProvider({ children }: { children: React.ReactNode }) {
 
 	return (
 		<QueryClientProvider client={queryClient}>
-			{children}
+			<LoadingProvider>
+				<NavigationTracker />
+				{children}
+			</LoadingProvider>
 			<ReactQueryDevtools initialIsOpen={false} />
 		</QueryClientProvider>
 	);

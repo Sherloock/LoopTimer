@@ -9,6 +9,8 @@ export interface CreateTemplateParams {
 	name: string;
 	description?: string;
 	category: string;
+	icon?: string | null;
+	color?: string | null;
 	data: AdvancedConfig;
 	isPublic?: boolean;
 }
@@ -17,7 +19,15 @@ export async function createTemplate(params: CreateTemplateParams) {
 	try {
 		const userId = await checkAuth();
 
-		const { name, description, category, data, isPublic = false } = params;
+		const {
+			name,
+			description,
+			category,
+			icon,
+			color,
+			data,
+			isPublic = false,
+		} = params;
 
 		// Validate category
 		const validCategories = Object.values(TEMPLATE_CATEGORIES);
@@ -41,6 +51,8 @@ export async function createTemplate(params: CreateTemplateParams) {
 				name: name.trim(),
 				description: description?.trim() || null,
 				category,
+				icon: icon ?? null,
+				color: color ?? null,
 				data: data as any,
 				isPublic,
 				cloneCount: 0,

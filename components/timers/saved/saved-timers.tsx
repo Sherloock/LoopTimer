@@ -1,5 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { Skeleton } from "@/components/ui/skeleton";
 import { useDeleteTimer, useTimers } from "@/hooks/use-timers";
 import { formatDistanceToNow } from "date-fns";
 import { Edit, Play, Trash2 } from "lucide-react";
@@ -14,7 +15,30 @@ export function SavedTimers({ onLoadTimer }: SavedTimersProps) {
 	const { mutate: deleteTimer, isPending: isDeleting } = useDeleteTimer();
 
 	if (isLoading) {
-		return <p className="text-center">Loading saved timers...</p>;
+		return (
+			<div className="h-96 w-full overflow-y-auto rounded-md border p-4">
+				<div className="space-y-4">
+					{Array.from({ length: 3 }).map((_, i) => (
+						<div
+							key={i}
+							className="flex items-center justify-between gap-4 rounded-md border p-4"
+						>
+							<div className="flex flex-1 items-center gap-4">
+								<div className="flex gap-2">
+									<Skeleton className="h-8 w-8 rounded-md" />
+									<Skeleton className="h-8 w-8 rounded-md" />
+								</div>
+								<div className="flex-1 space-y-2">
+									<Skeleton className="h-4 w-32" />
+									<Skeleton className="h-3 w-24" />
+								</div>
+							</div>
+							<Skeleton className="h-8 w-16 rounded-md" />
+						</div>
+					))}
+				</div>
+			</div>
+		);
 	}
 
 	if (isError) {

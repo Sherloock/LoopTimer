@@ -16,35 +16,43 @@ _Screenshots coming soon - showcasing timer editor, player, AI generation, and t
 
 ## ✨ Features
 
-### Core Timer Functionality
+### Custom Intervals
 
-- **Advanced Timer Builder**: Drag-and-drop interface with nested loops, intervals, and rest periods
+Create precise work and rest intervals tailored to your specific workout needs. Build complex timing sequences with drag-and-drop interface, nested loops, and rest periods. Perfect for interval training, HIIT workouts, Tabata, boxing rounds, yoga flows, and custom timing requirements.
+
+### Loop Control
+
+Set up complex workout routines with multiple loops and rounds for advanced training. Design intricate sequences with nested loops, interval groups, and customizable rest periods between rounds. Ideal for progressive training programs and multi-phase workouts.
+
+### Easy to Use
+
+Intuitive interface that gets out of your way so you can focus on your workout. Clean, modern design with drag-and-drop timer builder, keyboard shortcuts (Space for play/pause, Arrow keys for navigation, Escape to stop), and visual progress indicators. Mobile-first responsive design optimized for desktop, tablet, and mobile devices.
+
+### Precision Timing
+
+Accurate to the second timing ensures you get the most out of every workout session. Real-time playback with visual progress bars, countdown display, interval indicators, and audio/visual cues. Wake Lock API keeps your screen on during workouts, and keyboard controls provide full timer management.
+
+### Progress Tracking
+
+Monitor your workout patterns and stay consistent with your fitness goals. Cloud sync with PostgreSQL database ensures your timers are saved and accessible across devices. Track your workout history, save favorite routines, and build a library of personalized timers.
+
+### Community Driven
+
+Built by fitness enthusiasts for fitness enthusiasts with continuous improvements. Features include:
+
 - **AI-Powered Workout Generation**: Natural language prompts generate complete workout routines (powered by Groq)
-- **Real-Time Playback**: Visual progress bars, countdown display, interval indicators
-- **Keyboard Controls**: Space (play/pause), Arrow keys (skip), Escape (stop), M (mute)
-- **Wake Lock API**: Keeps screen on during workouts
+- **Template Library**: Pre-built workouts (Tabata, HIIT, Boxing, Yoga, Pomodoro) that you can clone and customize
+- **Export/Import**: JSON export, QR code sharing, and shareable links for easy workout sharing
+- **User Authentication**: Secure auth with Clerk (Google, GitHub, email) for personalized experience
+- **Real-Time Updates**: React Query for optimistic updates and seamless cache management
+- **Type-Safe**: Strict TypeScript throughout with Zod validation at boundaries
 
-### Templates & Sharing _(Coming Soon)_
-
-- **Template Library**: Pre-built workouts (Tabata, HIIT, Boxing, Yoga, Pomodoro)
-- **Community Templates**: Share and discover workouts created by others
-- **Export/Import**: JSON export, QR code sharing, shareable links
-- **Clone & Customize**: Start with templates and adapt to your needs
-
-### User Experience
+### Additional Features
 
 - **Dark/Light Mode**: System-aware theme with smooth transitions
-- **Responsive Design**: Optimized for desktop, tablet, and mobile
-- **PWA Support**: Install as standalone app, offline capability
+- **PWA Support**: Install as standalone app with offline capability
 - **Accessibility**: WCAG-compliant, keyboard navigation, screen reader friendly
-- **Audio & Visual Cues**: Sound effects, text-to-speech, color-coded states
-
-### Technical Features
-
-- **User Authentication**: Secure auth with Clerk (Google, GitHub, email)
-- **Cloud Sync**: PostgreSQL database with Prisma ORM
-- **Real-Time Updates**: React Query for optimistic updates and cache management
-- **Type-Safe**: Strict TypeScript throughout, Zod validation at boundaries
+- **Audio & Visual Cues**: Sound effects, text-to-speech announcements, color-coded states
 
 ## 🚀 Tech Stack
 

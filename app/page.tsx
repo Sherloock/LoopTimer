@@ -12,10 +12,16 @@ import { auth } from "@clerk/nextjs/server";
 import {
 	ArrowRight,
 	BarChart3,
+	Brain,
 	Clock,
+	Download,
+	FileText,
 	Play,
+	QrCode,
+	Share2,
 	Target,
 	Timer,
+	Upload,
 	Users,
 	Zap,
 } from "lucide-react";
@@ -80,9 +86,10 @@ export default async function LandingPage() {
 							{/* <span className=" text-foreground">With Custom Timers</span> */}
 						</h1>
 						<p className="mx-auto mb-8 max-w-2xl text-xl text-muted-foreground">
-							Create powerful, customizable workout timers with loops,
+							AI-powered workout generation, template library, and seamless
+							sharing. Create powerful, customizable timers with loops,
 							intervals, and rest periods. Take your fitness routine to the next
-							level with precision timing.
+							level.
 						</p>
 						<div className="flex flex-col items-center justify-center gap-4 sm:flex-row">
 							<SignedOut>
@@ -131,13 +138,58 @@ export default async function LandingPage() {
 							<CardHeader>
 								<div className="flex items-center gap-3">
 									<div className="neon-glow flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-primary/10 transition-transform group-hover:scale-110">
+										<Brain size={24} className="text-primary" />
+									</div>
+									<CardTitle>AI-Powered Generation</CardTitle>
+								</div>
+								<CardDescription>
+									Describe your workout in natural language and let AI create
+									the perfect timer. Supports multiple languages and understands
+									your fitness goals.
+								</CardDescription>
+							</CardHeader>
+						</Card>
+						<Card className="neon-feature-card group relative border-2 border-primary/20 bg-card/80 backdrop-blur-sm transition-all hover:border-primary/40">
+							<CardHeader>
+								<div className="flex items-center gap-3">
+									<div className="neon-glow flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-primary/10 transition-transform group-hover:scale-110">
+										<FileText size={24} className="text-primary" />
+									</div>
+									<CardTitle>Template Library</CardTitle>
+								</div>
+								<CardDescription>
+									Browse pre-built workouts: Tabata, HIIT, Boxing, Yoga, and
+									more. Clone templates and customize them to fit your needs.
+								</CardDescription>
+							</CardHeader>
+						</Card>
+						<Card className="neon-feature-card group relative border-2 border-primary/20 bg-card/80 backdrop-blur-sm transition-all hover:border-primary/40">
+							<CardHeader>
+								<div className="flex items-center gap-3">
+									<div className="neon-glow flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-primary/10 transition-transform group-hover:scale-110">
+										<Share2 size={24} className="text-primary" />
+									</div>
+									<CardTitle>Share & Export</CardTitle>
+								</div>
+								<CardDescription>
+									Share workouts via QR codes, links, or JSON files. Import from
+									file, clipboard, or scan QR codes. Perfect for trainers and
+									teams.
+								</CardDescription>
+							</CardHeader>
+						</Card>
+						<Card className="neon-feature-card group relative border-2 border-primary/20 bg-card/80 backdrop-blur-sm transition-all hover:border-primary/40">
+							<CardHeader>
+								<div className="flex items-center gap-3">
+									<div className="neon-glow flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-primary/10 transition-transform group-hover:scale-110">
 										<Clock size={24} className="text-primary" />
 									</div>
 									<CardTitle>Custom Intervals</CardTitle>
 								</div>
 								<CardDescription>
-									Create precise work and rest intervals tailored to your
-									specific workout needs.
+									Create precise work and rest intervals with drag-and-drop
+									builder. Design complex sequences with nested loops and
+									advanced timing controls.
 								</CardDescription>
 							</CardHeader>
 						</Card>
@@ -150,22 +202,9 @@ export default async function LandingPage() {
 									<CardTitle>Loop Control</CardTitle>
 								</div>
 								<CardDescription>
-									Set up complex workout routines with multiple loops and rounds
-									for advanced training.
-								</CardDescription>
-							</CardHeader>
-						</Card>
-						<Card className="neon-feature-card group relative border-2 border-primary/20 bg-card/80 backdrop-blur-sm transition-all hover:border-primary/40">
-							<CardHeader>
-								<div className="flex items-center gap-3">
-									<div className="neon-glow flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-primary/10 transition-transform group-hover:scale-110">
-										<Play size={24} className="text-primary" />
-									</div>
-									<CardTitle>Easy to Use</CardTitle>
-								</div>
-								<CardDescription>
-									Intuitive interface that gets out of your way so you can focus
-									on your workout.
+									Set up complex workout routines with multiple loops, rounds,
+									and nested sequences. Perfect for progressive training
+									programs and multi-phase workouts.
 								</CardDescription>
 							</CardHeader>
 						</Card>
@@ -178,8 +217,9 @@ export default async function LandingPage() {
 									<CardTitle>Precision Timing</CardTitle>
 								</div>
 								<CardDescription>
-									Accurate to the second timing ensures you get the most out of
-									every workout session.
+									Accurate to the second with real-time playback, visual
+									progress bars, and audio cues. Wake Lock API keeps your screen
+									on during workouts.
 								</CardDescription>
 							</CardHeader>
 						</Card>
@@ -192,8 +232,24 @@ export default async function LandingPage() {
 									<CardTitle>Progress Tracking</CardTitle>
 								</div>
 								<CardDescription>
-									Monitor your workout patterns and stay consistent with your
-									fitness goals.
+									Cloud sync keeps your timers accessible across devices. Build
+									a library of personalized workouts and track your fitness
+									journey.
+								</CardDescription>
+							</CardHeader>
+						</Card>
+						<Card className="neon-feature-card group relative border-2 border-primary/20 bg-card/80 backdrop-blur-sm transition-all hover:border-primary/40">
+							<CardHeader>
+								<div className="flex items-center gap-3">
+									<div className="neon-glow flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-primary/10 transition-transform group-hover:scale-110">
+										<Play size={24} className="text-primary" />
+									</div>
+									<CardTitle>Easy to Use</CardTitle>
+								</div>
+								<CardDescription>
+									Intuitive drag-and-drop interface with keyboard shortcuts.
+									Mobile-first responsive design. Get started in seconds, no
+									learning curve.
 								</CardDescription>
 							</CardHeader>
 						</Card>
@@ -206,8 +262,9 @@ export default async function LandingPage() {
 									<CardTitle>Community Driven</CardTitle>
 								</div>
 								<CardDescription>
-									Built by fitness enthusiasts for fitness enthusiasts with
-									continuous improvements.
+									Share public templates, discover workouts from others, and
+									contribute to a growing library. Built by fitness enthusiasts
+									for fitness enthusiasts.
 								</CardDescription>
 							</CardHeader>
 						</Card>

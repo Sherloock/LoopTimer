@@ -16,8 +16,10 @@ alwaysApply: false
 - Use Lucide icons sized with `size={20}` / `size={16}` / `size={12}` only.
 - Never use `<img>`; always use Next.js `Image` from `next/image`.
 
-## Loading and confirmations
-- Prefer Skeleton loaders (`Skeleton`) over generic spinners.
+## Loading and confirmations (mandatory)
+- **Always use Skeleton loaders (`Skeleton`) everywhere** - never use full-screen loading overlays or generic spinners for content loading.
+- Create skeleton components that match the structure of the actual content (e.g., `TemplateCardSkeleton` for template cards).
+- Skeleton loaders should be placed inline where content will appear, maintaining layout stability.
 - Never use `confirm()`, `alert()`, `prompt()`; use Shadcn dialogs/alert dialogs and toasts.
 
 ## Inputs (mobile UX)

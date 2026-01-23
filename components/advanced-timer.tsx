@@ -5,7 +5,6 @@ import {
 	findItemById,
 	removeItemById,
 } from "@/components/timers/editor/advanced/advanced-timer-tree";
-import { Checkbox } from "@/components/timers/editor/advanced/dnd/checkbox";
 import { DroppableZone } from "@/components/timers/editor/advanced/dnd/droppable-zone";
 import { useIdGenerator } from "@/components/timers/editor/advanced/use-id-generator";
 import { MinimalisticContainer } from "@/components/timers/player/minimalistic-container";
@@ -14,35 +13,19 @@ import { TimerCompletionScreen } from "@/components/timers/player/timer-completi
 import { TimerControls } from "@/components/timers/player/timer-controls";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { ColorPicker } from "@/components/ui/color-picker";
-import { Dialog, DialogClose, DialogContent } from "@/components/ui/dialog";
-import { FloatLabel } from "@/components/ui/float-label";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import {
-	Select,
-	SelectContent,
-	SelectItem,
-	SelectTrigger,
-	SelectValue,
-} from "@/components/ui/select";
 import { StatCard } from "@/components/ui/stat-card";
 import { useTimerState } from "@/hooks/use-timer-state";
 import { useSaveTimer, useTimers, useUpdateTimer } from "@/hooks/use-timers";
 import {
 	ADVANCED_TIMER_DEFAULT_COLORS,
 	TEMPLATE_CATEGORIES,
-	TEMPLATE_CATEGORY_LABELS,
-	TIMER_CATEGORY_ICONS,
 	TIMER_NAME_MAX_LENGTH,
 	type TemplateCategory,
 } from "@/lib/constants/timers";
-import {
-	playSound,
-	SOUND_OPTIONS,
-	speakText,
-	stopAllSounds,
-} from "@/lib/sound-utils";
+import { playSound, speakText, stopAllSounds } from "@/lib/sound-utils";
 import { formatTime, getProgress, timerToasts } from "@/lib/timer-utils";
 import {
 	getIntervalTypeForDisplay,
@@ -71,7 +54,6 @@ import {
 import {
 	Activity,
 	ArrowLeft,
-	Check,
 	Clock,
 	Download,
 	Dumbbell,
@@ -79,25 +61,17 @@ import {
 	Heart,
 	Library,
 	Repeat,
-	RotateCcw,
 	Save as SaveIcon,
 	Settings,
 	Share2,
 	Target,
 	Timer,
-	Trash2,
 	Undo,
 	Wand2,
 	X,
 	type LucideIcon,
 } from "lucide-react";
-import React, {
-	useCallback,
-	useEffect,
-	useMemo,
-	useRef,
-	useState,
-} from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 
 // Externalised components
@@ -105,14 +79,11 @@ import { SortableItem } from "@/components/timers/editor/advanced/dnd/sortable-i
 import { AiPromptDialog } from "@/components/timers/editor/ai-prompt-dialog";
 import { SaveTemplateDialog } from "@/components/timers/editor/save-template-dialog";
 import { TimelinePreview } from "@/components/timers/editor/timeline-preview";
+import { TimerSettingsDialog } from "@/components/timers/editor/timer-settings-dialog";
 import { UserPreferencesDialog } from "@/components/timers/editor/user-preferences-dialog";
 import { ShareDialog } from "@/components/timers/share/share-dialog";
 import { useUserPreferences } from "@/hooks/use-user-preferences";
 import { setMute } from "@/lib/sound-utils";
-import {
-	clearItemLevelColors,
-	mergeUserPreferences,
-} from "@/lib/workout-processing";
 import {
 	AdvancedConfig,
 	ColorSettings,
@@ -178,9 +149,6 @@ export function AdvancedTimer({
 				collapsed: false,
 			},
 		],
-		colors: ADVANCED_TIMER_DEFAULT_COLORS,
-		defaultAlarm: "beep-1x",
-		speakNames: true,
 	});
 
 	// Update config when a saved timer is loaded
@@ -194,31 +162,8 @@ export function AdvancedTimer({
 
 			const loadedData = sanitizeConfig(loadedTimer.data as AdvancedConfig);
 
-			// Merge user preferences if workout doesn't have colors (new format)
-			// or if user preferences are available
-			if (userPreferences) {
-				// If workout has items but no colors, merge preferences
-				if (
-					loadedData.items &&
-					(!loadedData.colors || Object.keys(loadedData.colors).length === 0)
-				) {
-					const merged = mergeUserPreferences(
-						{ items: loadedData.items },
-						userPreferences,
-					);
-					setConfig(merged);
-				} else {
-					// Keep existing colors but update defaultAlarm and speakNames from preferences
-					setConfig({
-						...loadedData,
-						defaultAlarm:
-							loadedData.defaultAlarm || userPreferences.defaultAlarm,
-						speakNames: loadedData.speakNames ?? userPreferences.isSpeakNames,
-					});
-				}
-			} else {
-				setConfig(loadedData);
-			}
+			// Config now only contains items (colors/defaultAlarm/speakNames moved to timer level)
+			setConfig(loadedData);
 
 			// update next id to avoid collisions
 			const extractIds = (items: WorkoutItem[]): number[] => {
@@ -235,14 +180,13 @@ export function AdvancedTimer({
 			const maxId = ids.length ? Math.max(...ids) : 0;
 			setNextId(maxId + 1);
 		}
-	}, [loadedTimer, setNextId, userPreferences]);
+	}, [loadedTimer, setNextId]);
 
 	const [activeId, setActiveId] = useState<string | null>(null);
 	const [currentType, setCurrentType] = useState<TimerType>("prepare");
 	const [timeLeft, setTimeLeft] = useState(0);
 	const [currentItemIndex, setCurrentItemIndex] = useState(0);
 	const [showSettings, setShowSettings] = useState(false);
-	const [showColorHierarchy, setShowColorHierarchy] = useState(false);
 	const [showAiDialog, setShowAiDialog] = useState(false);
 	const [showSaveTemplateDialog, setShowSaveTemplateDialog] = useState(false);
 	const [showShareDialog, setShowShareDialog] = useState(false);
@@ -271,18 +215,34 @@ export function AdvancedTimer({
 
 	// Timer name handling
 	const [timerName, setTimerName] = useState<string>(loadedTimer?.name || "");
+
+	// Timer settings (moved from config)
 	const [timerCategory, setTimerCategory] = useState<string>(
 		loadedTimer?.category || TEMPLATE_CATEGORIES.CUSTOM,
 	);
 	const [timerIcon, setTimerIcon] = useState<string | null>(
 		loadedTimer?.icon || null,
 	);
-
-	// Normalize category to handle old timers without category
-	const normalizedCategory = timerCategory || TEMPLATE_CATEGORIES.CUSTOM;
 	const [timerColor, setTimerColor] = useState<string | null>(
 		loadedTimer?.color || null,
 	);
+	const [timerColors, setTimerColors] = useState<ColorSettings>(
+		(loadedTimer?.colors as ColorSettings) ||
+			userPreferences?.colors ||
+			ADVANCED_TIMER_DEFAULT_COLORS,
+	);
+	const [timerIsSpeakNames, setTimerIsSpeakNames] = useState<boolean>(
+		loadedTimer?.isSpeakNames ?? userPreferences?.isSpeakNames ?? true,
+	);
+	const [timerDefaultAlarm, setTimerDefaultAlarm] = useState<string>(
+		loadedTimer?.defaultAlarm || userPreferences?.defaultAlarm || "beep-1x",
+	);
+	const [timerDescription, setTimerDescription] = useState<string>(
+		loadedTimer?.description || "",
+	);
+
+	// Normalize category to handle old timers without category
+	const normalizedCategory = timerCategory || TEMPLATE_CATEGORIES.CUSTOM;
 
 	// Update timer fields when loadedTimer changes
 	useEffect(() => {
@@ -298,7 +258,31 @@ export function AdvancedTimer({
 		if (loadedTimer?.color) {
 			setTimerColor(loadedTimer.color);
 		}
-	}, [loadedTimer]);
+		if (loadedTimer?.colors) {
+			setTimerColors(loadedTimer.colors as ColorSettings);
+		} else if (userPreferences?.colors) {
+			setTimerColors(userPreferences.colors);
+		}
+		if (
+			loadedTimer?.isSpeakNames !== undefined &&
+			loadedTimer.isSpeakNames !== null
+		) {
+			setTimerIsSpeakNames(loadedTimer.isSpeakNames);
+		} else if (
+			userPreferences?.isSpeakNames !== undefined &&
+			userPreferences.isSpeakNames !== null
+		) {
+			setTimerIsSpeakNames(userPreferences.isSpeakNames);
+		}
+		if (loadedTimer?.defaultAlarm) {
+			setTimerDefaultAlarm(loadedTimer.defaultAlarm);
+		} else if (userPreferences?.defaultAlarm) {
+			setTimerDefaultAlarm(userPreferences.defaultAlarm);
+		}
+		if (loadedTimer?.description) {
+			setTimerDescription(loadedTimer.description);
+		}
+	}, [loadedTimer, userPreferences]);
 
 	// Notify parent component when timer name changes
 	const handleTimerNameChange = (name: string) => {
@@ -1061,7 +1045,7 @@ export function AdvancedTimer({
 			timerToasts.nextInterval(intervalName);
 		} else {
 			stopAllSounds();
-			playSound(config.defaultAlarm);
+			playSound(timerDefaultAlarm);
 			setCompleted("🎉 Advanced Workout Complete! Great job!");
 			// Call completion callback if provided
 			onComplete?.(timerName || "Timer");
@@ -1070,7 +1054,7 @@ export function AdvancedTimer({
 		currentItemIndex,
 		flattenedIntervals,
 		setCompleted,
-		config.defaultAlarm,
+		timerDefaultAlarm,
 		stopAllSounds,
 		onComplete,
 		timerName,
@@ -1178,8 +1162,8 @@ export function AdvancedTimer({
 
 	const currentIntervalColor = useMemo(() => {
 		if (!currentInterval) return undefined;
-		return currentInterval.color || config.colors[currentInterval.type];
-	}, [currentInterval, config.colors]);
+		return currentInterval.color || timerColors[currentInterval.type];
+	}, [currentInterval, timerColors]);
 
 	// Compute nextInterval for preview
 	const nextInterval =
@@ -1191,7 +1175,7 @@ export function AdvancedTimer({
 						name: next.name,
 						type: mapIntervalTypeToTimerType(next.type),
 						duration: next.duration,
-						color: next.color || config.colors[next.type],
+						color: next.color || timerColors[next.type],
 					};
 				})()
 			: undefined;
@@ -1441,23 +1425,7 @@ export function AdvancedTimer({
 		}
 	}, [state, currentInterval, timeLeft, currentItemIndex, flattenedIntervals]);
 
-	// Color management
-	const updateColor = useCallback(
-		(type: keyof ColorSettings, color: string) => {
-			setConfig((prev) => ({
-				...prev,
-				colors: { ...prev.colors, [type]: color },
-			}));
-		},
-		[],
-	);
-
-	const resetColors = useCallback(() => {
-		setConfig((prev) => ({
-			...prev,
-			colors: ADVANCED_TIMER_DEFAULT_COLORS,
-		}));
-	}, []);
+	// Color management - now handled in settings dialog
 
 	// Check if we should show minimalistic view
 	const isMinimalisticView =
@@ -1512,7 +1480,7 @@ export function AdvancedTimer({
 		if (state !== "running") return;
 		if (!currentInterval) return;
 
-		const soundKey = (currentInterval.sound || config.defaultAlarm) as string;
+		const soundKey = (currentInterval.sound || timerDefaultAlarm) as string;
 		// Handle any category countdown based on variant pattern
 		const [category, variant] = soundKey.split("-") as [
 			string,
@@ -1530,11 +1498,11 @@ export function AdvancedTimer({
 				playSound(shortKey);
 			}
 		}
-	}, [state, timeLeft, currentInterval, config.defaultAlarm]);
+	}, [state, timeLeft, currentInterval, timerDefaultAlarm]);
 
 	// ======= Speak interval names while running =======
 	useEffect(() => {
-		if (!config.speakNames) return;
+		if (!timerIsSpeakNames) return;
 		if (state !== "running") return;
 		if (
 			flattenedIntervals.length === 0 ||
@@ -1545,7 +1513,7 @@ export function AdvancedTimer({
 		const interval = flattenedIntervals[currentItemIndex];
 		const name = interval.name;
 		speakText(name);
-	}, [state, currentItemIndex, flattenedIntervals, config.speakNames]);
+	}, [state, currentItemIndex, flattenedIntervals, timerIsSpeakNames]);
 
 	// Replace handleSave with immediate save logic
 	const handleSave = () => {
@@ -1576,6 +1544,10 @@ export function AdvancedTimer({
 						category: normalizedCategory as TemplateCategory,
 						icon: timerIcon,
 						color: timerColor,
+						colors: timerColors,
+						isSpeakNames: timerIsSpeakNames,
+						defaultAlarm: timerDefaultAlarm,
+						description: timerDescription || null,
 					},
 				},
 				{
@@ -1591,11 +1563,15 @@ export function AdvancedTimer({
 		// Creating a brand-new timer
 		saveTimer(
 			{
-				name: timerName.trim(),
+				name: timerName.trim() || "New Timer",
 				data: config,
 				category: normalizedCategory as TemplateCategory,
 				icon: timerIcon,
 				color: timerColor,
+				colors: timerColors,
+				isSpeakNames: timerIsSpeakNames,
+				defaultAlarm: timerDefaultAlarm,
+				description: timerDescription || null,
 			},
 			{
 				onSuccess: () => {
@@ -1738,6 +1714,10 @@ export function AdvancedTimer({
 						category: normalizedCategory as TemplateCategory,
 						icon: timerIcon,
 						color: timerColor,
+						colors: timerColors,
+						isSpeakNames: timerIsSpeakNames,
+						defaultAlarm: timerDefaultAlarm,
+						description: timerDescription || null,
 					},
 				},
 				{ onSuccess },
@@ -1747,11 +1727,15 @@ export function AdvancedTimer({
 		// Creating a brand-new timer
 		saveTimer(
 			{
-				name: timerName.trim(),
+				name: timerName.trim() || "New Timer",
 				data: config,
 				category: normalizedCategory as TemplateCategory,
 				icon: timerIcon,
 				color: timerColor,
+				colors: timerColors,
+				isSpeakNames: timerIsSpeakNames,
+				defaultAlarm: timerDefaultAlarm,
+				description: timerDescription || null,
 			},
 			{ onSuccess },
 		);
@@ -1760,6 +1744,10 @@ export function AdvancedTimer({
 		timerCategory,
 		timerIcon,
 		timerColor,
+		timerColors,
+		timerIsSpeakNames,
+		timerDefaultAlarm,
+		timerDescription,
 		config,
 		loadedTimer,
 		existingTimers,
@@ -1940,98 +1928,19 @@ export function AdvancedTimer({
 											</span>
 										</div>
 									</div>
-									{/* Category and Icon Selection */}
-									<div className="flex w-full flex-col gap-3 sm:flex-row md:flex-1 md:gap-3">
-										<div className="flex-1">
-											<FloatLabel
-												label="Category"
-												htmlFor="timer-category"
-												hasValue={!!normalizedCategory}
-											>
-												<Select
-													value={normalizedCategory}
-													onValueChange={setTimerCategory}
-												>
-													<SelectTrigger id="timer-category" className="w-full">
-														<SelectValue />
-													</SelectTrigger>
-													<SelectContent>
-														{Object.entries(TEMPLATE_CATEGORIES).map(
-															([key, value]) => (
-																<SelectItem key={value} value={value}>
-																	{TEMPLATE_CATEGORY_LABELS[value]}
-																</SelectItem>
-															),
-														)}
-													</SelectContent>
-												</Select>
-											</FloatLabel>
-										</div>
-										<div className="flex-1">
-											<FloatLabel
-												label="Icon"
-												htmlFor="timer-icon"
-												hasValue={timerIcon !== null && timerIcon !== "auto"}
-											>
-												<Select
-													value={timerIcon || "auto"}
-													onValueChange={(value) =>
-														setTimerIcon(value === "auto" ? null : value)
-													}
-												>
-													<SelectTrigger id="timer-icon" className="w-full">
-														{timerIcon &&
-														timerIcon !== "auto" &&
-														ICON_MAP[timerIcon] ? (
-															<div className="flex items-center gap-2">
-																{React.createElement(ICON_MAP[timerIcon], {
-																	size: 16,
-																	className: "shrink-0",
-																})}
-																<span>{timerIcon}</span>
-															</div>
-														) : (
-															<SelectValue placeholder="Auto (by category)" />
-														)}
-													</SelectTrigger>
-													<SelectContent>
-														<SelectItem value="auto">
-															Auto (by category)
-														</SelectItem>
-														{Object.values(TIMER_CATEGORY_ICONS).map(
-															(iconName) => {
-																const IconComponent = ICON_MAP[iconName];
-																return (
-																	<SelectItem key={iconName} value={iconName}>
-																		<div className="flex items-center gap-2">
-																			{IconComponent && (
-																				<IconComponent
-																					size={16}
-																					className="shrink-0"
-																				/>
-																			)}
-																			<span>{iconName}</span>
-																		</div>
-																	</SelectItem>
-																);
-															},
-														)}
-													</SelectContent>
-												</Select>
-											</FloatLabel>
-										</div>
-									</div>
 								</div>
 								{/* Row 2: Total Session Time and Total Steps (on md+) */}
-								<div className="flex w-full flex-wrap items-center justify-center gap-4 md:justify-start">
+								<div className="flex w-full flex-wrap items-center justify-center gap-4 md:flex-row md:flex-nowrap md:justify-start">
 									<StatCard
 										label="Total Session Time"
 										value={formatTime(totalSessionTime)}
+										className="flex-1 md:flex-none"
 									/>
 									<StatCard
 										label="Total Steps"
 										value={flattenedIntervals.length.toString()}
 										valueClassName="text-2xl font-bold"
+										className="flex-1 md:flex-none"
 									/>
 								</div>
 								{/* Timeline Preview */}
@@ -2153,7 +2062,7 @@ export function AdvancedTimer({
 															onMoveUp={moveUp}
 															onMoveDown={moveDown}
 															activeId={activeId}
-															colors={config.colors}
+															colors={timerColors}
 														/>
 
 														{/* Drop indicator after each root item */}
@@ -2205,211 +2114,35 @@ export function AdvancedTimer({
 				</>
 			)}
 
-			{/* Settings Dialog */}
-			<Dialog open={showSettings} onOpenChange={setShowSettings}>
-				<DialogContent title="Settings" className="max-w-lg">
-					<DialogClose onClose={() => setShowSettings(false)} />
-
-					<div className="space-y-6">
-						{/* Sound settings */}
-						<div className="space-y-4">
-							<h3 className="text-base font-medium">Alarm Sound</h3>
-
-							<div className="flex gap-2">
-								<Select
-									value={config.defaultAlarm}
-									onValueChange={(value) => {
-										setConfig((prev) => ({ ...prev, defaultAlarm: value }));
-										playSound(value);
-									}}
-								>
-									<SelectTrigger className="flex-1">
-										<SelectValue placeholder="Select alarm" />
-									</SelectTrigger>
-									<SelectContent>
-										{SOUND_OPTIONS.map((opt) => (
-											<SelectItem key={opt.value} value={opt.value}>
-												{opt.label}
-											</SelectItem>
-										))}
-									</SelectContent>
-								</Select>
-
-								<Button
-									variant="outline"
-									size="icon"
-									onClick={() => playSound(config.defaultAlarm)}
-								>
-									▶
-								</Button>
-							</div>
-						</div>
-
-						{/* Speak names toggle */}
-						<div className="flex items-center gap-2">
-							<Checkbox
-								id="speak-names"
-								checked={config.speakNames}
-								onCheckedChange={(checked) =>
-									setConfig((prev) => ({ ...prev, speakNames: !!checked }))
-								}
-							/>
-							<Label htmlFor="speak-names" className="text-sm">
-								Speak interval names
-							</Label>
-						</div>
-
-						{/* Horizontal separator */}
-						<hr className="border-border" />
-
-						{/* Color settings */}
-						<div className="space-y-4">
-							<h3 className="text-base font-medium">Interval Colors</h3>
-
-							<ColorPicker
-								label="Prepare Intervals"
-								value={config.colors.prepare}
-								onChange={(color) => updateColor("prepare", color)}
-							/>
-
-							<ColorPicker
-								label="Work Intervals"
-								value={config.colors.work}
-								onChange={(color) => updateColor("work", color)}
-							/>
-
-							<ColorPicker
-								label="Rest Intervals"
-								value={config.colors.rest}
-								onChange={(color) => updateColor("rest", color)}
-							/>
-						</div>
-
-						<div className="space-y-4">
-							<h3 className="text-base font-medium">Loop Colors</h3>
-
-							<ColorPicker
-								label="Main Loops"
-								value={config.colors.loop}
-								onChange={(color) => updateColor("loop", color)}
-							/>
-
-							<ColorPicker
-								label="Nested Loops"
-								value={config.colors.nestedLoop}
-								onChange={(color) => updateColor("nestedLoop", color)}
-							/>
-						</div>
-
-						{/* Color Hierarchy Explanation */}
-						<div className="space-y-2 rounded-md border p-3">
-							<button
-								type="button"
-								onClick={() => setShowColorHierarchy(!showColorHierarchy)}
-								className="flex w-full items-center justify-between text-sm font-medium"
-							>
-								<span>How colors work</span>
-								<span className="text-muted-foreground">
-									{showColorHierarchy ? "−" : "+"}
-								</span>
-							</button>
-							{showColorHierarchy && (
-								<div className="space-y-2 pt-2 text-xs text-muted-foreground">
-									<p className="font-medium text-foreground">
-										Color Priority (highest to lowest):
-									</p>
-									<ol className="ml-4 list-decimal space-y-1">
-										<li>
-											<strong>Item/Set Level</strong> - Set in individual
-											interval/loop settings dialogs
-										</li>
-										<li>
-											<strong>Workout Level</strong> - Set in this dialog
-										</li>
-										<li>
-											<strong>Your Defaults</strong> - Set in User Preferences
-										</li>
-										<li>
-											<strong>System Defaults</strong> - Built-in fallback
-											colors
-										</li>
-									</ol>
-								</div>
-							)}
-						</div>
-
-						{/* Reset Options */}
-						<div className="space-y-3 pt-4">
-							<div className="space-y-2">
-								<p className="text-sm font-medium">Color Actions</p>
-								<div className="flex flex-col gap-2">
-									{userPreferences && (
-										<Button
-											onClick={() => {
-												// Apply user preferences AND clear item-level colors
-												const clearedItems = clearItemLevelColors(config.items);
-												const merged = mergeUserPreferences(
-													{ items: clearedItems },
-													userPreferences,
-												);
-												setConfig(merged);
-												toast.success(
-													"Reset workout colors to your defaults and cleared item-level overrides",
-													{
-														id: "reset-to-defaults",
-													},
-												);
-											}}
-											variant="default"
-											className="w-full gap-2"
-										>
-											<RotateCcw size={16} />
-											Reset workout colors to my default
-										</Button>
-									)}
-									<Button
-										onClick={() => {
-											const clearedItems = clearItemLevelColors(config.items);
-											setConfig((prev) => ({
-												...prev,
-												items: clearedItems,
-											}));
-											toast.success("Deleted all item-level color overrides", {
-												id: "delete-item-colors",
-											});
-										}}
-										variant="destructive"
-										className="w-full gap-2"
-									>
-										<Trash2 size={16} />
-										Delete item colors
-									</Button>
-								</div>
-							</div>
-							<div className="flex gap-2 pt-2">
-								<Button
-									onClick={() => {
-										setShowSettings(false);
-										setShowUserPreferencesDialog(true);
-									}}
-									variant="outline"
-									className="flex-1 gap-2"
-								>
-									<Settings size={16} />
-									Manage My Defaults
-								</Button>
-								<Button
-									onClick={() => setShowSettings(false)}
-									className="flex-1 gap-2"
-								>
-									<Check size={16} />
-									Done
-								</Button>
-							</div>
-						</div>
-					</div>
-				</DialogContent>
-			</Dialog>
+			{/* Timer Settings Dialog */}
+			<TimerSettingsDialog
+				open={showSettings}
+				onOpenChange={setShowSettings}
+				timer={
+					loadedTimer
+						? {
+								...loadedTimer,
+								category: timerCategory,
+								icon: timerIcon,
+								color: timerColor,
+								colors: timerColors,
+								isSpeakNames: timerIsSpeakNames,
+								defaultAlarm: timerDefaultAlarm,
+								description: timerDescription,
+							}
+						: null
+				}
+				workoutItems={config.items}
+				onSave={(settings) => {
+					setTimerCategory(settings.category);
+					setTimerIcon(settings.icon);
+					setTimerColor(settings.color);
+					setTimerColors(settings.colors);
+					setTimerIsSpeakNames(settings.isSpeakNames);
+					setTimerDefaultAlarm(settings.defaultAlarm);
+					setTimerDescription(settings.description || "");
+				}}
+			/>
 
 			{/* AI Prompt Dialog */}
 			<AiPromptDialog
@@ -2434,6 +2167,7 @@ export function AdvancedTimer({
 				onOpenChange={setShowShareDialog}
 				timerName={timerName}
 				timerData={config}
+				timerDescription={timerDescription}
 			/>
 
 			{/* User Preferences Dialog */}

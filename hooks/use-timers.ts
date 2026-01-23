@@ -100,3 +100,33 @@ export function useDeleteTimer() {
 		onError: (error: Error) => toast.error(error.message),
 	});
 }
+
+export function useCloneTemplate() {
+	const queryClient = useQueryClient();
+	return useMutation({
+		mutationFn: async (templateId: string) => {
+			const res = await fetch(`/api/templates/${templateId}/clone`, {
+				method: "POST",
+			});
+			if (res.status === 401) {
+				throw new Error("Please sign in to clone templates");
+			}
+			if (!res.ok) {
+				const error = await res
+					.json()
+					.catch(() => ({ error: "Failed to clone template" }));
+				throw new Error(error.error || "Failed to clone template");
+			}
+			return res.json();
+		},
+		onSuccess: () => {
+			toast.success("Template cloned to your timers!", {
+				id: "clone-template",
+			});
+			queryClient.invalidateQueries({ queryKey: QUERY_KEYS.TIMERS });
+		},
+		onError: (error: Error) => {
+			toast.error(error.message, { id: "clone-template" });
+		},
+	});
+}

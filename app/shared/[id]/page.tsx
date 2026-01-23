@@ -87,7 +87,6 @@ export default async function SharedTimerPage({ params }: PageProps) {
 							<p className="mb-2 text-sm font-medium">Timer Structure:</p>
 							<div className="space-y-1 text-sm text-muted-foreground">
 								<p>{data.items.length} intervals/loops</p>
-								{data.speakNames && <p>✓ Voice announcements enabled</p>}
 							</div>
 						</div>
 

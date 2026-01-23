@@ -4,6 +4,7 @@ export { ROUTES } from "@/lib/constants/routes";
 
 import { ROUTES } from "@/lib/constants/routes";
 import { useRouter } from "next/navigation";
+import { useLoadingContext } from "@/components/providers/loading-context";
 
 /**
  * Navigation utility functions for the timer app
@@ -16,20 +17,26 @@ import { useRouter } from "next/navigation";
  */
 export function useNavigation() {
 	const router = useRouter();
+	const { setLoading } = useLoadingContext();
+
+	const navigateWithLoading = (path: string) => {
+		setLoading("navigation", true);
+		router.push(path);
+	};
 
 	return {
 		// Navigate to menu page (previously /app)
-		goToMenu: () => router.push(ROUTES.MENU),
+		goToMenu: () => navigateWithLoading(ROUTES.MENU),
 
 		// Navigate to advanced timer page
-		goToAdvancedTimer: () => router.push(ROUTES.TIMER_LIST),
+		goToAdvancedTimer: () => navigateWithLoading(ROUTES.TIMER_LIST),
 
 		// Navigate to edit timer page with optional timer ID
 		goToEditTimer: (timerId?: string) => {
 			const url = timerId
 				? `${ROUTES.TIMER_EDIT}?id=${timerId}`
 				: ROUTES.TIMER_EDIT;
-			router.push(url);
+			navigateWithLoading(url);
 		},
 
 		// Navigate to play timer page with optional timer ID
@@ -37,20 +44,23 @@ export function useNavigation() {
 			const url = timerId
 				? `${ROUTES.TIMER_PLAY}?id=${timerId}`
 				: ROUTES.TIMER_PLAY;
-			router.push(url);
+			navigateWithLoading(url);
 		},
 
 		// Navigate to templates page
-		goToTemplates: () => router.push(ROUTES.TIMER_TEMPLATES),
+		goToTemplates: () => navigateWithLoading(ROUTES.TIMER_TEMPLATES),
 
 		// Navigate to home page
-		goToHome: () => router.push(ROUTES.HOME),
+		goToHome: () => navigateWithLoading(ROUTES.HOME),
 
 		// Go back to previous page
-		goBack: () => router.back(),
+		goBack: () => {
+			setLoading("navigation", true);
+			router.back();
+		},
 
 		// Generic navigation function
-		navigate: (path: string) => router.push(path),
+		navigate: (path: string) => navigateWithLoading(path),
 	};
 }
 

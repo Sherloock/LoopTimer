@@ -8,6 +8,7 @@ import {
 	TEMPLATE_CATEGORY_LABELS,
 } from "@/lib/constants/timers";
 import { TemplateCard } from "./template-card";
+import { TemplateCardSkeleton } from "./template-card-skeleton";
 import { Search } from "lucide-react";
 import type { AdvancedConfig } from "@/types/advanced-timer";
 
@@ -27,11 +28,13 @@ interface Template {
 interface TemplatesBrowserProps {
 	templates: Template[];
 	onClone: (templateId: string) => Promise<void>;
+	isLoading?: boolean;
 }
 
 export function TemplatesBrowser({
 	templates,
 	onClone,
+	isLoading = false,
 }: TemplatesBrowserProps) {
 	const [searchQuery, setSearchQuery] = useState("");
 	const [selectedCategory, setSelectedCategory] = useState<string>("all");
@@ -96,7 +99,13 @@ export function TemplatesBrowser({
 				</div>
 
 				<TabsContent value={selectedCategory} className="mt-0">
-					{filteredTemplates.length === 0 ? (
+					{isLoading ? (
+						<div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+							{Array.from({ length: 6 }).map((_, i) => (
+								<TemplateCardSkeleton key={i} />
+							))}
+						</div>
+					) : filteredTemplates.length === 0 ? (
 						<div className="rounded-lg border border-dashed py-12 text-center">
 							<p className="text-muted-foreground">
 								{searchQuery

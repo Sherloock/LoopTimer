@@ -9,15 +9,19 @@ generator client {
 }
 
 model Timer {
-  id        String   @id @default(cuid())
-  userId    String
-  name      String
-  data      Json
-  category  String?  @default("custom")
-  icon      String?
-  color     String?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id          String   @id @default(cuid())
+  userId      String
+  name        String
+  data        Json
+  category    String?  @default("custom")
+  icon        String?
+  color       String?
+  colors      Json?    // ColorSettings
+  isSpeakNames Boolean @default(true)
+  defaultAlarm String  @default("beep-1x")
+  description String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 
   @@index([userId])
   @@index([category])
@@ -30,6 +34,8 @@ model TimerTemplate {
   name        String
   description String?
   category    String // "hiit", "tabata", "boxing", "yoga", "strength", "pomodoro", "custom"
+  icon        String?
+  color       String?
   data        Json // AdvancedConfig
   isPublic    Boolean  @default(false)
   cloneCount  Int      @default(0)

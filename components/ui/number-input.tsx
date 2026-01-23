@@ -41,15 +41,11 @@ export function NumberInput({
 		onChange(Math.max(min, Math.min(max, newValue)));
 	};
 
-	const wrapperClassName = cn("flex items-center gap-[1px]");
-	const inputClassName = cn(
-		"text-center [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none",
-		className,
-	);
 	return (
-		<div className={wrapperClassName}>
+		<div className="flex items-center gap-[1px]">
 			<Button
 				variant="control"
+				className="p-2"
 				size="icon"
 				onClick={handleDecrement}
 				disabled={disabled || value <= min}
@@ -62,7 +58,10 @@ export function NumberInput({
 				type="number"
 				value={value}
 				onChange={handleInputChange}
-				className={inputClassName}
+				className={cn(
+					"w-20 px-2 py-2 text-center font-mono text-sm sm:w-16 sm:px-3 sm:py-2 sm:text-lg",
+					className,
+				)}
 				placeholder={placeholder}
 				disabled={disabled}
 				min={min}
@@ -70,6 +69,7 @@ export function NumberInput({
 			/>
 			<Button
 				variant="control"
+				className="p-2"
 				size="icon"
 				onClick={handleIncrement}
 				disabled={disabled || value >= max}
