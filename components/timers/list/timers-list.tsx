@@ -21,10 +21,10 @@ import {
 import { Skeleton } from "@/components/ui/skeleton";
 import { useDeleteTimer, useSaveTimer, useTimers } from "@/hooks/use-timers";
 import {
-	TIMER_LIST,
-	TIMER_CATEGORY_ICONS,
-	TIMER_CATEGORY_COLORS,
 	TEMPLATE_CATEGORIES,
+	TIMER_CATEGORY_COLORS,
+	TIMER_CATEGORY_ICONS,
+	TIMER_LIST,
 	type TemplateCategory,
 } from "@/lib/constants/timers";
 import { useNavigation } from "@/lib/navigation";

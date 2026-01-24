@@ -5,7 +5,6 @@ import { Button } from "@/components/ui/button";
 import { ColorPicker } from "@/components/ui/color-picker";
 import { Dialog, DialogClose, DialogContent } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
-import { Skeleton } from "@/components/ui/skeleton";
 import {
 	Select,
 	SelectContent,
@@ -13,6 +12,7 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "@/components/ui/select";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
 	useUpdateUserPreferences,
 	useUserPreferences,
@@ -21,7 +21,7 @@ import { COLOR_SCHEMES, getColorScheme } from "@/lib/constants/color-schemes";
 import { DEFAULT_USER_PREFERENCES } from "@/lib/constants/timers";
 import { SOUND_OPTIONS, playSound } from "@/lib/sound-utils";
 import type { ColorSettings } from "@/types/advanced-timer";
-import { Loader2, RotateCcw, Save } from "lucide-react";
+import { Loader2, RotateCcw, Save, X } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
@@ -50,6 +50,7 @@ export function UserPreferencesDialog({
 	const [isSpeakNames, setIsSpeakNames] = useState<boolean>(
 		DEFAULT_USER_PREFERENCES.isSpeakNames,
 	);
+	const [showResetConfirm, setShowResetConfirm] = useState(false);
 
 	// Load preferences when dialog opens
 	useEffect(() => {
@@ -251,16 +252,17 @@ export function UserPreferencesDialog({
 						</div>
 
 						{/* Actions */}
-						<div className="flex flex-col gap-2 pt-4 sm:flex-row">
+						<div className="flex flex-col gap-4 pt-3 sm:flex-row sm:gap-2">
 							<Button
 								variant="outline"
-								onClick={handleReset}
+								onClick={() => setShowResetConfirm(true)}
 								className="flex-1 gap-2"
 							>
 								<RotateCcw size={16} />
 								Reset to Defaults
 							</Button>
 							<Button
+								variant="brand"
 								onClick={handleSave}
 								disabled={updatePreferences.isPending}
 								className="flex-1 gap-2"
@@ -281,6 +283,38 @@ export function UserPreferencesDialog({
 					</div>
 				)}
 			</DialogContent>
+
+			{/* Reset confirmation dialog */}
+			{showResetConfirm && (
+				<Dialog open={true} onOpenChange={() => setShowResetConfirm(false)}>
+					<DialogContent title="Reset to defaults?" className="space-y-4">
+						<p className="text-sm text-muted-foreground">
+							This will reset all preferences to their default values.
+						</p>
+						<div className="flex flex-col gap-3 pt-4 sm:flex-row sm:justify-end sm:gap-2">
+							<Button
+								variant="outline"
+								onClick={() => setShowResetConfirm(false)}
+								className="gap-2"
+							>
+								<X size={16} />
+								Cancel
+							</Button>
+							<Button
+								variant="destructive"
+								onClick={() => {
+									handleReset();
+									setShowResetConfirm(false);
+								}}
+								className="gap-2"
+							>
+								<RotateCcw size={16} />
+								Reset
+							</Button>
+						</div>
+					</DialogContent>
+				</Dialog>
+			)}
 		</Dialog>
 	);
 }
