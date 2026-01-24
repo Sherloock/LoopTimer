@@ -24,16 +24,40 @@ const isLoop = (item: WorkoutItem): item is LoopGroup => {
 	return (item as LoopGroup).loops !== undefined;
 };
 
-export const computeTotalTime = (items: WorkoutItem[]): number => {
+/**
+ * Computes the total duration for a list of workout items.
+ *
+ * @param items - The workout items to compute time for
+ * @param multiplier - Cumulative multiplier from all parent loops (default 1 at root)
+ * @param immediateLoops - Loop count of the immediate parent (for skipOnLastLoop calculation)
+ */
+export const computeTotalTime = (
+	items: WorkoutItem[],
+	multiplier: number = 1,
+	immediateLoops: number = 1,
+): number => {
 	let total = 0;
 
 	for (const item of items) {
 		if (isLoop(item)) {
-			// Compute inside the loop, multiply by number of loops
-			const inner = computeTotalTime(item.items);
-			total += inner * item.loops;
+			// Recurse with multiplied count and pass this loop's count for skipOnLastLoop handling
+			total += computeTotalTime(
+				item.items,
+				multiplier * item.loops,
+				item.loops,
+			);
 		} else {
-			total += item.duration;
+			// Calculate effective multiplier based on skipOnLastLoop
+			// If skipOnLastLoop is true, skip one iteration of the immediate parent loop
+			if (item.skipOnLastLoop) {
+				// Reduce multiplier by one iteration of immediate parent
+				// Formula: multiplier * (immediateLoops - 1) / immediateLoops
+				const adjustedMultiplier =
+					immediateLoops > 1 ? multiplier - multiplier / immediateLoops : 0;
+				total += item.duration * adjustedMultiplier;
+			} else {
+				total += item.duration * multiplier;
+			}
 		}
 	}
 

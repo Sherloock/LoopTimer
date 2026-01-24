@@ -147,17 +147,36 @@ function summarizeWorkoutItems(items: WorkoutItem[]): WorkoutSummary {
 		prepareSeconds: 0,
 	};
 
-	const walk = (current: WorkoutItem[], multiplier: number) => {
+	/**
+	 * @param current - Current items to process
+	 * @param multiplier - Cumulative multiplier from all parent loops
+	 * @param immediateLoops - Loop count of immediate parent (for skipOnLastLoop)
+	 */
+	const walk = (
+		current: WorkoutItem[],
+		multiplier: number,
+		immediateLoops: number,
+	) => {
 		for (const item of current) {
 			if (isLoopGroup(item)) {
 				summary.loopGroups += 1;
 				summary.maxLoops = Math.max(summary.maxLoops, item.loops);
-				walk(item.items, multiplier * item.loops);
+				// Recurse with multiplied count
+				walk(item.items, multiplier * item.loops, item.loops);
 				continue;
 			}
 
 			summary.intervalSteps += 1;
-			const seconds = item.duration * multiplier;
+			// Calculate effective multiplier based on skipOnLastLoop
+			let effectiveMultiplier: number;
+			if (item.skipOnLastLoop) {
+				// Reduce multiplier by one iteration of immediate parent
+				effectiveMultiplier =
+					immediateLoops > 1 ? multiplier - multiplier / immediateLoops : 0;
+			} else {
+				effectiveMultiplier = multiplier;
+			}
+			const seconds = item.duration * effectiveMultiplier;
 			summary.totalSeconds += seconds;
 
 			switch (item.type) {
@@ -174,7 +193,7 @@ function summarizeWorkoutItems(items: WorkoutItem[]): WorkoutSummary {
 		}
 	};
 
-	walk(items, 1);
+	walk(items, 1, 1);
 	return summary;
 }
 
