@@ -14,7 +14,7 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "@/components/ui/select";
-import { SOUND_OPTIONS, playSound } from "@/lib/sound-utils";
+import { SoundSelector } from "@/components/ui/sound-selector";
 import {
 	ColorSettings,
 	IntervalStep,
@@ -99,36 +99,11 @@ export default function IntervalSettingsDialog({
 					{/* Sound selector */}
 					<div className="space-y-2">
 						<Label>Sound</Label>
-						<div className="flex gap-2">
-							<Select
-								value={item.sound ?? "default"}
-								onValueChange={(value) => {
-									const val = value === "default" ? undefined : value;
-									onUpdate(item.id, "sound", val);
-									playSound(val);
-								}}
-							>
-								<SelectTrigger className="flex-1">
-									<SelectValue placeholder="Default" />
-								</SelectTrigger>
-								<SelectContent>
-									<SelectItem value="default">Default</SelectItem>
-									{SOUND_OPTIONS.map((opt) => (
-										<SelectItem key={opt.value} value={opt.value}>
-											{opt.label}
-										</SelectItem>
-									))}
-								</SelectContent>
-							</Select>
-
-							<Button
-								variant="outline"
-								size="icon"
-								onClick={() => playSound(item.sound || undefined)}
-							>
-								▶
-							</Button>
-						</div>
+						<SoundSelector
+							value={item.sound}
+							onChange={(value) => onUpdate(item.id, "sound", value)}
+							showDefaultOption
+						/>
 					</div>
 
 					<ColorPicker

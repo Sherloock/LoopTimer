@@ -19,7 +19,7 @@ import {
 } from "@/hooks/use-user-preferences";
 import { COLOR_SCHEMES, getColorScheme } from "@/lib/constants/color-schemes";
 import { DEFAULT_USER_PREFERENCES } from "@/lib/constants/timers";
-import { SOUND_OPTIONS, playSound } from "@/lib/sound-utils";
+import { SoundSelector } from "@/components/ui/sound-selector";
 import type { ColorSettings } from "@/types/advanced-timer";
 import { Loader2, RotateCcw, Save, X } from "lucide-react";
 import { useEffect, useState } from "react";
@@ -143,33 +143,10 @@ export function UserPreferencesDialog({
 						{/* Sound Settings */}
 						<div className="space-y-4">
 							<Label>Default Alarm Sound</Label>
-							<div className="flex gap-2">
-								<Select
-									value={defaultAlarm}
-									onValueChange={(value) => {
-										setDefaultAlarm(value);
-										playSound(value);
-									}}
-								>
-									<SelectTrigger className="flex-1">
-										<SelectValue placeholder="Select sound" />
-									</SelectTrigger>
-									<SelectContent>
-										{SOUND_OPTIONS.map((opt) => (
-											<SelectItem key={opt.value} value={opt.value}>
-												{opt.label}
-											</SelectItem>
-										))}
-									</SelectContent>
-								</Select>
-								<Button
-									variant="outline"
-									size="icon"
-									onClick={() => playSound(defaultAlarm)}
-								>
-									▶
-								</Button>
-							</div>
+							<SoundSelector
+								value={defaultAlarm}
+								onChange={(value) => value && setDefaultAlarm(value)}
+							/>
 
 							<div className="flex items-center gap-2">
 								<Checkbox

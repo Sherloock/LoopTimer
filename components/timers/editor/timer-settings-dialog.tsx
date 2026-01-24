@@ -19,7 +19,7 @@ import {
 	TEMPLATE_CATEGORY_LABELS,
 	TIMER_CATEGORY_ICONS,
 } from "@/lib/constants/timers";
-import { playSound, SOUND_OPTIONS } from "@/lib/sound-utils";
+import { SoundSelector } from "@/components/ui/sound-selector";
 import { clearItemLevelColors } from "@/lib/workout-processing";
 import type {
 	ColorSettings,
@@ -272,34 +272,11 @@ export function TimerSettingsDialog({
 					<div className="space-y-4">
 						<h3 className="text-base font-medium">Alarm Sound</h3>
 
-						<div className="flex gap-2">
-							<Select
-								value={defaultAlarm}
-								onValueChange={(value) => {
-									setDefaultAlarm(value);
-									playSound(value);
-								}}
-							>
-								<SelectTrigger className="flex-1">
-									<SelectValue placeholder="Select alarm" />
-								</SelectTrigger>
-								<SelectContent>
-									{SOUND_OPTIONS.map((opt) => (
-										<SelectItem key={opt.value} value={opt.value}>
-											{opt.label}
-										</SelectItem>
-									))}
-								</SelectContent>
-							</Select>
-
-							<Button
-								variant="outline"
-								size="icon"
-								onClick={() => playSound(defaultAlarm)}
-							>
-								▶
-							</Button>
-						</div>
+						<SoundSelector
+							value={defaultAlarm}
+							onChange={(value) => value && setDefaultAlarm(value)}
+							placeholder="Select alarm"
+						/>
 					</div>
 
 					{/* Speak names toggle */}
