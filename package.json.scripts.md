@@ -329,7 +329,7 @@ npm run lint
 - To check for code quality issues
 - In CI/CD pipelines
 
-**Config**: `.eslintrc.json`
+**Config**: `eslint.config.mjs` (ESLint 9 flat config)
 
 ---
 
