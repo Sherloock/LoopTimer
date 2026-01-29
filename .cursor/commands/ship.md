@@ -4,7 +4,7 @@ Iteratively fix errors, run tests, and build until the project passes all checks
 
 ## Workflow
 
-1. **Stop dev server**: If the project is served through `npm run dev`, stop it first
+1. **Stop dev server**: Run `npm run dev:stop` to stop any running dev server
 2. **Receive errors**: User provides errors (compilation, lint, test, or build errors)
 3. **Fix errors**: Analyze and fix all provided errors
 4. **Run tests**: Execute `npm test` to verify fixes
@@ -13,7 +13,7 @@ Iteratively fix errors, run tests, and build until the project passes all checks
 
 ## Execution order
 
-1. Stop dev server if running (`npm run dev` process)
+1. Stop dev server if running (`npm run dev:stop`)
 2. Fix all provided errors in code
 3. Run `npm test` (capture output)
 4. If tests fail, fix test errors and repeat from step 3
