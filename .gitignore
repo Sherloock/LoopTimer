@@ -44,3 +44,4 @@ next-env.d.ts
 # /prisma/migrations
 # clerk configuration (can include secrets)
 /.clerk/
+.idea/
