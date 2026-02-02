@@ -18,10 +18,12 @@ components/
   debug/                      # hydration / error boundary helpers
   clock/                      # clock feature
   timers/                     # timer feature (list/edit/play)
+    advanced-timer.tsx        # main advanced timer (edit + play)
     list/
     saved/
     editor/
       advanced/
+        advanced-timer-editor-panel.tsx
         dnd/
     player/
 ```
@@ -77,4 +79,4 @@ components/
 
 ## Notes
 
-- `AdvancedTimer` is imported via `components/timers/editor/advanced/advanced-timer.tsx` (public path). The implementation currently lives in `components/advanced-timer.tsx` but depends on modules under `components/timers/editor/advanced/` and is being progressively decomposed.
+- **AdvancedTimer**: canonical path `components/timers/advanced-timer.tsx`. Orchestrates editor + player; uses `useFlattenedIntervals`, `useAdvancedTimerPlayback`, and `AdvancedTimerEditorPanel` (editor/advanced/advanced-timer-editor-panel.tsx). Flatten logic lives in `lib/timer-tree/flatten.ts`; playback state/effects in `hooks/timers/use-advanced-timer-playback.ts`.

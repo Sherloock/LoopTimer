@@ -1,6 +1,6 @@
 "use client";
 
-import { AdvancedTimer } from "@/components/timers/editor/advanced/advanced-timer";
+import { AdvancedTimer } from "@/components/timers/advanced-timer";
 import type { ComponentProps } from "react";
 
 // Re-export a pared-down editing variant of AdvancedTimer

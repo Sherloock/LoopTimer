@@ -39,6 +39,8 @@ Feature-first component tree. See `docs/components.md` for the taxonomy and rule
 - **Key files**:
   - `hooks/use-timers.ts`: React Query CRUD for `/api/timers`.
   - `hooks/use-timer-state.ts`: shared timer playback state helpers.
+  - `hooks/timers/use-flattened-intervals.ts`: flattened playback order from workout items.
+  - `hooks/timers/use-advanced-timer-playback.ts`: advanced timer countdown, completion, beep, speak, auto-start.
 
 ### `lib/`
 
@@ -47,6 +49,7 @@ Feature-first component tree. See `docs/components.md` for the taxonomy and rule
   - `lib/constants/*`: centralized constants (routes, query keys, event names, UI text).
   - `lib/navigation.ts`: navigation helpers (`useNavigation()`).
   - `lib/timer-utils.ts`: timer time/progress helpers + toasts.
+  - `lib/timer-tree/flatten.ts`: flatten workout items to playback order.
   - `lib/sound-utils.ts`: sound + TTS utilities.
 
 ### `schema/`

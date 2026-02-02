@@ -1,6 +1,6 @@
 "use client";
 
-import { AdvancedTimer } from "@/components/timers/editor/advanced/advanced-timer";
+import { AdvancedTimer } from "@/components/timers/advanced-timer";
 import { SavedTimers } from "@/components/timers/saved/saved-timers";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { CUSTOM_EVENTS } from "@/lib/constants/custom-events";
