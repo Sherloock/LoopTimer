@@ -1,5 +1,6 @@
 // Shared types & helpers for Advanced Timer
-export type TimerType = "prepare" | "work" | "rest";
+export const TIMER_TYPES = ["prepare", "work", "rest"] as const;
+export type TimerType = (typeof TIMER_TYPES)[number];
 export interface IntervalStep {
 	id: string;
 	name: string;

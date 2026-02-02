@@ -4,6 +4,7 @@ import {
 	MAX_WORKOUT_ITEMS,
 	MIN_DURATION_SECONDS,
 } from "@/lib/constants/ai";
+import { TIMER_TYPES } from "@/types/advanced-timer";
 
 export interface ValidationError {
 	path: string;
@@ -88,11 +89,11 @@ function validateIntervalStep(
 		isValid = false;
 	}
 
-	if (!["prepare", "work", "rest"].includes(interval.type as string)) {
+	if (!TIMER_TYPES.includes(interval.type as (typeof TIMER_TYPES)[number])) {
 		errors.push({
 			path: `${path}.type`,
-			message: `Invalid value '${interval.type}', must be 'prepare' | 'work' | 'rest'`,
-			expected: "'prepare' | 'work' | 'rest'",
+			message: `Invalid value '${interval.type}', must be '${TIMER_TYPES.join("' | '")}'`,
+			expected: `'${TIMER_TYPES.join("' | '")}'`,
 			received: String(interval.type),
 		});
 		isValid = false;

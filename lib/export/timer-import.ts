@@ -1,5 +1,5 @@
 import { z } from "zod";
-import type { AdvancedConfig } from "@/types/advanced-timer";
+import { TIMER_TYPES, type AdvancedConfig } from "@/types/advanced-timer";
 import type { TimerExport } from "./timer-export";
 
 // Import the AdvancedConfig schema from timerSchema if it exists
@@ -8,7 +8,7 @@ const IntervalStepSchema = z.object({
 	id: z.string(),
 	name: z.string(),
 	duration: z.number().positive(),
-	type: z.enum(["prepare", "work", "rest"]),
+	type: z.enum(TIMER_TYPES),
 	color: z.string().optional(),
 	skipOnLastLoop: z.boolean().optional(),
 	sound: z.string().optional(),
