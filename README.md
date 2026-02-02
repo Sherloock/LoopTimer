@@ -6,8 +6,7 @@
 
 A modern, full-stack workout timer application with AI-powered workout generation, drag-and-drop timer builder, and real-time playback. Built with Next.js 15, TypeScript, PostgreSQL, and deployed on Vercel.
 
-🚀 **[Live Demo](https://your-timer-app.vercel.app)** _(Update this URL after deployment)_
-
+🚀 **[Live Demo](https://loop-timer.vercel.app)**
 Perfect for interval training, HIIT workouts, Tabata, boxing rounds, yoga flows, and custom timing needs.
 
 ## 📸 Screenshots
