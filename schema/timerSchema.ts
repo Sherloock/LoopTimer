@@ -4,13 +4,53 @@ import {
 	TEMPLATE_CATEGORIES,
 	TIMER_NAME_MAX_LENGTH,
 } from "@/lib/constants/timers";
+import type { LoopGroup } from "@/types/advanced-timer";
+import { TIMER_TYPES } from "@/types/advanced-timer";
 
-const colorSettingsSchema = z.object({
+export const colorSettingsSchema = z.object({
 	prepare: z.string(),
 	work: z.string(),
 	rest: z.string(),
 	loop: z.string(),
 	nestedLoop: z.string(),
+});
+
+const intervalStepSchema = z.object({
+	id: z.string(),
+	name: z.string(),
+	duration: z.number().positive(),
+	type: z.enum(TIMER_TYPES),
+	color: z.string().optional(),
+	skipOnLastLoop: z.boolean().optional(),
+	sound: z.string().optional(),
+});
+
+const loopGroupSchema: z.ZodType<LoopGroup> = z.lazy(() =>
+	z.object({
+		id: z.string(),
+		loops: z.number().int().positive(),
+		items: z.array(z.union([intervalStepSchema, loopGroupSchema])),
+		collapsed: z.boolean().optional(),
+		color: z.string().optional(),
+	}),
+);
+
+const workoutItemSchema = z.union([intervalStepSchema, loopGroupSchema]);
+
+export const advancedConfigSchema = z.object({
+	items: z.array(workoutItemSchema),
+	colors: colorSettingsSchema,
+	defaultAlarm: z.string(),
+	speakNames: z.boolean(),
+});
+
+export const timerExportSchema = z.object({
+	version: z.string(),
+	exportedAt: z.string().datetime(),
+	timer: z.object({
+		name: z.string().min(1).max(TIMER_NAME_MAX_LENGTH),
+		data: advancedConfigSchema,
+	}),
 });
 
 export const timerSchema = z.object({
