@@ -3,13 +3,11 @@
  * Handles adding, removing, updating, moving, and duplicating workout items.
  */
 
+import { useIdGenerator } from "@/hooks/timers/use-id-generator";
 import {
 	addItemToLoop,
-	removeItemById,
-} from "@/components/timers/editor/advanced/advanced-timer-tree";
-import { useIdGenerator } from "@/components/timers/editor/advanced/use-id-generator";
-import {
 	findAndRemoveItem,
+	removeItemById,
 	toggleLoopCollapsed,
 	moveItemDown as treeItemDown,
 	moveItemUp as treeItemUp,

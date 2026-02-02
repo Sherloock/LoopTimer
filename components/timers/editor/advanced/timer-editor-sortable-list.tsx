@@ -1,8 +1,8 @@
 "use client";
 
-import { findItemById } from "@/components/timers/editor/advanced/advanced-timer-tree";
 import { DroppableZone } from "@/components/timers/editor/advanced/dnd/droppable-zone";
 import { SortableItem } from "@/components/timers/editor/advanced/dnd/sortable-item";
+import { findItemById } from "@/lib/timer-tree/tree-operations";
 import type {
 	AdvancedConfig,
 	ColorSettings,

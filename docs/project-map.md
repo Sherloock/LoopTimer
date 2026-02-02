@@ -44,25 +44,26 @@ Feature-first component tree. See `docs/components.md` for the taxonomy and rule
 
 ### `lib/`
 
-- **What**: cross-cutting utilities and app infrastructure.
+- **What**: app and feature infrastructure (constants, navigation, feature modules, UI-coupled helpers).
+- **Rule**: No standalone pure domain/tree logic files here that belong in `utils/` or `types/`; tree logic lives under `lib/timer-tree/`.
 - **Key folders**:
   - `lib/constants/*`: centralized constants (routes, query keys, event names, UI text).
   - `lib/navigation.ts`: navigation helpers (`useNavigation()`).
-  - `lib/timer-utils.ts`: timer time/progress helpers + toasts.
-  - `lib/timer-tree/flatten.ts`: flatten workout items to playback order.
+  - `lib/timer-utils.ts`: timer state, toasts, progress; re-exports time formatters from `utils/format-time`.
+  - `lib/timer-tree/`: tree helpers (`tree-helpers.ts`), tree operations (`tree-operations.ts`), flatten for playback.
   - `lib/sound-utils.ts`: sound + TTS utilities.
 
 ### `schema/`
 
-- **What**: Zod schemas for validating inputs at boundaries.
+- **What**: Zod schemas for validating inputs at API/form boundaries only.
 
 ### `types/`
 
-- **What**: domain model types (advanced timer structures etc).
+- **What**: domain types and type-related pieces only — interfaces for the timer domain, domain const enums (e.g. `TIMER_TYPES`), type guards (e.g. `isLoop`, `isInterval`), and ambient declarations (`*.d.ts`). No business logic, no React, no Zod.
 
 ### `utils/`
 
-- **What**: pure utilities (e.g. computing total time, timer shared helpers).
+- **What**: pure, framework-agnostic helpers. No React, no Node-only APIs, no app-specific imports from `lib/` or `app/`. Examples: `compute-total-time`, `format-time`, `time-input`.
 
 ### `prisma/`
 
@@ -77,4 +78,8 @@ Feature-first component tree. See `docs/components.md` for the taxonomy and rule
 - **Server-side business logic**: `actions/...`
 - **API boundary**: `app/api/.../route.ts` (thin controller, call actions)
 - **Constants**: `lib/constants/...`
-- **Pure logic utilities**: `lib/...` or `utils/...` (prefer `utils/` for pure functions)
+- **Pure logic utilities**: `utils/...` (pure functions with no app/lib deps). App/feature glue and UI-coupled helpers: `lib/...`
+- **Domain types / type guards**: `types/...`
+- **Validation schemas**: `schema/...`
+
+**Rule**: Components are UI only. Pure domain or tree logic belongs in `lib/` or `utils/`, not as standalone `.ts` files under `components/`.

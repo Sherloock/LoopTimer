@@ -56,7 +56,7 @@ components/
   - `saved/`: saved timers picker UI (`SavedTimers`).
   - `templates/`: template library browser and cards.
   - `editor/`: creating/editing timers.
-    - `advanced/`: advanced builder/editor.
+    - `advanced/`: advanced builder/editor (UI only; tree helpers in `lib/timer-tree/`, id generator in `hooks/timers/use-id-generator.ts`).
       - `dnd/`: drag-and-drop builder pieces + dialogs.
   - `player/`: running timer UI (display, controls, completion, fullscreen).
   - `import/`: import dialog with file/clipboard/QR scan.

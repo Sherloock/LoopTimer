@@ -6,10 +6,8 @@
 
 import {
 	addItemToLoop,
-	findItemById,
-} from "@/components/timers/editor/advanced/advanced-timer-tree";
-import {
 	findAndRemoveItem,
+	findItemById,
 	findItemLocation,
 	findTargetAndParent,
 	insertIntoLoopAfterTarget,

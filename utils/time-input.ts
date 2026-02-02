@@ -1,4 +1,4 @@
-import { formatTime } from "@/lib/timer-utils";
+import { formatTime } from "@/utils/format-time";
 
 export function parseTimeInput(value: string): number {
 	// Handle mm:ss format

@@ -9,12 +9,7 @@ import {
 	type WorkoutItem,
 } from "@/types/advanced-timer";
 
-// Re-export existing utilities for convenience
-export {
-	addItemToLoop,
-	findItemById,
-	removeItemById,
-} from "@/components/timers/editor/advanced/advanced-timer-tree";
+export { addItemToLoop, findItemById, removeItemById } from "./tree-helpers";
 
 /**
  * Result of finding and removing an item from the tree.
