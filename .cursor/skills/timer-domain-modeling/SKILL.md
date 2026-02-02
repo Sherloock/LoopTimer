@@ -24,5 +24,6 @@ Keep timer modeling consistent across UI, actions, API routes, and Prisma bounda
 ## Quick references (repo)
 
 - Zod schemas: `schema/timerSchema.ts`
-- Shared timer helpers: `lib/timer-utils.ts`, `utils/timer-shared.ts`, `utils/compute-total-time.ts`
+- Timer types: `types/advanced-timer.ts` (all timer domain types including `TimerType`, `IntervalStep`, `LoopGroup`, `WorkoutItem`)
+- Timer helpers: `lib/timer-utils.ts`, `utils/compute-total-time.ts`, `utils/time-input.ts`
 - Advanced timer UI: `components/advanced-timer.tsx`

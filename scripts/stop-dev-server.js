@@ -3,13 +3,13 @@
 /**
  * Stop dev server on port (Windows-compatible)
  * Kills any process listening on the configured port
- * Defaults to port 3010 to match dev server
+ * Defaults to port 3000 to match dev server
  */
 
 const { exec } = require("child_process");
 const os = require("os");
 
-const PORT = process.env.PORT || 3010;
+const PORT = process.env.PORT;
 const platform = os.platform();
 
 function stopDevServer() {

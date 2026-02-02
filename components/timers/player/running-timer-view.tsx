@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { useWakeLock } from "@/hooks/use-wake-lock";
 import { getMute, setMute } from "@/lib/sound-utils";
 import { formatTime, TimerState } from "@/lib/timer-utils";
+import { TimerType } from "@/types/advanced-timer";
 import {
 	Maximize2,
 	Minimize2,
@@ -25,7 +26,7 @@ interface RunningTimerViewProps {
 	state: TimerState;
 	currentSet: number;
 	totalSets: number;
-	intervalType: "workout" | "rest" | "prepare";
+	intervalType: TimerType;
 	intervalColor?: string;
 
 	// Display info
@@ -43,14 +44,12 @@ interface RunningTimerViewProps {
 	isHolding: boolean;
 	holdProgress: number;
 
-	nextInterval:
-		| {
-				name: string;
-				type: "workout" | "rest" | "prepare";
-				duration: number;
-				color?: string;
-		  }
-		| undefined;
+	nextIntervals: Array<{
+		name: string;
+		type: TimerType;
+		duration: number;
+		color?: string;
+	}>;
 
 	// Callbacks
 	onFastBackward: () => void;
@@ -83,7 +82,7 @@ export function RunningTimerView({
 	onHoldEnd,
 	onPlay,
 	onPause,
-	nextInterval,
+	nextIntervals,
 }: RunningTimerViewProps) {
 	const [isMuted, setIsMuted] = useState(false);
 	const [isFullscreen, setIsFullscreen] = useState(false);
@@ -116,6 +115,32 @@ export function RunningTimerView({
 				"mozfullscreenchange",
 				handleFullscreenChange,
 			);
+		};
+	}, []);
+
+	// Exit fullscreen when component unmounts (timer exits)
+	useEffect(() => {
+		return () => {
+			const exitFullscreenOnUnmount = async () => {
+				try {
+					if (
+						document.fullscreenElement ||
+						document.webkitFullscreenElement ||
+						document.mozFullScreenElement
+					) {
+						if (document.exitFullscreen) {
+							await document.exitFullscreen();
+						} else if (document.webkitExitFullscreen) {
+							await document.webkitExitFullscreen();
+						} else if (document.mozCancelFullScreen) {
+							await document.mozCancelFullScreen();
+						}
+					}
+				} catch {
+					// Ignore errors on unmount
+				}
+			};
+			exitFullscreenOnUnmount();
 		};
 	}, []);
 
@@ -351,32 +376,21 @@ export function RunningTimerView({
 						showStepCounter={showStepCounter}
 						currentStep={currentStep}
 						totalSteps={totalSteps}
-						nextInterval={nextInterval}
+						nextIntervals={nextIntervals}
 					/>
 				</div>
 			</div>
 
 			{/* Play/Pause button in bottom right corner */}
 			<div className="absolute bottom-6 right-6 md:bottom-8 md:left-1/2 md:right-auto md:-translate-x-1/2">
-				{state === "running" ? (
-					<Button
-						onClick={onPause}
-						variant="ghost"
-						className="flex items-center gap-2 rounded-lg px-4 py-3 transition-all duration-200 hover:bg-muted/80 md:px-6"
-					>
-						<Pause size={24} />
-						<span className="hidden text-sm font-medium md:inline">PAUSE</span>
-					</Button>
-				) : (
-					<Button
-						onClick={onPlay}
-						variant="ghost"
-						className="flex items-center gap-2 rounded-lg px-4 py-3 transition-all duration-200 hover:bg-muted/80 md:px-6"
-					>
-						<Play size={24} />
-						<span className="hidden text-sm font-medium md:inline">PLAY</span>
-					</Button>
-				)}
+				<Button
+					onClick={state === "running" ? onPause : onPlay}
+					variant="ghost"
+					size="icon"
+					className="md:h-18 md:w-18 h-16 w-16 rounded-xl transition-all duration-200 hover:bg-muted/80"
+				>
+					{state === "running" ? <Pause size={32} /> : <Play size={32} />}
+				</Button>
 			</div>
 		</>
 	);

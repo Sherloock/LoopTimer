@@ -29,8 +29,11 @@ import {
 } from "@/lib/constants/timers";
 import { useNavigation } from "@/lib/navigation";
 import { formatTime, formatTimeMinutes } from "@/lib/timer-utils";
-import type { AdvancedConfig } from "@/types/advanced-timer";
-import { type LoopGroup, type WorkoutItem } from "@/utils/compute-total-time";
+import type {
+	AdvancedConfig,
+	LoopGroup,
+	WorkoutItem,
+} from "@/types/advanced-timer";
 import {
 	Activity,
 	Clock,

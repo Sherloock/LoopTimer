@@ -1,4 +1,5 @@
-import { computeTotalTime, type WorkoutItem } from "@/utils/compute-total-time";
+import type { WorkoutItem } from "@/types/advanced-timer";
+import { computeTotalTime } from "@/utils/compute-total-time";
 
 describe("computeTotalTime", () => {
 	it("returns 0 for empty input", () => {

@@ -1,28 +1,4 @@
-"use client";
-
-// Returns total duration in seconds for a given advanced timer configuration
-export interface IntervalStep {
-	id: string;
-	name: string;
-	duration: number;
-	type: "prepare" | "work" | "rest";
-	skipOnLastLoop?: boolean;
-	sound?: string;
-}
-
-export interface LoopGroup {
-	id: string;
-	loops: number;
-	items: WorkoutItem[];
-	skippedOnLastLoop?: boolean;
-}
-
-export type WorkoutItem = IntervalStep | LoopGroup;
-
-// Type guard helpers
-const isLoop = (item: WorkoutItem): item is LoopGroup => {
-	return (item as LoopGroup).loops !== undefined;
-};
+import { isLoop, type WorkoutItem } from "@/types/advanced-timer";
 
 /**
  * Computes the total duration for a list of workout items.

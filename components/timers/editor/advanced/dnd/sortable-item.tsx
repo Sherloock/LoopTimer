@@ -14,7 +14,7 @@ import {
 	WorkoutItem,
 } from "@/types/advanced-timer";
 import { computeTotalTime } from "@/utils/compute-total-time";
-import { formatTimeInput } from "@/utils/timer-shared";
+import { formatTimeInput } from "@/utils/time-input";
 import { useDndContext } from "@dnd-kit/core";
 import {
 	SortableContext,

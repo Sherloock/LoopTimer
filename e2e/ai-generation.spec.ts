@@ -15,7 +15,7 @@ test.describe("AI Workout Generation", () => {
 
 		// Enter prompt
 		await page.fill(
-			'textarea[placeholder*="workout"]',
+			'textarea[placeholder*="work"]',
 			"Create a 20 minute HIIT workout with 30 seconds work and 15 seconds rest",
 		);
 
@@ -59,7 +59,7 @@ test.describe("AI Workout Generation", () => {
 		await page.goto("/app/timer/edit");
 		await page.click('button[aria-label="Generate with AI"]');
 
-		await page.fill('textarea[placeholder*="workout"]', "Simple workout");
+		await page.fill('textarea[placeholder*="work"]', "Simple workout");
 		await page.click('button:has-text("Generate")');
 
 		// If API fails, should show retry count

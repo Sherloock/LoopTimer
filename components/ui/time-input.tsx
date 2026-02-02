@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
-import { formatTimeInput, parseTimeInput } from "@/utils/timer-shared";
+import { formatTimeInput, parseTimeInput } from "@/utils/time-input";
 import { Minus, Plus } from "lucide-react";
 import React, { useState } from "react";
 

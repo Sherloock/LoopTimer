@@ -2,6 +2,7 @@
 
 import { formatTime, TimerState } from "@/lib/timer-utils";
 import { cn } from "@/lib/utils";
+import { TimerType } from "@/types/advanced-timer";
 import { AlarmClock, ArrowDownCircle, Coffee, Dumbbell } from "lucide-react";
 
 const SET_LINE_LABEL = "SET";
@@ -57,17 +58,17 @@ interface TimerDisplayProps {
 	currentRound: number;
 	totalRounds: number;
 	progress: number;
-	intervalType?: "workout" | "rest" | "prepare";
+	intervalType?: TimerType;
 	intervalColor?: string;
 	showStepCounter?: boolean;
 	currentStep?: number;
 	totalSteps?: number;
-	nextInterval?: {
+	nextIntervals?: Array<{
 		name: string;
-		type: "workout" | "rest" | "prepare";
+		type: TimerType;
 		duration: number;
 		color?: string;
-	};
+	}>;
 }
 
 export function TimerDisplay({
@@ -77,18 +78,18 @@ export function TimerDisplay({
 	currentRound,
 	totalRounds,
 	progress,
-	intervalType = "workout",
+	intervalType = "work",
 	intervalColor,
 	showStepCounter = false,
 	currentStep,
 	totalSteps,
-	nextInterval,
+	nextIntervals = [],
 }: TimerDisplayProps) {
 	const getIntervalBadgeColor = () => {
 		switch (intervalType) {
 			case "prepare":
 				return "bg-interval-prepare text-interval-foreground hover:bg-interval-prepare/90";
-			case "workout":
+			case "work":
 				return "bg-interval-workout text-interval-foreground hover:bg-interval-workout/90";
 			case "rest":
 				return "bg-interval-rest text-interval-foreground hover:bg-interval-rest/90";
@@ -101,7 +102,7 @@ export function TimerDisplay({
 		switch (intervalType) {
 			case "prepare":
 				return "text-interval-prepare";
-			case "workout":
+			case "work":
 				return "text-interval-workout";
 			case "rest":
 				return "text-interval-rest";
@@ -114,7 +115,7 @@ export function TimerDisplay({
 		switch (intervalType) {
 			case "prepare":
 				return "text-interval-prepare/70";
-			case "workout":
+			case "work":
 				return "text-interval-workout/70";
 			case "rest":
 				return "text-interval-rest/70";
@@ -127,7 +128,7 @@ export function TimerDisplay({
 		switch (intervalType) {
 			case "prepare":
 				return "bg-interval-prepare";
-			case "workout":
+			case "work":
 				return "bg-interval-workout";
 			case "rest":
 				return "bg-interval-rest";
@@ -205,8 +206,8 @@ export function TimerDisplay({
 
 				{/* Next Up section directly under exercise name */}
 				<div className="pt-6 sm:pt-8">
-					{nextInterval ? (
-						<NextUp nextInterval={nextInterval} />
+					{nextIntervals.length > 0 ? (
+						<NextUpList nextIntervals={nextIntervals} />
 					) : (
 						<FinalNextUpPlaceholder />
 					)}
@@ -216,26 +217,29 @@ export function TimerDisplay({
 	);
 }
 
-function NextUp({
-	nextInterval,
-}: {
-	nextInterval: {
-		name: string;
-		type: "workout" | "rest" | "prepare";
-		duration: number;
-		color?: string;
-	};
-}) {
-	const customColor = nextInterval.color;
-	const getIcon = () => {
+type NextIntervalItem = {
+	name: string;
+	type: TimerType;
+	duration: number;
+	color?: string;
+};
+
+function NextUpList({ nextIntervals }: { nextIntervals: NextIntervalItem[] }) {
+	// Show up to 2 items
+	const itemsToShow = nextIntervals.slice(0, 2);
+	const primaryInterval = itemsToShow[0];
+	const secondaryInterval = itemsToShow[1];
+	const customColor = primaryInterval.color;
+
+	const getIconForType = (type: string, color?: string) => {
 		const iconSize = 20;
-		switch (nextInterval.type) {
-			case "workout":
+		switch (type) {
+			case "work":
 				return (
 					<Dumbbell
 						size={iconSize}
 						className="text-interval-workout"
-						style={customColor ? { color: customColor } : undefined}
+						style={color ? { color } : undefined}
 					/>
 				);
 			case "rest":
@@ -243,7 +247,7 @@ function NextUp({
 					<Coffee
 						size={iconSize}
 						className="text-interval-rest"
-						style={customColor ? { color: customColor } : undefined}
+						style={color ? { color } : undefined}
 					/>
 				);
 			case "prepare":
@@ -251,7 +255,7 @@ function NextUp({
 					<AlarmClock
 						size={iconSize}
 						className="text-interval-prepare"
-						style={customColor ? { color: customColor } : undefined}
+						style={color ? { color } : undefined}
 					/>
 				);
 			default:
@@ -261,9 +265,9 @@ function NextUp({
 		}
 	};
 
-	const getBackground = () => {
-		switch (nextInterval.type) {
-			case "workout":
+	const getBackgroundForType = (type: string) => {
+		switch (type) {
+			case "work":
 				return "bg-interval-workout/10 border-interval-workout/35";
 			case "rest":
 				return "bg-interval-rest/10 border-interval-rest/35";
@@ -278,7 +282,7 @@ function NextUp({
 		<div
 			className={cn(
 				"mx-auto w-full max-w-80 rounded-2xl border p-4 shadow-lg backdrop-blur-md transition-all duration-300 sm:w-96",
-				getBackground(),
+				getBackgroundForType(primaryInterval.type),
 			)}
 			style={
 				customColor
@@ -295,32 +299,61 @@ function NextUp({
 					: undefined
 			}
 		>
+			{/* Primary next interval */}
 			<div className="grid grid-cols-2 items-center gap-4">
 				{/* Left column: icon + label + duration */}
 				<div className="flex min-w-0 items-center gap-3">
 					<span className="flex size-10 flex-shrink-0 items-center justify-center">
-						{getIcon()}
+						{getIconForType(primaryInterval.type, customColor)}
 					</span>
 					<div className="flex min-w-0 flex-col items-start">
 						<span className="text-xs font-medium uppercase tracking-widest text-muted-foreground">
 							{NEXT_UP_LABEL}
 						</span>
 						<span className="font-mono text-sm text-muted-foreground">
-							{formatTime(nextInterval.duration)}
+							{formatTime(primaryInterval.duration)}
 						</span>
 					</div>
 				</div>
 
-				{/* Right column: interval name */}
+				{/* Right column: interval name - allows 2 lines */}
 				<div className="min-w-0 text-right">
 					<span
-						className="block w-full min-w-0 truncate text-sm font-semibold text-foreground"
-						title={nextInterval.name}
+						className="line-clamp-2 block w-full min-w-0 text-sm font-semibold leading-tight text-foreground"
+						title={primaryInterval.name}
 					>
-						{nextInterval.name}
+						{primaryInterval.name}
 					</span>
 				</div>
 			</div>
+
+			{/* Secondary next interval (if exists) */}
+			{secondaryInterval && (
+				<div className="mt-3 grid grid-cols-2 items-center gap-4 border-t border-muted-foreground/20 pt-3">
+					<div className="flex min-w-0 items-center gap-3">
+						<span className="flex size-10 flex-shrink-0 items-center justify-center">
+							{getIconForType(secondaryInterval.type, secondaryInterval.color)}
+						</span>
+						<div className="flex min-w-0 flex-col items-start">
+							<span className="text-xs font-medium uppercase tracking-widest text-muted-foreground/70">
+								Then
+							</span>
+							<span className="font-mono text-sm text-muted-foreground/70">
+								{formatTime(secondaryInterval.duration)}
+							</span>
+						</div>
+					</div>
+
+					<div className="min-w-0 text-right">
+						<span
+							className="line-clamp-2 block w-full min-w-0 text-sm font-semibold leading-tight text-muted-foreground"
+							title={secondaryInterval.name}
+						>
+							{secondaryInterval.name}
+						</span>
+					</div>
+				</div>
+			)}
 		</div>
 	);
 }

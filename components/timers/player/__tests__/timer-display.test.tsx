@@ -13,8 +13,8 @@ describe("TimerDisplay", () => {
 				currentRound={1}
 				totalRounds={3}
 				progress={50}
-				intervalType="workout"
-				nextInterval={{ name: "REST", type: "rest", duration: 10 }}
+				intervalType="work"
+				nextIntervals={[{ name: "REST", type: "rest", duration: 10 }]}
 			/>,
 		);
 
@@ -26,7 +26,7 @@ describe("TimerDisplay", () => {
 		expect(screen.getByText("00:10")).toBeInTheDocument();
 	});
 
-	it("renders a final placeholder when nextInterval is not provided", () => {
+	it("renders a final placeholder when nextIntervals is empty", () => {
 		render(
 			<TimerDisplay
 				timeLeft={5}

@@ -1,10 +1,9 @@
 import { z } from "zod";
 
 import {
-	TIMER_NAME_MAX_LENGTH,
 	TEMPLATE_CATEGORIES,
+	TIMER_NAME_MAX_LENGTH,
 } from "@/lib/constants/timers";
-import type { ColorSettings } from "@/types/advanced-timer";
 
 const colorSettingsSchema = z.object({
 	prepare: z.string(),

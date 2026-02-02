@@ -15,11 +15,7 @@ import {
 	SelectValue,
 } from "@/components/ui/select";
 import { SoundSelector } from "@/components/ui/sound-selector";
-import {
-	ColorSettings,
-	IntervalStep,
-	getDefaultNameForType,
-} from "@/types/advanced-timer";
+import { ColorSettings, IntervalStep, TimerType } from "@/types/advanced-timer";
 import { ChevronDown, ChevronUp } from "lucide-react";
 
 interface Props {
@@ -47,9 +43,13 @@ export default function IntervalSettingsDialog({
 }: Props) {
 	const itemColor = item.color || colors[item.type];
 
-	const handleTypeChange = (newType: "prepare" | "work" | "rest") => {
+	const handleTypeChange = (newType: TimerType) => {
 		onUpdate(item.id, "type", newType);
-		onUpdate(item.id, "name", getDefaultNameForType(newType));
+		onUpdate(
+			item.id,
+			"name",
+			newType.charAt(0).toUpperCase() + newType.slice(1),
+		);
 	};
 
 	return (
@@ -81,9 +81,7 @@ export default function IntervalSettingsDialog({
 						<Label>Interval Type</Label>
 						<Select
 							value={item.type}
-							onValueChange={(value) =>
-								handleTypeChange(value as "prepare" | "work" | "rest")
-							}
+							onValueChange={(value) => handleTypeChange(value as TimerType)}
 						>
 							<SelectTrigger className="w-full">
 								<SelectValue placeholder="Select type" />

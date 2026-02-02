@@ -1,7 +1,5 @@
 import { formatTime } from "@/lib/timer-utils";
 
-export type TimerType = "prepare" | "workout" | "rest";
-
 export function parseTimeInput(value: string): number {
 	// Handle mm:ss format
 	if (value.includes(":")) {
@@ -24,20 +22,4 @@ export function parseTimeInput(value: string): number {
 
 export function formatTimeInput(seconds: number): string {
 	return formatTime(seconds);
-}
-
-export function getIntervalTypeForDisplay(
-	currentType: TimerType | null,
-): "workout" | "rest" | "prepare" {
-	if (currentType === "workout") return "workout";
-	if (currentType === "rest") return "rest";
-	return "prepare";
-}
-
-export function mapIntervalTypeToTimerType(
-	intervalType: "prepare" | "work" | "rest",
-): TimerType {
-	if (intervalType === "work") return "workout";
-	if (intervalType === "rest") return "rest";
-	return "prepare";
 }

@@ -1,9 +1,10 @@
 // Shared types & helpers for Advanced Timer
+export type TimerType = "prepare" | "work" | "rest";
 export interface IntervalStep {
 	id: string;
 	name: string;
 	duration: number;
-	type: "prepare" | "work" | "rest";
+	type: TimerType;
 	color?: string;
 	skipOnLastLoop?: boolean;
 	sound?: string;
@@ -50,19 +51,4 @@ export const isLoop = (item: WorkoutItem): item is LoopGroup => {
 
 export const isInterval = (item: WorkoutItem): item is IntervalStep => {
 	return "duration" in item && "type" in item;
-};
-
-export const getDefaultNameForType = (
-	type: "prepare" | "work" | "rest",
-): string => {
-	switch (type) {
-		case "prepare":
-			return "PREPARE";
-		case "work":
-			return "WORK";
-		case "rest":
-			return "REST";
-		default:
-			return "INTERVAL";
-	}
 };

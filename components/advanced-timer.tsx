@@ -28,11 +28,6 @@ import {
 import { playSound, speakText, stopAllSounds } from "@/lib/sound-utils";
 import { formatTime, getProgress, timerToasts } from "@/lib/timer-utils";
 import {
-	getIntervalTypeForDisplay,
-	mapIntervalTypeToTimerType,
-	TimerType,
-} from "@/utils/timer-shared";
-import {
 	closestCenter,
 	DndContext,
 	DragEndEvent,
@@ -92,6 +87,7 @@ import {
 	isLoop,
 	LoadedTimer,
 	LoopGroup,
+	TimerType,
 	WorkoutItem,
 } from "@/types/advanced-timer";
 
@@ -1011,7 +1007,7 @@ export function AdvancedTimer({
 		if (state === "idle") {
 			if (flattenedIntervals.length > 0) {
 				setTimeLeft(flattenedIntervals[0].duration);
-				setCurrentType(mapIntervalTypeToTimerType(flattenedIntervals[0].type));
+				setCurrentType(flattenedIntervals[0].type);
 				setCurrentItemIndex(0);
 			}
 			setCurrentSet(1);
@@ -1022,7 +1018,7 @@ export function AdvancedTimer({
 	useEffect(() => {
 		if (state === "idle" && flattenedIntervals.length > 0) {
 			setTimeLeft(flattenedIntervals[0].duration);
-			setCurrentType(mapIntervalTypeToTimerType(flattenedIntervals[0].type));
+			setCurrentType(flattenedIntervals[0].type);
 			setCurrentItemIndex(0);
 		}
 	}, [flattenedIntervals, state]);
@@ -1038,7 +1034,7 @@ export function AdvancedTimer({
 			}
 			const nextInterval = flattenedIntervals[nextIndex];
 			setCurrentItemIndex(nextIndex);
-			setCurrentType(mapIntervalTypeToTimerType(nextInterval.type));
+			setCurrentType(nextInterval.type);
 			setTimeLeft(nextInterval.duration);
 
 			const intervalName = nextInterval.loopInfo
@@ -1167,20 +1163,30 @@ export function AdvancedTimer({
 		return currentInterval.color || timerColors[currentInterval.type];
 	}, [currentInterval, timerColors]);
 
-	// Compute nextInterval for preview
-	const nextInterval =
-		flattenedIntervals.length > 0 &&
-		currentItemIndex + 1 < flattenedIntervals.length
-			? (() => {
-					const next = flattenedIntervals[currentItemIndex + 1];
-					return {
-						name: next.name,
-						type: mapIntervalTypeToTimerType(next.type),
-						duration: next.duration,
-						color: next.color || timerColors[next.type],
-					};
-				})()
-			: undefined;
+	// Compute up to 2 next intervals for preview
+	const nextIntervals = useMemo(() => {
+		const result: Array<{
+			name: string;
+			type: TimerType;
+			duration: number;
+			color?: string;
+		}> = [];
+
+		for (let i = 1; i <= 2; i++) {
+			const nextIndex = currentItemIndex + i;
+			if (nextIndex < flattenedIntervals.length) {
+				const next = flattenedIntervals[nextIndex];
+				result.push({
+					name: next.name,
+					type: next.type,
+					duration: next.duration,
+					color: next.color || timerColors[next.type],
+				});
+			}
+		}
+
+		return result;
+	}, [currentItemIndex, flattenedIntervals, timerColors]);
 
 	// Calculate current set and total sets for display
 	const { currentLoopSet, totalLoopSets } = useMemo(() => {
@@ -1405,7 +1411,7 @@ export function AdvancedTimer({
 			const nextIndex = currentItemIndex + 1;
 			setCurrentItemIndex(nextIndex);
 			const nextInterval = flattenedIntervals[nextIndex];
-			setCurrentType(mapIntervalTypeToTimerType(nextInterval.type));
+			setCurrentType(nextInterval.type);
 			setTimeLeft(nextInterval.duration);
 			timerToasts.fastForward(`Skipped to ${nextInterval.name}`);
 		}
@@ -1421,7 +1427,7 @@ export function AdvancedTimer({
 			const prevIndex = currentItemIndex - 1;
 			setCurrentItemIndex(prevIndex);
 			const prevInterval = flattenedIntervals[prevIndex];
-			setCurrentType(mapIntervalTypeToTimerType(prevInterval.type));
+			setCurrentType(prevInterval.type);
 			setTimeLeft(prevInterval.duration);
 			timerToasts.fastBackward(`Jumped back to ${prevInterval.name}`);
 		}
@@ -1441,7 +1447,7 @@ export function AdvancedTimer({
 		if (state === "idle" && flattenedIntervals.length > 0) {
 			const firstInterval = flattenedIntervals[0];
 			setTimeLeft(firstInterval.duration);
-			setCurrentType(mapIntervalTypeToTimerType(firstInterval.type));
+			setCurrentType(firstInterval.type);
 			setCurrentItemIndex(0);
 			setCurrentSet(1);
 		}
@@ -1820,7 +1826,7 @@ export function AdvancedTimer({
 							state={state}
 							currentSet={currentLoopSet}
 							totalSets={totalLoopSets}
-							intervalType={getIntervalTypeForDisplay(currentType)}
+							intervalType={currentType}
 							intervalColor={currentIntervalColor}
 							currentIntervalName={getCurrentIntervalName()}
 							progress={getTimerProgress()}
@@ -1836,7 +1842,7 @@ export function AdvancedTimer({
 							onHoldEnd={handleHoldEnd}
 							onPlay={startTimer}
 							onPause={pauseTimer}
-							nextInterval={nextInterval}
+							nextIntervals={nextIntervals}
 						/>
 					</MinimalisticContainer>
 				</>

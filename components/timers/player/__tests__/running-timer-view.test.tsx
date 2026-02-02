@@ -1,8 +1,7 @@
 /** @jest-environment jsdom */
 
 import { RunningTimerView } from "@/components/timers/player/running-timer-view";
-import { render } from "@testing-library/react";
-import { fireEvent } from "@testing-library/react";
+import { fireEvent, render } from "@testing-library/react";
 
 jest.mock("@/hooks/use-wake-lock", () => ({
 	useWakeLock: () => undefined,
@@ -30,14 +29,14 @@ describe("RunningTimerView", () => {
 				state="running"
 				currentSet={1}
 				totalSets={1}
-				intervalType="workout"
+				intervalType="work"
 				currentIntervalName="WORK"
 				progress={50}
 				overallProgress={20}
 				totalTimeRemaining={100}
 				isHolding={false}
 				holdProgress={0}
-				nextInterval={undefined}
+				nextIntervals={[]}
 				onFastBackward={() => undefined}
 				onFastForward={() => undefined}
 				onHoldStart={() => undefined}
@@ -61,14 +60,14 @@ describe("RunningTimerView", () => {
 				state="running"
 				currentSet={1}
 				totalSets={1}
-				intervalType="workout"
+				intervalType="work"
 				currentIntervalName="WORK"
 				progress={50}
 				overallProgress={20}
 				totalTimeRemaining={100}
 				isHolding={false}
 				holdProgress={0}
-				nextInterval={undefined}
+				nextIntervals={[]}
 				onFastBackward={() => undefined}
 				onFastForward={() => undefined}
 				onHoldStart={() => undefined}
