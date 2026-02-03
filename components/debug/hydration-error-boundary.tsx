@@ -11,6 +11,16 @@ interface State {
 	hasError: boolean;
 }
 
+const HYDRATION_ERROR_SUBSTRINGS = [
+	"Hydration",
+	"Text content does not match",
+	"Expected server HTML to contain",
+] as const;
+
+function isHydrationError(error: Error): boolean {
+	return HYDRATION_ERROR_SUBSTRINGS.some((s) => error.message.includes(s));
+}
+
 export class HydrationErrorBoundary extends Component<Props, State> {
 	constructor(props: Props) {
 		super(props);
@@ -18,15 +28,7 @@ export class HydrationErrorBoundary extends Component<Props, State> {
 	}
 
 	static getDerivedStateFromError(error: Error): State {
-		// Check if this is a hydration error
-		if (
-			error.message.includes("Hydration") ||
-			error.message.includes("Text content does not match") ||
-			error.message.includes("Expected server HTML to contain")
-		) {
-			return { hasError: true };
-		}
-		return { hasError: false };
+		return { hasError: isHydrationError(error) };
 	}
 
 	componentDidCatch(error: Error, errorInfo: unknown) {

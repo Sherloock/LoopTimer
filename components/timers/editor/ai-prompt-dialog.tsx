@@ -105,7 +105,9 @@ export function AiPromptDialog({
 	};
 
 	const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-		if (e.key === "Enter" && !e.shiftKey && !isGenerating) {
+		const isEnterWithoutShift = e.key === "Enter" && !e.shiftKey;
+		const shouldSubmit = isEnterWithoutShift && !isGenerating;
+		if (shouldSubmit) {
 			e.preventDefault();
 			handleGenerate();
 		}
