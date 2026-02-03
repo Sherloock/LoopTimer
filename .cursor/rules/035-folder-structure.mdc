@@ -1,5 +1,5 @@
 ---
-description: Where to put types, utils, lib, and component-level code. See docs/project-map.md for full map.
+description: Where to put types, utils, lib, and component-level code. See 037-project-map for full map.
 globs: "**/*.ts, **/*.tsx"
 alwaysApply: false
 ---

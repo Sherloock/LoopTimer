@@ -1,10 +1,11 @@
 ---
-description: Components taxonomy + documentation upkeep (TIMER).
-globs: "components/**/*.ts, components/**/*.tsx, app/**/*.tsx, docs/**/*.md"
+description: Components taxonomy (TIMER). This rule is the source of truth; no separate docs.
+globs: "components/**/*.ts, components/**/*.tsx, app/**/*.tsx"
 alwaysApply: false
 ---
 
 ## Components taxonomy (mandatory)
+
 - Keep `components/` feature-first.
 - `components/ui/*` is the design system only (shadcn primitives). It must not depend on feature folders.
 - Use these top-level groups:
@@ -15,6 +16,7 @@ alwaysApply: false
   - `components/timers/`: timer feature (list/editor/player)
 
 ## Naming rules
+
 - Folders: `kebab-case`, plural for collections (e.g. `timers/`, `providers/`).
 - Files: `kebab-case.tsx` for components.
 - Exports: `PascalCase`.
@@ -24,21 +26,13 @@ alwaysApply: false
   - `*-view.tsx` for full-screen views
 
 ## Import rules
+
 - Prefer explicit imports like `@/components/timers/player/timer-display`.
 - Do not introduce barrel exports (e.g. `components/index.ts`) unless explicitly requested.
 
-## Documentation upkeep (required)
-- If you add/move/rename anything under `components/`, update:
-  - `docs/components.md` (taxonomy + notes)
-  - `docs/project-map.md` (where to find it)
-- If you change data flow (hooks/API/actions/Prisma), update:
-  - `docs/data-flow.md`
-- If you change testing tooling or commands, update:
-  - `docs/testing.md`
-
 ## Testing expectations for structural refactors
+
 - For component moves/renames:
   - update affected tests
   - add/adjust at least one smoke test for critical UI pieces when feasible
 - Always ensure `npm run lint` and `npm test` stay green.
-
