@@ -1,6 +1,6 @@
 "use client";
 
-import { AdvancedTimer } from "@/components/timers/advanced-timer";
+import { TimerEditor } from "@/components/timers/editor/timer-editor";
 import { SavedTimers } from "@/components/timers/saved/saved-timers";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { CUSTOM_EVENTS } from "@/lib/constants/custom-events";
@@ -49,7 +49,7 @@ export function WorkoutTimer() {
 				)}
 
 				<TabsContent value="advanced" className="space-y-6">
-					<AdvancedTimer
+					<TimerEditor
 						loadedTimer={
 							selectedTimer ? { ...selectedTimer, name: timerName } : undefined
 						}

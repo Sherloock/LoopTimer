@@ -18,14 +18,15 @@ components/
   debug/                      # hydration / error boundary helpers
   clock/                      # clock feature
   timers/                     # timer feature (list/edit/play)
-    advanced-timer.tsx        # main advanced timer (edit + play)
     list/
     saved/
     editor/
+      timer-editor.tsx        # edit-only: config, persistence, editor panel, dialogs
       advanced/
         advanced-timer-editor-panel.tsx
         dnd/
     player/
+      timer-player.tsx        # play-only: run + completion; no editor
 ```
 
 ## Folder responsibilities
@@ -79,4 +80,5 @@ components/
 
 ## Notes
 
-- **AdvancedTimer**: canonical path `components/timers/advanced-timer.tsx`. Orchestrates editor + player; uses `useFlattenedIntervals`, `useAdvancedTimerPlayback`, and `AdvancedTimerEditorPanel` (editor/advanced/advanced-timer-editor-panel.tsx). Flatten logic lives in `lib/timer-tree/flatten.ts`; playback state/effects in `hooks/timers/use-advanced-timer-playback.ts`.
+- **TimerEditor**: `components/timers/editor/timer-editor.tsx`. Edit-only: config management, persistence, settings, editor panel (`AdvancedTimerEditorPanel`), and dialogs (settings, AI, save template, share, unsaved confirm). Used on the edit route. No playback.
+- **TimerPlayer**: `components/timers/player/timer-player.tsx`. Play-only: loads timer from `loadedTimer`, runs playback (`useFlattenedIntervals`, `useTimerState`, `useAdvancedTimerPlayback`), shows ready screen → running view → completion. Used on the play route. No editor panel or save dialogs.

@@ -2,9 +2,9 @@
 
 export { ROUTES } from "@/lib/constants/routes";
 
+import { useLoadingContext } from "@/components/providers/loading-context";
 import { ROUTES } from "@/lib/constants/routes";
 import { useRouter } from "next/navigation";
-import { useLoadingContext } from "@/components/providers/loading-context";
 
 /**
  * Navigation utility functions for the timer app
@@ -28,8 +28,8 @@ export function useNavigation() {
 		// Navigate to menu page (previously /app)
 		goToMenu: () => navigateWithLoading(ROUTES.MENU),
 
-		// Navigate to advanced timer page
-		goToAdvancedTimer: () => navigateWithLoading(ROUTES.TIMER_LIST),
+		// Navigate to timer list page
+		goToTimerList: () => navigateWithLoading(ROUTES.TIMER_LIST),
 
 		// Navigate to edit timer page with optional timer ID
 		goToEditTimer: (timerId?: string) => {
@@ -70,7 +70,7 @@ export function useNavigation() {
  */
 export const navigation = {
 	getMenuUrl: () => ROUTES.MENU,
-	getAdvancedTimerUrl: () => ROUTES.TIMER_LIST,
+	getTimerListUrl: () => ROUTES.TIMER_LIST,
 	getEditTimerUrl: (timerId?: string) =>
 		timerId ? `${ROUTES.TIMER_EDIT}?id=${timerId}` : ROUTES.TIMER_EDIT,
 	getPlayTimerUrl: (timerId?: string) =>

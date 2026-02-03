@@ -5,7 +5,8 @@ alwaysApply: false
 ---
 
 ## Navigation patterns
+
 - Use centralized navigation utilities in `@/lib/navigation.ts`.
 - Prefer `useNavigation()` hook over direct `router.push()` calls.
 - Define all route strings in `ROUTES` for maintainability (no hardcoded strings).
-- Prefer descriptive functions like `goToAdvancedTimer()` over generic `navigate()`.
+- Prefer descriptive functions like `goToTimerList()` over generic `navigate()`.

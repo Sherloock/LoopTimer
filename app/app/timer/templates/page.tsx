@@ -1,16 +1,16 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useLoadingContext } from "@/components/providers/loading-context";
+import { TemplateCardSkeleton } from "@/components/timers/templates/template-card-skeleton";
 import { TemplatesBrowser } from "@/components/timers/templates/templates-browser";
 import { Button } from "@/components/ui/button";
+import { useCloneTemplate } from "@/hooks/use-timers";
 import { ROUTES } from "@/lib/constants/routes";
+import { useNavigation } from "@/lib/navigation";
+import type { AdvancedConfig } from "@/types/advanced-timer";
 import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
-import type { AdvancedConfig } from "@/types/advanced-timer";
-import { useCloneTemplate } from "@/hooks/use-timers";
-import { useLoadingContext } from "@/components/providers/loading-context";
-import { useNavigation } from "@/lib/navigation";
-import { TemplateCardSkeleton } from "@/components/timers/templates/template-card-skeleton";
+import { useEffect, useState } from "react";
 
 interface Template {
 	id: string;
@@ -31,7 +31,7 @@ export default function TemplatesPage() {
 	const [error, setError] = useState<string | null>(null);
 	const { mutate: cloneTemplate } = useCloneTemplate();
 	const { setLoading } = useLoadingContext();
-	const { goToAdvancedTimer } = useNavigation();
+	const { goToTimerList } = useNavigation();
 
 	useEffect(() => {
 		async function fetchTemplates() {
@@ -60,7 +60,7 @@ export default function TemplatesPage() {
 		return new Promise((resolve, reject) => {
 			cloneTemplate(templateId, {
 				onSuccess: () => {
-					goToAdvancedTimer();
+					goToTimerList();
 					resolve();
 				},
 				onError: (error) => {

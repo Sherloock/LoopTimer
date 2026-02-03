@@ -101,7 +101,7 @@ This document describes the newly implemented portfolio features for the Workout
 
 ### 6. UI Integration
 
-**Timer Editor** (`components/advanced-timer.tsx`):
+**Timer Editor** (`components/timers/editor/timer-editor.tsx`):
 
 - ✅ "AI Generate" button (existing)
 - ✅ "Save Template" button (new)
@@ -312,7 +312,7 @@ This implementation demonstrates:
 - `lib/constants/routes.ts` - Added template and share routes
 - `lib/constants/query-keys.ts` - Added template query keys
 - `components/timers/list/timers-list.tsx` - Added Import button
-- `components/advanced-timer.tsx` - Added Share/Export/Save Template buttons
+- `components/timers/editor/timer-editor.tsx` - Added Share/Export/Save Template buttons
 - `app/app/menu/page.tsx` - Added Template Library navigation
 - `README.md` - Enhanced with architecture, features, and All Rights Reserved license
 - `docs/components.md` - Updated component taxonomy

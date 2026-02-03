@@ -1,14 +1,13 @@
 "use client";
 
 import { Header } from "@/components/layout/header";
-import { AdvancedTimer } from "@/components/timers/advanced-timer";
+import { TimerPlayer } from "@/components/timers/player/timer-player";
 import { useTimers } from "@/hooks/use-timers";
 import { useNavigation } from "@/lib/navigation";
 import { useSearchParams } from "next/navigation";
 import { Suspense, useMemo, useState } from "react";
 
 export default function PlayTimerPage() {
-	// Initialize as minimalistic if autoStart is true to prevent flicker
 	const [isMinimalisticView, setIsMinimalisticView] = useState(true);
 
 	return (
@@ -42,22 +41,16 @@ function PlayTimerContent({
 	const timerId = searchParams.get("id");
 	const autoStart = searchParams.get("autoStart") === "true";
 	const { data: timers } = useTimers();
-	const { goToAdvancedTimer } = useNavigation();
-	const [, setShowCompletion] = useState(false);
-	// Initialize as minimalistic since we have autoStart
+	const { goToTimerList } = useNavigation();
 	const [isMinimalisticView, setIsMinimalisticView] = useState(true);
 
 	const loadedTimer = useMemo(() => {
 		if (!timerId || !timers) return undefined;
-		return timers.find((t: any) => t.id === timerId);
+		return timers.find((t: { id: string }) => t.id === timerId);
 	}, [timerId, timers]);
 
 	const handleExit = () => {
-		goToAdvancedTimer();
-	};
-
-	const handleComplete = (_timerName: string) => {
-		setShowCompletion(true);
+		goToTimerList();
 	};
 
 	const handleMinimalisticViewChange = (isMinimalistic: boolean) => {
@@ -71,12 +64,13 @@ function PlayTimerContent({
 				isMinimalisticView ? "" : "container mx-auto max-w-4xl px-4 pb-8"
 			}
 		>
-			<AdvancedTimer
+			<TimerPlayer
 				loadedTimer={loadedTimer}
-				autoStart
+				autoStart={autoStart}
 				onExit={handleExit}
-				onComplete={handleComplete}
+				onComplete={() => {}}
 				onMinimalisticViewChange={handleMinimalisticViewChange}
+				onSelectTimer={goToTimerList}
 			/>
 		</main>
 	);
