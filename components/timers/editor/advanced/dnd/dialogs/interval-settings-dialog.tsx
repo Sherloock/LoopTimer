@@ -18,16 +18,190 @@ import { SoundSelector } from "@/components/ui/sound-selector";
 import { ColorSettings, IntervalStep, TimerType } from "@/types/advanced-timer";
 import { ChevronDown, ChevronUp } from "lucide-react";
 
-interface Props {
+interface IntervalSettingsDialogProps {
 	isOpen: boolean;
 	onClose: () => void;
 	item: IntervalStep;
-	onUpdate: (id: string, field: string, value: any) => void;
+	onUpdate: (id: string, field: string, value: unknown) => void;
 	onMoveUp: (id: string) => void;
 	onMoveDown: (id: string) => void;
 	onMoveToTop: (id: string) => void;
 	onMoveToBottom: (id: string) => void;
 	colors: ColorSettings;
+}
+
+interface FieldUpdateProps {
+	item: IntervalStep;
+	onUpdate: (id: string, field: string, value: unknown) => void;
+}
+
+function IntervalNameField({ item, onUpdate }: FieldUpdateProps) {
+	return (
+		<div className="space-y-2">
+			<Label>Interval Name</Label>
+			<Input
+				value={item.name}
+				onChange={(e) => onUpdate(item.id, "name", e.target.value)}
+				placeholder="Interval name"
+			/>
+		</div>
+	);
+}
+
+function DurationField({ item, onUpdate }: FieldUpdateProps) {
+	return (
+		<div className="space-y-2">
+			<Label>Duration (seconds)</Label>
+			<NumberInput
+				value={item.duration}
+				onChange={(value) => onUpdate(item.id, "duration", value)}
+				min={0}
+				step={5}
+			/>
+		</div>
+	);
+}
+
+function IntervalTypeField({ item, onUpdate }: FieldUpdateProps) {
+	const handleIntervalTypeChange = (newType: TimerType) => {
+		onUpdate(item.id, "type", newType);
+		onUpdate(
+			item.id,
+			"name",
+			newType.charAt(0).toUpperCase() + newType.slice(1),
+		);
+	};
+	return (
+		<div className="space-y-2">
+			<Label>Interval Type</Label>
+			<Select
+				value={item.type}
+				onValueChange={(value) => handleIntervalTypeChange(value as TimerType)}
+			>
+				<SelectTrigger className="w-full">
+					<SelectValue placeholder="Select type" />
+				</SelectTrigger>
+				<SelectContent>
+					<SelectItem value="prepare">Prepare</SelectItem>
+					<SelectItem value="work">Work</SelectItem>
+					<SelectItem value="rest">Rest</SelectItem>
+				</SelectContent>
+			</Select>
+		</div>
+	);
+}
+
+function SoundField({ item, onUpdate }: FieldUpdateProps) {
+	return (
+		<div className="space-y-2">
+			<Label>Sound</Label>
+			<SoundSelector
+				value={item.sound}
+				onChange={(value) => onUpdate(item.id, "sound", value)}
+				showDefaultOption
+			/>
+		</div>
+	);
+}
+
+interface ColorFieldProps extends FieldUpdateProps {
+	colors: ColorSettings;
+}
+
+function ColorField({ item, colors, onUpdate }: ColorFieldProps) {
+	const itemColor = item.color ?? colors[item.type];
+	return (
+		<ColorPicker
+			label="Custom Color"
+			value={itemColor}
+			onChange={(color) => onUpdate(item.id, "color", color)}
+		/>
+	);
+}
+
+function SkipOnLastLoopField({ item, onUpdate }: FieldUpdateProps) {
+	return (
+		<div className="flex items-center gap-2">
+			<Checkbox
+				id={`skip-last-${item.id}`}
+				checked={Boolean(item.skipOnLastLoop)}
+				onCheckedChange={(checked) =>
+					onUpdate(item.id, "skipOnLastLoop", checked)
+				}
+			/>
+			<Label htmlFor={`skip-last-${item.id}`} className="text-sm">
+				Skip on last loop
+			</Label>
+		</div>
+	);
+}
+
+interface PositionButtonsProps {
+	item: IntervalStep;
+	onMoveUp: (id: string) => void;
+	onMoveDown: (id: string) => void;
+	onMoveToTop: (id: string) => void;
+	onMoveToBottom: (id: string) => void;
+	onClose: () => void;
+}
+
+function IntervalPositionButtons({
+	item,
+	onMoveUp,
+	onMoveDown,
+	onMoveToTop,
+	onMoveToBottom,
+	onClose,
+}: PositionButtonsProps) {
+	return (
+		<div className="space-y-2">
+			<Label>Position</Label>
+			<div className="grid grid-cols-2 gap-2">
+				<Button
+					onClick={() => {
+						onMoveUp(item.id);
+						onClose();
+					}}
+					variant="outline"
+					className="gap-2"
+				>
+					<ChevronUp size={16} /> Move Up
+				</Button>
+				<Button
+					onClick={() => {
+						onMoveDown(item.id);
+						onClose();
+					}}
+					variant="outline"
+					className="gap-2"
+				>
+					<ChevronDown size={16} /> Move Down
+				</Button>
+			</div>
+			<div className="grid grid-cols-2 gap-2">
+				<Button
+					onClick={() => {
+						onMoveToTop(item.id);
+						onClose();
+					}}
+					variant="outline"
+					className="gap-2"
+				>
+					↑ To Top
+				</Button>
+				<Button
+					onClick={() => {
+						onMoveToBottom(item.id);
+						onClose();
+					}}
+					variant="outline"
+					className="gap-2"
+				>
+					↓ To Bottom
+				</Button>
+			</div>
+		</div>
+	);
 }
 
 export default function IntervalSettingsDialog({
@@ -40,136 +214,27 @@ export default function IntervalSettingsDialog({
 	onMoveToTop,
 	onMoveToBottom,
 	colors,
-}: Props) {
-	const itemColor = item.color || colors[item.type];
-
-	const handleTypeChange = (newType: TimerType) => {
-		onUpdate(item.id, "type", newType);
-		onUpdate(
-			item.id,
-			"name",
-			newType.charAt(0).toUpperCase() + newType.slice(1),
-		);
-	};
-
+}: IntervalSettingsDialogProps) {
 	return (
 		<Dialog open={isOpen} onOpenChange={onClose}>
 			<DialogContent title={`${item.name} Settings`} className="max-w-md">
 				<DialogClose onClose={onClose} />
 
 				<div className="space-y-4">
-					<div className="space-y-2">
-						<Label>Interval Name</Label>
-						<Input
-							value={item.name}
-							onChange={(e) => onUpdate(item.id, "name", e.target.value)}
-							placeholder="Interval name"
-						/>
-					</div>
-
-					<div className="space-y-2">
-						<Label>Duration (seconds)</Label>
-						<NumberInput
-							value={item.duration}
-							onChange={(value) => onUpdate(item.id, "duration", value)}
-							min={0}
-							step={5}
-						/>
-					</div>
-
-					<div className="space-y-2">
-						<Label>Interval Type</Label>
-						<Select
-							value={item.type}
-							onValueChange={(value) => handleTypeChange(value as TimerType)}
-						>
-							<SelectTrigger className="w-full">
-								<SelectValue placeholder="Select type" />
-							</SelectTrigger>
-							<SelectContent>
-								<SelectItem value="prepare">Prepare</SelectItem>
-								<SelectItem value="work">Work</SelectItem>
-								<SelectItem value="rest">Rest</SelectItem>
-							</SelectContent>
-						</Select>
-					</div>
-
-					{/* Sound selector */}
-					<div className="space-y-2">
-						<Label>Sound</Label>
-						<SoundSelector
-							value={item.sound}
-							onChange={(value) => onUpdate(item.id, "sound", value)}
-							showDefaultOption
-						/>
-					</div>
-
-					<ColorPicker
-						label="Custom Color"
-						value={itemColor}
-						onChange={(color) => onUpdate(item.id, "color", color)}
+					<IntervalNameField item={item} onUpdate={onUpdate} />
+					<DurationField item={item} onUpdate={onUpdate} />
+					<IntervalTypeField item={item} onUpdate={onUpdate} />
+					<SoundField item={item} onUpdate={onUpdate} />
+					<ColorField item={item} colors={colors} onUpdate={onUpdate} />
+					<SkipOnLastLoopField item={item} onUpdate={onUpdate} />
+					<IntervalPositionButtons
+						item={item}
+						onMoveUp={onMoveUp}
+						onMoveDown={onMoveDown}
+						onMoveToTop={onMoveToTop}
+						onMoveToBottom={onMoveToBottom}
+						onClose={onClose}
 					/>
-
-					<div className="flex items-center gap-2">
-						<Checkbox
-							id={`skip-last-${item.id}`}
-							checked={Boolean(item.skipOnLastLoop)}
-							onCheckedChange={(checked) =>
-								onUpdate(item.id, "skipOnLastLoop", checked)
-							}
-						/>
-						<Label htmlFor={`skip-last-${item.id}`} className="text-sm">
-							Skip on last loop
-						</Label>
-					</div>
-
-					<div className="space-y-2">
-						<Label>Position</Label>
-						<div className="grid grid-cols-2 gap-2">
-							<Button
-								onClick={() => {
-									onMoveUp(item.id);
-									onClose();
-								}}
-								variant="outline"
-								className="gap-2"
-							>
-								<ChevronUp size={16} /> Move Up
-							</Button>
-							<Button
-								onClick={() => {
-									onMoveDown(item.id);
-									onClose();
-								}}
-								variant="outline"
-								className="gap-2"
-							>
-								<ChevronDown size={16} /> Move Down
-							</Button>
-						</div>
-						<div className="grid grid-cols-2 gap-2">
-							<Button
-								onClick={() => {
-									onMoveToTop(item.id);
-									onClose();
-								}}
-								variant="outline"
-								className="gap-2"
-							>
-								↑ To Top
-							</Button>
-							<Button
-								onClick={() => {
-									onMoveToBottom(item.id);
-									onClose();
-								}}
-								variant="outline"
-								className="gap-2"
-							>
-								↓ To Bottom
-							</Button>
-						</div>
-					</div>
 				</div>
 			</DialogContent>
 		</Dialog>
