@@ -35,6 +35,10 @@
 			"name": "timer",
 			"path": ".",
 		},
+		{
+			"name": "GatekeeperHQ",
+			"path": "./../GatekeeperHQ/",
+		},
 		// {
 		// 	"name": "portfolio",
 		// 	"path": "./../portfolio-single-page/",

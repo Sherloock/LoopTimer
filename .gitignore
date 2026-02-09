@@ -45,3 +45,6 @@ next-env.d.ts
 # clerk configuration (can include secrets)
 /.clerk/
 .idea/
+
+# Cursor: synced from .ai-rules (run npm run sync:ai-rules)
+.cursor/rules/shared-*.mdc

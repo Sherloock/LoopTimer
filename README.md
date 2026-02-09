@@ -58,6 +58,7 @@ Open [http://localhost:3000](http://localhost:3000).
 | Build     | `npm run build`, `npm run start`, `npm run vercel-build`                                                                      |
 | Test      | `npm test`, `npm run test:watch`, `npm run test:coverage`, `npm run test:e2e`, `npm run test:db`                              |
 | Lint      | `npm run lint`, `npm run lint:fix`, `npm run format`, `npm run format:check`                                                  |
+| AI rules  | `npm run sync:ai-rules` — sync `.ai-rules/*.md` into `.cursor/rules/` for Cursor                                              |
 | DB (dev)  | `npm run db:migrate`, `npm run db:migrate:reset` (destructive), `npm run db:generate`, `npm run db:studio`, `npm run db:seed` |
 | DB (prod) | `npm run db:migrate:deploy`, `npm run db:migrate:deploy:prod`                                                                 |
 | Docker    | `npm run db:up`, `npm run db:down`                                                                                            |

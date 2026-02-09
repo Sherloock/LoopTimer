@@ -31,6 +31,7 @@
 		"remove-unused": "npx eslint . --fix --quiet --rule \"unused-imports/no-unused-imports:error\"",
 		"format": "prettier --write .",
 		"format:check": "prettier --check .",
+		"sync:ai-rules": "node scripts/sync-ai-rules.js",
 		"// [DATABASE - PRISMA DEV]": "==============================================",
 		"db:generate": "prisma generate",
 		"db:push": "prisma db push",

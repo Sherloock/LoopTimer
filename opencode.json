@@ -1,0 +1,10 @@
+{
+	"$schema": "https://opencode.ai/config.json",
+	"instructions": [
+		".ai-rules/global.md",
+		".ai-rules/security.md",
+		".ai-rules/commit-standards.md",
+		".ai-rules/typescript.md",
+		"AGENTS.md"
+	]
+}
