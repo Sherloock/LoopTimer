@@ -290,27 +290,6 @@ export function TimerPlayer({
 					/>
 				</MinimalisticContainer>
 			)}
-
-			{state === "idle" && !isCompletionView && (
-				<div className="flex min-h-[50vh] flex-col items-center justify-center gap-6 px-4 py-8">
-					<div className="text-center">
-						<h2 className="text-xl font-semibold">
-							{displaySettings.timerName}
-						</h2>
-						<p className="text-sm text-muted-foreground">
-							{flattenedIntervals.length} steps ·{" "}
-							{Math.round(totalSessionTime / 60)} min
-						</p>
-					</div>
-					<button
-						type="button"
-						onClick={startTimer}
-						className="rounded-lg bg-primary px-6 py-3 text-lg font-medium text-primary-foreground shadow hover:bg-primary/90"
-					>
-						Start
-					</button>
-				</div>
-			)}
 		</div>
 	);
 }

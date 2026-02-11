@@ -97,14 +97,13 @@ export function useTimerState() {
 			}
 		}, HOLD_PROGRESS_TICK_MS);
 
-		// Actual exit after hold duration
+		// Actual exit after hold duration (do not reset holdProgress so the bar stays at 100% until unmount)
 		holdTimeoutRef.current = setTimeout(() => {
 			try {
 				onComplete();
 			} finally {
 				clearHoldTimers();
 				setIsHolding(false);
-				setHoldProgress(0);
 			}
 		}, HOLD_EXIT_DURATION_MS);
 	};

@@ -39,7 +39,10 @@ function PlayTimerContent({
 }) {
 	const searchParams = useSearchParams();
 	const timerId = searchParams.get("id");
-	const autoStart = searchParams.get("autoStart") === "true";
+	const autoStart =
+		timerId != null && timerId !== ""
+			? searchParams.get("autoStart") !== "false"
+			: searchParams.get("autoStart") === "true";
 	const { data: timers } = useTimers();
 	const { goToTimerList } = useNavigation();
 	const [isMinimalisticView, setIsMinimalisticView] = useState(true);

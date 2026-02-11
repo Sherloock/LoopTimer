@@ -39,10 +39,10 @@ export function useNavigation() {
 			navigateWithLoading(url);
 		},
 
-		// Navigate to play timer page with optional timer ID
+		// Navigate to play timer page with optional timer ID (autoStart when id present)
 		goToPlayTimer: (timerId?: string) => {
 			const url = timerId
-				? `${ROUTES.TIMER_PLAY}?id=${timerId}`
+				? `${ROUTES.TIMER_PLAY}?id=${timerId}&autoStart=true`
 				: ROUTES.TIMER_PLAY;
 			navigateWithLoading(url);
 		},
@@ -74,6 +74,8 @@ export const navigation = {
 	getEditTimerUrl: (timerId?: string) =>
 		timerId ? `${ROUTES.TIMER_EDIT}?id=${timerId}` : ROUTES.TIMER_EDIT,
 	getPlayTimerUrl: (timerId?: string) =>
-		timerId ? `${ROUTES.TIMER_PLAY}?id=${timerId}` : ROUTES.TIMER_PLAY,
+		timerId
+			? `${ROUTES.TIMER_PLAY}?id=${timerId}&autoStart=true`
+			: ROUTES.TIMER_PLAY,
 	getHomeUrl: () => ROUTES.HOME,
 };

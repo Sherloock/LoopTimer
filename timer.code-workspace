@@ -27,10 +27,10 @@
 		"prisma.pinToPrisma6": true,
 	},
 	"folders": [
-		// {
-		// 	"name": "TEMP",
-		// 	"path": "f:/temp/.",
-		// },
+		{
+			"name": "skills",
+			"path": "C:/Users/dejak/.cursor/skills/",
+		},
 		{
 			"name": "timer",
 			"path": ".",
