@@ -19,7 +19,9 @@
 			"src": "/apple-icon",
 			"sizes": "180x180",
 			"type": "image/png",
-			"purpose": "apple touch icon"
+			"purpose": "any maskable"
 		}
-	]
+	],
+	"prefer_related_applications": false,
+	"scope": "/"
 }

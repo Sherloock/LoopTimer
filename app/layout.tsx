@@ -1,6 +1,7 @@
 import { HydrationErrorBoundary } from "@/components/debug/hydration-error-boundary";
 import { ClientOnly } from "@/components/providers/client-only";
 import { QueryProvider } from "@/components/providers/query-provider";
+import { ServiceWorkerRegistration } from "@/components/providers/service-worker-registration";
 import { ThemeProvider } from "@/components/providers/theme-provider";
 import { Toaster } from "@/components/ui/sonner";
 import { clerkProviderProps } from "@/lib/clerk";
@@ -46,6 +47,7 @@ export default function RootLayout({
 				<HydrationErrorBoundary>
 					<ClerkProvider {...clerkProviderProps}>
 						<ClientOnly>
+							<ServiceWorkerRegistration />
 							<NextTopLoader
 								color="#8B5CF6"
 								initialPosition={0.08}
