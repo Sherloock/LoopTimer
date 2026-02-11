@@ -52,7 +52,11 @@ export function useAdvancedTimerPlayback({
 	const resetState = useCallback(() => {
 		setCurrentSet(1);
 		setCurrentItemIndex(0);
-	}, [setCurrentSet]);
+		if (flattenedIntervals.length > 0) {
+			setTimeLeft(flattenedIntervals[0].duration);
+			setCurrentType(flattenedIntervals[0].type);
+		}
+	}, [setCurrentSet, flattenedIntervals]);
 
 	const handleTimerComplete = useCallback(() => {
 		const nextIndex = currentItemIndex + 1;
@@ -94,20 +98,34 @@ export function useAdvancedTimerPlayback({
 			setCurrentItemIndex(nextIndex);
 			setCurrentType(nextInterval.type);
 			setTimeLeft(nextInterval.duration);
+		} else if (
+			flattenedIntervals.length > 0 &&
+			currentItemIndex === flattenedIntervals.length - 1
+		) {
+			handleTimerComplete();
 		}
-	}, [currentItemIndex, flattenedIntervals]);
+	}, [currentItemIndex, flattenedIntervals, handleTimerComplete]);
 
 	const fastBackward = useCallback(() => {
+		if (flattenedIntervals.length === 0) return;
+		const current = flattenedIntervals[currentItemIndex];
+		if (!current) return;
+
+		// If not at the start of the current interval, restart it
+		if (timeLeft < current.duration) {
+			setTimeLeft(current.duration);
+			return;
+		}
+
+		// Already at the start — jump to previous interval (if any)
 		if (currentItemIndex > 0) {
 			const prevIndex = currentItemIndex - 1;
 			const prevInterval = flattenedIntervals[prevIndex];
 			setCurrentItemIndex(prevIndex);
 			setCurrentType(prevInterval.type);
 			setTimeLeft(prevInterval.duration);
-		} else if (flattenedIntervals.length > 0) {
-			setTimeLeft(flattenedIntervals[0].duration);
 		}
-	}, [currentItemIndex, flattenedIntervals]);
+	}, [currentItemIndex, flattenedIntervals, timeLeft]);
 
 	const currentInterval = useMemo(() => {
 		if (
