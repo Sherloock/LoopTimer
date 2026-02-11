@@ -35,14 +35,14 @@
 			"name": "timer",
 			"path": ".",
 		},
-		{
-			"name": "GatekeeperHQ",
-			"path": "./../GatekeeperHQ/",
-		},
 		// {
-		// 	"name": "portfolio",
-		// 	"path": "./../portfolio-single-page/",
+		// 	"name": "GatekeeperHQ",
+		// 	"path": "./../GatekeeperHQ/",
 		// },
+		{
+			"name": "portfolio",
+			"path": "./../portfolio/",
+		},
 		// {
 		// 	"name": "scrapeease",
 		// 	"path": "./../scrape-flow/",
