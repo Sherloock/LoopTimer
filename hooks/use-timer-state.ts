@@ -1,24 +1,20 @@
+import {
+	HOLD_EXIT_DURATION_MS,
+	HOLD_PROGRESS_MAX,
+	HOLD_PROGRESS_TICK_MS,
+} from "@/lib/constants/timers";
 import { CUSTOM_EVENTS } from "@/lib/constants/custom-events";
 import { TimerState, timerToasts } from "@/lib/timer-utils";
 import { useRef, useState } from "react";
-
-const HOLD_EXIT_DURATION_MS = 1000;
-const HOLD_PROGRESS_MAX = 100;
-const HOLD_PROGRESS_TICK_MS = 50;
 
 export function useTimerState() {
 	const [state, setState] = useState<TimerState>("idle");
 	const [currentSet, setCurrentSet] = useState(1);
 	const [isHolding, setIsHolding] = useState(false);
 	const [holdProgress, setHoldProgress] = useState(0);
-	const holdTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 	const holdIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
 	const clearHoldTimers = () => {
-		if (holdTimeoutRef.current) {
-			clearTimeout(holdTimeoutRef.current);
-			holdTimeoutRef.current = null;
-		}
 		if (holdIntervalRef.current) {
 			clearInterval(holdIntervalRef.current);
 			holdIntervalRef.current = null;
@@ -73,14 +69,14 @@ export function useTimerState() {
 
 	const handleHoldStart = (onComplete: () => void) => {
 		// Defensive: prevent multiple concurrent hold timers (e.g. touch + mouse)
-		if (holdTimeoutRef.current || holdIntervalRef.current) return;
+		if (holdIntervalRef.current) return;
 
 		setIsHolding(true);
 		setHoldProgress(0);
 
 		const holdStart = Date.now();
 
-		// Progress animation (time-based to avoid drift)
+		// Progress animation and exit in same tick when duration reached (no "hold after 100%")
 		holdIntervalRef.current = setInterval(() => {
 			const elapsedMs = Date.now() - holdStart;
 			const nextProgress = Math.min(
@@ -90,22 +86,11 @@ export function useTimerState() {
 			setHoldProgress(nextProgress);
 
 			if (elapsedMs >= HOLD_EXIT_DURATION_MS) {
-				if (holdIntervalRef.current) {
-					clearInterval(holdIntervalRef.current);
-					holdIntervalRef.current = null;
-				}
-			}
-		}, HOLD_PROGRESS_TICK_MS);
-
-		// Actual exit after hold duration (do not reset holdProgress so the bar stays at 100% until unmount)
-		holdTimeoutRef.current = setTimeout(() => {
-			try {
-				onComplete();
-			} finally {
 				clearHoldTimers();
 				setIsHolding(false);
+				onComplete();
 			}
-		}, HOLD_EXIT_DURATION_MS);
+		}, HOLD_PROGRESS_TICK_MS);
 	};
 
 	const handleHoldEnd = () => {

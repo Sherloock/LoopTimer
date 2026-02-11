@@ -4,8 +4,13 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Palette, X } from "lucide-react";
+import dynamic from "next/dynamic";
 import { useEffect, useRef, useState } from "react";
-import { HexColorPicker } from "react-colorful";
+
+const HexColorPicker = dynamic(
+	() => import("react-colorful").then((m) => ({ default: m.HexColorPicker })),
+	{ ssr: false },
+);
 
 interface ColorPickerProps {
 	label: string;

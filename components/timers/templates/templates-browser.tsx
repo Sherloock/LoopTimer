@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useDeferredValue, useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
@@ -37,15 +37,18 @@ export function TemplatesBrowser({
 	isLoading = false,
 }: TemplatesBrowserProps) {
 	const [searchQuery, setSearchQuery] = useState("");
+	const deferredSearchQuery = useDeferredValue(searchQuery);
 	const [selectedCategory, setSelectedCategory] = useState<string>("all");
 
-	// Filter templates by search query
+	// Filter templates by deferred search query (non-blocking)
 	const filteredTemplates = templates.filter((template) => {
 		const matchesSearch =
-			!searchQuery ||
-			template.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+			!deferredSearchQuery ||
+			template.name.toLowerCase().includes(deferredSearchQuery.toLowerCase()) ||
 			(template.description &&
-				template.description.toLowerCase().includes(searchQuery.toLowerCase()));
+				template.description
+					.toLowerCase()
+					.includes(deferredSearchQuery.toLowerCase()));
 
 		const matchesCategory =
 			selectedCategory === "all" || template.category === selectedCategory;

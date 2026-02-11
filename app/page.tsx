@@ -1,4 +1,3 @@
-import { SparklesBackground } from "@/components/sparkles/sparkles-background";
 import { Button } from "@/components/ui/button";
 import {
 	Card,
@@ -25,6 +24,7 @@ import {
 	Users,
 	Zap,
 } from "lucide-react";
+import { ClientSparklesBackground } from "@/components/sparkles/client-sparkles-background";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 
@@ -75,7 +75,7 @@ export default async function LandingPage() {
 				<div className="absolute inset-0 [mask-image:linear-gradient(to_bottom,transparent,black_10%,black_70%,transparent)]">
 					{/* Sparkles centered on hero */}
 					<div className="pointer-events-none absolute inset-0 z-0 overflow-hidden">
-						<SparklesBackground />
+						<ClientSparklesBackground />
 					</div>
 				</div>
 				<div className="container relative z-10 mx-auto text-center">

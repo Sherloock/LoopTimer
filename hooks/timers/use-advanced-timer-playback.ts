@@ -49,6 +49,12 @@ export function useAdvancedTimerPlayback({
 	const [currentItemIndex, setCurrentItemIndex] = useState(0);
 	const playedSecondsRef = useRef<Set<number>>(new Set());
 
+	// Refs for stable reads inside callbacks without adding deps
+	const timeLeftRef = useRef(timeLeft);
+	timeLeftRef.current = timeLeft;
+	const currentItemIndexRef = useRef(currentItemIndex);
+	currentItemIndexRef.current = currentItemIndex;
+
 	const resetState = useCallback(() => {
 		setCurrentSet(1);
 		setCurrentItemIndex(0);
@@ -59,31 +65,32 @@ export function useAdvancedTimerPlayback({
 	}, [setCurrentSet, flattenedIntervals]);
 
 	const handleTimerComplete = useCallback(() => {
-		const nextIndex = currentItemIndex + 1;
+		setCurrentItemIndex((prevIndex) => {
+			const nextIndex = prevIndex + 1;
 
-		if (nextIndex < flattenedIntervals.length) {
-			const nextIntervalPreview = flattenedIntervals[nextIndex];
-			if (nextIntervalPreview.sound) {
-				playSound(nextIntervalPreview.sound);
+			if (nextIndex < flattenedIntervals.length) {
+				const nextInterval = flattenedIntervals[nextIndex];
+				if (nextInterval.sound) {
+					playSound(nextInterval.sound);
+				}
+				setCurrentType(nextInterval.type);
+				setTimeLeft(nextInterval.duration);
+
+				const intervalName = nextInterval.loopInfo
+					? `${nextInterval.loopInfo.iteration} - ${nextInterval.name}`
+					: nextInterval.name;
+
+				timerToasts.nextInterval(intervalName);
+				return nextIndex;
 			}
-			const nextInterval = flattenedIntervals[nextIndex];
-			setCurrentItemIndex(nextIndex);
-			setCurrentType(nextInterval.type);
-			setTimeLeft(nextInterval.duration);
 
-			const intervalName = nextInterval.loopInfo
-				? `${nextInterval.loopInfo.iteration} - ${nextInterval.name}`
-				: nextInterval.name;
-
-			timerToasts.nextInterval(intervalName);
-		} else {
 			stopAllSounds();
 			playSound(timerDefaultAlarm);
 			setCompleted("🎉 Advanced Workout Complete! Great job!");
 			onComplete?.(timerName || "Timer");
-		}
+			return prevIndex;
+		});
 	}, [
-		currentItemIndex,
 		flattenedIntervals,
 		setCompleted,
 		timerDefaultAlarm,
@@ -92,40 +99,45 @@ export function useAdvancedTimerPlayback({
 	]);
 
 	const fastForward = useCallback(() => {
-		if (currentItemIndex < flattenedIntervals.length - 1) {
-			const nextIndex = currentItemIndex + 1;
-			const nextInterval = flattenedIntervals[nextIndex];
-			setCurrentItemIndex(nextIndex);
-			setCurrentType(nextInterval.type);
-			setTimeLeft(nextInterval.duration);
-		} else if (
-			flattenedIntervals.length > 0 &&
-			currentItemIndex === flattenedIntervals.length - 1
-		) {
-			handleTimerComplete();
-		}
-	}, [currentItemIndex, flattenedIntervals, handleTimerComplete]);
+		setCurrentItemIndex((prevIndex) => {
+			if (prevIndex < flattenedIntervals.length - 1) {
+				const nextIndex = prevIndex + 1;
+				const nextInterval = flattenedIntervals[nextIndex];
+				setCurrentType(nextInterval.type);
+				setTimeLeft(nextInterval.duration);
+				return nextIndex;
+			}
+			if (
+				flattenedIntervals.length > 0 &&
+				prevIndex === flattenedIntervals.length - 1
+			) {
+				handleTimerComplete();
+			}
+			return prevIndex;
+		});
+	}, [flattenedIntervals, handleTimerComplete]);
 
 	const fastBackward = useCallback(() => {
 		if (flattenedIntervals.length === 0) return;
-		const current = flattenedIntervals[currentItemIndex];
+		const idx = currentItemIndexRef.current;
+		const current = flattenedIntervals[idx];
 		if (!current) return;
 
 		// If not at the start of the current interval, restart it
-		if (timeLeft < current.duration) {
+		if (timeLeftRef.current < current.duration) {
 			setTimeLeft(current.duration);
 			return;
 		}
 
 		// Already at the start — jump to previous interval (if any)
-		if (currentItemIndex > 0) {
-			const prevIndex = currentItemIndex - 1;
+		if (idx > 0) {
+			const prevIndex = idx - 1;
 			const prevInterval = flattenedIntervals[prevIndex];
 			setCurrentItemIndex(prevIndex);
 			setCurrentType(prevInterval.type);
 			setTimeLeft(prevInterval.duration);
 		}
-	}, [currentItemIndex, flattenedIntervals, timeLeft]);
+	}, [flattenedIntervals]);
 
 	const currentInterval = useMemo(() => {
 		if (
@@ -169,26 +181,29 @@ export function useAdvancedTimerPlayback({
 		playedSecondsRef.current.clear();
 	}, [currentInterval]);
 
+	// Pre-compute beep config from alarm string (avoid recomputing on every tick)
+	const beepConfig = useMemo(() => {
+		const category = timerDefaultAlarm.replace(/-\d+x$/, "");
+		const variant = timerDefaultAlarm.match(/-(\d+x)$/)?.[1] || "1x";
+		let beepCount = 1;
+		if (variant === "2x") beepCount = 2;
+		else if (variant === "3x") beepCount = 3;
+		return { category, beepCount };
+	}, [timerDefaultAlarm]);
+
 	// Countdown beep logic (3-2-1)
 	useEffect(() => {
 		if (state !== "running") return;
 		if (!currentInterval) return;
 
-		const category = timerDefaultAlarm.replace(/-\d+x$/, "");
-		const variant = timerDefaultAlarm.match(/-(\d+x)$/)?.[1] || "1x";
-
-		let beepCount = 1;
-		if (variant === "2x") beepCount = 2;
-		else if (variant === "3x") beepCount = 3;
-
 		const isOutsideBeepRange =
-			timeLeft < 1 || timeLeft > 3 || timeLeft > beepCount;
+			timeLeft < 1 || timeLeft > 3 || timeLeft > beepConfig.beepCount;
 		if (isOutsideBeepRange) return;
 		if (playedSecondsRef.current.has(timeLeft)) return;
 
 		playedSecondsRef.current.add(timeLeft);
-		playSound(`${category}-short`);
-	}, [state, timeLeft, currentInterval, timerDefaultAlarm]);
+		playSound(`${beepConfig.category}-short`);
+	}, [state, timeLeft, currentInterval, beepConfig]);
 
 	// Speak interval names
 	useEffect(() => {

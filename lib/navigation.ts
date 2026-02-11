@@ -28,8 +28,14 @@ export function useNavigation() {
 		// Navigate to menu page (previously /app)
 		goToMenu: () => navigateWithLoading(ROUTES.MENU),
 
-		// Navigate to timer list page
-		goToTimerList: () => navigateWithLoading(ROUTES.TIMER_LIST),
+		// Navigate to timer list page. When showOverlay is false (e.g. exit from play), list and skeletons show immediately.
+		goToTimerList: (options?: { showOverlay?: boolean }) => {
+			if (options?.showOverlay === false) {
+				router.push(ROUTES.TIMER_LIST);
+			} else {
+				navigateWithLoading(ROUTES.TIMER_LIST);
+			}
+		},
 
 		// Navigate to edit timer page with optional timer ID
 		goToEditTimer: (timerId?: string) => {

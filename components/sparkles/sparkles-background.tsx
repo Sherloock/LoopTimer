@@ -77,13 +77,18 @@ export const SparklesBackground = () => {
 	useEffect(() => {
 		setSparkles(generateSparkles());
 
-		// Recalculate on window resize
+		// Debounced recalculation on window resize
+		let resizeTimeoutId: ReturnType<typeof setTimeout>;
 		const handleResize = () => {
-			setSparkles(generateSparkles());
+			clearTimeout(resizeTimeoutId);
+			resizeTimeoutId = setTimeout(() => setSparkles(generateSparkles()), 250);
 		};
 
 		window.addEventListener("resize", handleResize);
-		return () => window.removeEventListener("resize", handleResize);
+		return () => {
+			clearTimeout(resizeTimeoutId);
+			window.removeEventListener("resize", handleResize);
+		};
 	}, [generateSparkles]);
 
 	return (

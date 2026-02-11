@@ -21,7 +21,6 @@ import {
 } from "@/components/ui/select";
 import { Check, Copy, Download, Loader2, QrCode, Share2 } from "lucide-react";
 import { toast } from "sonner";
-import QRCode from "qrcode";
 import type { AdvancedConfig } from "@/types/advanced-timer";
 
 interface ShareDialogProps {
@@ -69,7 +68,8 @@ export function ShareDialog({
 			const url = `${window.location.origin}/shared/${sharedTimer.id}`;
 			setShareUrl(url);
 
-			// Generate QR code
+			// Generate QR code (dynamically imported to reduce initial bundle)
+			const QRCode = (await import("qrcode")).default;
 			const qrDataUrl = await QRCode.toDataURL(url, {
 				width: 300,
 				margin: 2,

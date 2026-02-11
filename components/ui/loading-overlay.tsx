@@ -10,7 +10,9 @@ const LOADING_DELAY_MS = 300;
 const NAVIGATION_DELAY_MS = 100;
 
 export function LoadingOverlay() {
-	const isFetching = useIsFetching();
+	const isFetching = useIsFetching({
+		predicate: (query) => query.state.data === undefined,
+	});
 	const isMutating = useIsMutating();
 	const pathname = usePathname();
 	const { isLoading: checkLoading } = useLoadingContext();

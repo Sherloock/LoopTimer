@@ -455,7 +455,10 @@ if (typeof window !== "undefined") {
 		document.removeEventListener("keydown", initUserInteraction);
 	};
 
-	document.addEventListener("touchstart", initUserInteraction, { once: true });
+	document.addEventListener("touchstart", initUserInteraction, {
+		once: true,
+		passive: true,
+	});
 	document.addEventListener("click", initUserInteraction, { once: true });
 	document.addEventListener("keydown", initUserInteraction, { once: true });
 }

@@ -1,5 +1,18 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+	experimental: {
+		optimizePackageImports: [
+			"lucide-react",
+			"date-fns",
+			"@radix-ui/react-dialog",
+			"@radix-ui/react-dropdown-menu",
+			"@radix-ui/react-select",
+			"@radix-ui/react-checkbox",
+			"@radix-ui/react-tabs",
+			"@radix-ui/react-progress",
+			"@radix-ui/react-label",
+		],
+	},
 	turbopack: {
 		rules: {
 			"*.svg": {

@@ -1,3 +1,8 @@
+/** Hold-to-exit gesture: duration and progress tick for the "Hold to Exit" button. */
+export const HOLD_EXIT_DURATION_MS = 1000;
+export const HOLD_PROGRESS_TICK_MS = 50;
+export const HOLD_PROGRESS_MAX = 100;
+
 export const TIMER_LIST = {
 	SKELETON_COUNT: 3,
 	COPY_SUFFIX: " (Copy)",
