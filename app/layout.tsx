@@ -18,10 +18,7 @@ export const metadata: Metadata = {
 	keywords: ["workout", "timer", "fitness", "exercise", "training"],
 	manifest: "/manifest.json",
 	icons: {
-		icon: [{ url: "/icon?<generated>", type: "image/png", sizes: "32x32" }],
-		apple: [
-			{ url: "/apple-icon?<generated>", type: "image/png", sizes: "180x180" },
-		],
+		icon: [{ url: "/icon.svg", type: "image/svg+xml", sizes: "any" }],
 	},
 	appleWebApp: {
 		title: "Workout Timer",
