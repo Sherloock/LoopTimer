@@ -1,12 +1,20 @@
 /// <reference lib="webworker" />
 
 const CACHE_NAME = "workout-timer-v1";
-const STATIC_ASSETS = ["/", "/manifest.json", "/icon.svg", "/apple-icon.png"];
+const STATIC_ASSETS = [
+	"/",
+	"/manifest.json",
+	"/icon.svg",
+	"/icon-192x192.png",
+	"/icon-512x512.png",
+];
 
 // Install event - cache static assets
 self.addEventListener("install", (event) => {
+	console.log("[SW] Installing...");
 	event.waitUntil(
 		caches.open(CACHE_NAME).then((cache) => {
+			console.log("[SW] Caching static assets");
 			return cache.addAll(STATIC_ASSETS);
 		}),
 	);
@@ -15,6 +23,7 @@ self.addEventListener("install", (event) => {
 
 // Activate event - clean up old caches
 self.addEventListener("activate", (event) => {
+	console.log("[SW] Activating...");
 	event.waitUntil(
 		caches.keys().then((cacheNames) => {
 			return Promise.all(
