@@ -140,7 +140,7 @@ export function useTimerConfigManagement({
 							const duplicate: IntervalStep = {
 								...item,
 								id: generateId(),
-								name: `${item.name} (Copy)`,
+								name: `${item.name}`,
 							};
 							newItems.push(duplicate);
 						} else if (isLoop(item)) {

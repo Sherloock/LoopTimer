@@ -5,7 +5,7 @@ export const HOLD_PROGRESS_MAX = 100;
 
 export const TIMER_LIST = {
 	SKELETON_COUNT: 3,
-	COPY_SUFFIX: " (Copy)",
+	COPY_SUFFIX: "",
 	SUBTITLE: {
 		HAS_TIMERS: "Choose a timer to start.",
 		EMPTY: "Turn minutes into momentum. Create your first timer.",
