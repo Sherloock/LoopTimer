@@ -86,7 +86,7 @@ export function useAdvancedTimerPlayback({
 
 			stopAllSounds();
 			playSound(timerDefaultAlarm);
-			setCompleted("🎉 Advanced Workout Complete! Great job!");
+			setCompleted("Advanced workout complete. Great job.");
 			onComplete?.(timerName || "Timer");
 			return prevIndex;
 		});

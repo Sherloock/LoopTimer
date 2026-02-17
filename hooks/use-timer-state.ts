@@ -101,7 +101,7 @@ export function useTimerState() {
 
 	const setCompleted = (message?: string) => {
 		setState("completed");
-		timerToasts.complete(message || "🎉 Workout Complete! Great job!");
+		timerToasts.complete(message || "Workout complete. Great job.");
 	};
 
 	return {
