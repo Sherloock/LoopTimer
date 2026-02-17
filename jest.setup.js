@@ -10,3 +10,18 @@ process.env.DATABASE_URL =
 process.env.DIRECT_URL =
 	"postgresql://postgres:postgres@localhost:5432/timer?schema=public";
 process.env.NODE_ENV = "test";
+
+// matchMedia stub for components that use media queries
+Object.defineProperty(global, "matchMedia", {
+	writable: true,
+	value: jest.fn().mockImplementation((query) => ({
+		matches: false,
+		media: query,
+		onchange: null,
+		addListener: jest.fn(),
+		removeListener: jest.fn(),
+		addEventListener: jest.fn(),
+		removeEventListener: jest.fn(),
+		dispatchEvent: jest.fn(),
+	})),
+});

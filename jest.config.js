@@ -29,6 +29,14 @@ const config = {
 	testPathIgnorePatterns: ["/node_modules/", "/.next/"],
 	// Setup files
 	setupFilesAfterEnv: ["<rootDir>/jest.setup.js"],
+	coverageThreshold: {
+		global: {
+			branches: 80,
+			functions: 80,
+			lines: 80,
+			statements: 80,
+		},
+	},
 };
 
 module.exports = config;
