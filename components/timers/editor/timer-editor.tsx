@@ -2,11 +2,33 @@
 
 import { AdvancedTimerEditorPanel } from "@/components/timers/editor/advanced/advanced-timer-editor-panel";
 import { UnsavedChangesDialog } from "@/components/timers/editor/advanced/unsaved-changes-dialog";
-import { AiPromptDialog } from "@/components/timers/editor/ai-prompt-dialog";
-import { SaveTemplateDialog } from "@/components/timers/editor/save-template-dialog";
 import { TimerSettingsDialog } from "@/components/timers/editor/timer-settings-dialog";
 import { UserPreferencesDialog } from "@/components/timers/editor/user-preferences-dialog";
-import { ShareDialog } from "@/components/timers/share/share-dialog";
+import dynamic from "next/dynamic";
+
+const AiPromptDialog = dynamic(
+	() =>
+		import("@/components/timers/editor/ai-prompt-dialog").then((m) => ({
+			default: m.AiPromptDialog,
+		})),
+	{ ssr: false },
+);
+
+const SaveTemplateDialog = dynamic(
+	() =>
+		import("@/components/timers/editor/save-template-dialog").then((m) => ({
+			default: m.SaveTemplateDialog,
+		})),
+	{ ssr: false },
+);
+
+const ShareDialog = dynamic(
+	() =>
+		import("@/components/timers/share/share-dialog").then((m) => ({
+			default: m.ShareDialog,
+		})),
+	{ ssr: false },
+);
 import { useFlattenedIntervals } from "@/hooks/timers/use-flattened-intervals";
 import { useTimerConfigManagement } from "@/hooks/timers/use-timer-config-management";
 import { useTimerDragAndDrop } from "@/hooks/timers/use-timer-drag-and-drop";

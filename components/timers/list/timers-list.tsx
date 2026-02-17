@@ -19,7 +19,13 @@ import {
 	DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Skeleton } from "@/components/ui/skeleton";
-import { useDeleteTimer, useSaveTimer, useTimers } from "@/hooks/use-timers";
+import {
+	fetchTimer,
+	useDeleteTimer,
+	useSaveTimer,
+	useTimers,
+} from "@/hooks/use-timers";
+import { QUERY_KEYS } from "@/lib/constants/query-keys";
 import {
 	TEMPLATE_CATEGORIES,
 	TIMER_CATEGORY_COLORS,
@@ -55,7 +61,8 @@ import {
 	X,
 	type LucideIcon,
 } from "lucide-react";
-import { useState } from "react";
+import { useQueryClient } from "@tanstack/react-query";
+import { memo, useCallback, useMemo, useState } from "react";
 
 interface TimerListItem {
 	id: string;
@@ -64,6 +71,7 @@ interface TimerListItem {
 	category?: string | null;
 	icon?: string | null;
 	color?: string | null;
+	_optimistic?: true;
 }
 
 interface WorkoutSummary {
@@ -199,6 +207,171 @@ function summarizeWorkoutItems(items: WorkoutItem[]): WorkoutSummary {
 	walk(items, 1, 1);
 	return summary;
 }
+
+interface TimerCardProps {
+	timer: TimerListItem;
+	onEdit: (id: string) => void;
+	onPlay: (id: string) => void;
+	onDuplicate: (name: string, data: unknown) => void;
+	onDeleteClick: (id: string) => void;
+}
+
+const TimerCard = memo(function TimerCard({
+	timer,
+	onEdit,
+	onPlay,
+	onDuplicate,
+	onDeleteClick,
+}: TimerCardProps) {
+	const queryClient = useQueryClient();
+	const handleCardMouseEnter = useCallback(() => {
+		if (!timer._optimistic) {
+			queryClient.prefetchQuery({
+				queryKey: QUERY_KEYS.TIMER(timer.id),
+				queryFn: () => fetchTimer(timer.id),
+			});
+		}
+	}, [queryClient, timer.id, timer._optimistic]);
+
+	const items = useMemo(
+		() => getWorkoutItemsFromTimerData(timer.data),
+		[timer.data],
+	);
+	const summary = useMemo(() => summarizeWorkoutItems(items), [items]);
+	const totalSeconds = summary.totalSeconds;
+	const metaParts = useMemo(
+		() =>
+			[
+				`${TIMER_CARD_META.labels.steps} ${summary.intervalSteps}`,
+				summary.loopGroups > 0 && summary.maxLoops > 0
+					? `${TIMER_CARD_META.labels.loops} ×${summary.maxLoops}`
+					: null,
+			].filter((p): p is string => Boolean(p)),
+		[summary.intervalSteps, summary.loopGroups, summary.maxLoops],
+	);
+	const breakdownParts = useMemo(
+		() =>
+			[
+				summary.workSeconds > 0
+					? `${TIMER_CARD_META.labels.work} ${formatTime(summary.workSeconds)}`
+					: null,
+				summary.restSeconds > 0
+					? `${TIMER_CARD_META.labels.rest} ${formatTime(summary.restSeconds)}`
+					: null,
+				summary.prepareSeconds > 0
+					? `${TIMER_CARD_META.labels.prepare} ${formatTime(summary.prepareSeconds)}`
+					: null,
+			].filter((p): p is string => Boolean(p)),
+		[summary.workSeconds, summary.restSeconds, summary.prepareSeconds],
+	);
+	const TimerIcon = getTimerIcon(timer.category, timer.icon);
+	const timerColor = getTimerColor(timer.category, timer.color);
+	const isOptimistic = !!timer._optimistic;
+
+	return (
+		<div
+			className="group relative overflow-hidden rounded-lg border bg-card/40 p-2.5 shadow-sm backdrop-blur supports-[backdrop-filter]:bg-card/30"
+			onMouseEnter={handleCardMouseEnter}
+		>
+			<div
+				aria-hidden
+				className="absolute inset-0 bg-gradient-to-r from-primary/10 via-transparent to-primary/5 opacity-0 transition-opacity group-hover:opacity-100"
+			/>
+
+			<div className="relative flex flex-row items-start justify-between gap-3">
+				<div className="flex min-w-0 items-start gap-3">
+					<div
+						className="neon-glow mt-0.5 inline-flex size-12 shrink-0 items-center justify-center rounded-lg text-primary"
+						style={{
+							backgroundColor: `${timerColor}20`,
+							color: timerColor,
+						}}
+					>
+						<TimerIcon size={20} />
+					</div>
+
+					<div className="min-w-0 flex-1">
+						<p className="neon-text truncate font-semibold leading-tight">
+							{timer.name}
+						</p>
+						<Badge
+							variant="secondary"
+							className="mt-1 w-fit shrink-0 rounded-lg border-primary/30 bg-primary/20 text-center font-mono text-xs font-semibold text-foreground md:text-base"
+						>
+							{isOptimistic ? "Saving…" : formatTimeMinutes(totalSeconds)}
+						</Badge>
+
+						{!isOptimistic && (
+							<div className="mt-1 hidden space-y-1 sm:block">
+								<p className="text-xs text-muted-foreground">
+									{metaParts.join(TIMER_CARD_META.separator)}
+								</p>
+								{breakdownParts.length > 0 && (
+									<p className="text-xs text-muted-foreground">
+										{breakdownParts.join(TIMER_CARD_META.separator)}
+									</p>
+								)}
+							</div>
+						)}
+					</div>
+				</div>
+
+				{!isOptimistic && (
+					<div className="flex items-end justify-end gap-2 self-center pt-0.5">
+						<DropdownMenu>
+							<DropdownMenuTrigger asChild>
+								<Button
+									variant="ghost"
+									size="icon"
+									className="h-11 w-11"
+									aria-label="Timer actions"
+								>
+									<MoreVertical size={18} />
+								</Button>
+							</DropdownMenuTrigger>
+							<DropdownMenuContent align="end">
+								<DropdownMenuItem
+									className="gap-2"
+									onSelect={() => onEdit(timer.id)}
+								>
+									<Edit size={16} /> Edit
+								</DropdownMenuItem>
+								<DropdownMenuItem
+									className="gap-2"
+									onSelect={() =>
+										onDuplicate(
+											`${timer.name}${TIMER_LIST.COPY_SUFFIX}`,
+											timer.data,
+										)
+									}
+								>
+									<Copy size={16} /> Duplicate
+								</DropdownMenuItem>
+								<DropdownMenuItem
+									className="gap-2 text-destructive"
+									onSelect={() => onDeleteClick(timer.id)}
+								>
+									<Trash2 size={16} /> Delete
+								</DropdownMenuItem>
+							</DropdownMenuContent>
+						</DropdownMenu>
+
+						<Button
+							variant="brand"
+							size="sm"
+							className="neon-hover-glow h-11 gap-2 px-3 md:px-4"
+							onClick={() => onPlay(timer.id)}
+							aria-label="Start timer"
+						>
+							<Play size={18} />
+							<span className="hidden md:inline">Start</span>
+						</Button>
+					</div>
+				)}
+			</div>
+		</div>
+	);
+});
 
 export function TimersList() {
 	const { data: timers, isLoading, isError } = useTimers();
@@ -357,133 +530,16 @@ export function TimersList() {
 				</Card>
 			) : (
 				<div className="space-y-3">
-					{timersList.map((timer) => {
-						const items = getWorkoutItemsFromTimerData(timer.data);
-						const summary = summarizeWorkoutItems(items);
-						const totalSeconds = summary.totalSeconds;
-						const metaParts = [
-							`${TIMER_CARD_META.labels.steps} ${summary.intervalSteps}`,
-							summary.loopGroups > 0 && summary.maxLoops > 0
-								? `${TIMER_CARD_META.labels.loops} ×${summary.maxLoops}`
-								: null,
-						].filter((p): p is string => Boolean(p));
-						const breakdownParts = [
-							summary.workSeconds > 0
-								? `${TIMER_CARD_META.labels.work} ${formatTime(summary.workSeconds)}`
-								: null,
-							summary.restSeconds > 0
-								? `${TIMER_CARD_META.labels.rest} ${formatTime(summary.restSeconds)}`
-								: null,
-							summary.prepareSeconds > 0
-								? `${TIMER_CARD_META.labels.prepare} ${formatTime(summary.prepareSeconds)}`
-								: null,
-						].filter((p): p is string => Boolean(p));
-
-						const TimerIcon = getTimerIcon(timer.category, timer.icon);
-						const timerColor = getTimerColor(timer.category, timer.color);
-
-						return (
-							<div
-								key={timer.id}
-								className="group relative overflow-hidden rounded-lg border bg-card/40 p-2.5 shadow-sm backdrop-blur supports-[backdrop-filter]:bg-card/30"
-							>
-								<div
-									aria-hidden
-									className="absolute inset-0 bg-gradient-to-r from-primary/10 via-transparent to-primary/5 opacity-0 transition-opacity group-hover:opacity-100"
-								/>
-
-								<div className="relative flex flex-row items-start justify-between gap-3">
-									<div className="flex min-w-0 items-start gap-3">
-										<div
-											className="neon-glow mt-0.5 inline-flex size-12 shrink-0 items-center justify-center rounded-lg text-primary"
-											style={{
-												backgroundColor: `${timerColor}20`,
-												color: timerColor,
-											}}
-										>
-											<TimerIcon size={20} />
-										</div>
-
-										<div className="min-w-0 flex-1">
-											<p className="neon-text truncate font-semibold leading-tight">
-												{timer.name}
-											</p>
-											<Badge
-												variant="secondary"
-												className="mt-1 w-fit shrink-0 rounded-lg border-primary/30 bg-primary/20 text-center font-mono text-xs font-semibold text-foreground md:text-base"
-											>
-												{formatTimeMinutes(totalSeconds)}
-											</Badge>
-
-											<div className="mt-1 hidden space-y-1 sm:block">
-												<p className="text-xs text-muted-foreground">
-													{metaParts.join(TIMER_CARD_META.separator)}
-												</p>
-												{breakdownParts.length > 0 && (
-													<p className="text-xs text-muted-foreground">
-														{breakdownParts.join(TIMER_CARD_META.separator)}
-													</p>
-												)}
-											</div>
-										</div>
-									</div>
-
-									<div className="flex items-end justify-end gap-2 self-center pt-0.5">
-										{/* Menu */}
-										<DropdownMenu>
-											<DropdownMenuTrigger asChild>
-												<Button
-													variant="ghost"
-													size="icon"
-													className="h-11 w-11"
-													aria-label="Timer actions"
-												>
-													<MoreVertical size={18} />
-												</Button>
-											</DropdownMenuTrigger>
-											<DropdownMenuContent align="end">
-												<DropdownMenuItem
-													className="gap-2"
-													onSelect={() => goToEditTimer(timer.id)}
-												>
-													<Edit size={16} /> Edit
-												</DropdownMenuItem>
-												<DropdownMenuItem
-													className="gap-2"
-													onSelect={() =>
-														duplicateTimer({
-															name: `${timer.name}${TIMER_LIST.COPY_SUFFIX}`,
-															data: timer.data,
-														})
-													}
-												>
-													<Copy size={16} /> Duplicate
-												</DropdownMenuItem>
-												<DropdownMenuItem
-													className="gap-2 text-destructive"
-													onSelect={() => setConfirmId(timer.id)}
-												>
-													<Trash2 size={16} /> Delete
-												</DropdownMenuItem>
-											</DropdownMenuContent>
-										</DropdownMenu>
-
-										{/* Play */}
-										<Button
-											variant="brand"
-											size="sm"
-											className="neon-hover-glow h-11 gap-2 px-3 md:px-4"
-											onClick={() => goToPlayTimer(timer.id)}
-											aria-label="Start timer"
-										>
-											<Play size={18} />
-											<span className="hidden md:inline">Start</span>
-										</Button>
-									</div>
-								</div>
-							</div>
-						);
-					})}
+					{timersList.map((timer) => (
+						<TimerCard
+							key={timer.id}
+							timer={timer}
+							onEdit={goToEditTimer}
+							onPlay={goToPlayTimer}
+							onDuplicate={(name, data) => duplicateTimer({ name, data })}
+							onDeleteClick={setConfirmId}
+						/>
+					))}
 				</div>
 			)}
 

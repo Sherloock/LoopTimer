@@ -9,6 +9,15 @@ export async function getTimers() {
 	const timers = await db.timer.findMany({
 		where: { userId },
 		orderBy: { updatedAt: "desc" },
+		select: {
+			id: true,
+			name: true,
+			data: true,
+			category: true,
+			icon: true,
+			color: true,
+			updatedAt: true,
+		},
 	});
 
 	return timers;

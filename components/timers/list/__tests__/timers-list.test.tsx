@@ -1,7 +1,25 @@
 /** @jest-environment jsdom */
 
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { TimersList } from "@/components/timers/list/timers-list";
 import { render, screen } from "@testing-library/react";
+import type { ReactElement } from "react";
+
+function createTestQueryClient() {
+	return new QueryClient({
+		defaultOptions: {
+			queries: { retry: false },
+			mutations: { retry: false },
+		},
+	});
+}
+
+function renderWithQueryClient(ui: ReactElement) {
+	const queryClient = createTestQueryClient();
+	return render(
+		<QueryClientProvider client={queryClient}>{ui}</QueryClientProvider>,
+	);
+}
 
 const useTimersMock = jest.fn();
 const useDeleteTimerMock = jest.fn();
@@ -45,7 +63,7 @@ describe("TimersList", () => {
 			isError: false,
 		});
 
-		render(<TimersList />);
+		renderWithQueryClient(<TimersList />);
 
 		expect(screen.getByText("Timers")).toBeInTheDocument();
 		expect(screen.queryByText("New timer")).not.toBeInTheDocument();
@@ -58,7 +76,7 @@ describe("TimersList", () => {
 			isError: false,
 		});
 
-		render(<TimersList />);
+		renderWithQueryClient(<TimersList />);
 
 		expect(screen.getByText("No timers yet")).toBeInTheDocument();
 	});
@@ -70,7 +88,7 @@ describe("TimersList", () => {
 			isError: true,
 		});
 
-		render(<TimersList />);
+		renderWithQueryClient(<TimersList />);
 
 		expect(
 			screen.getByText((content, element) => {
@@ -125,7 +143,7 @@ describe("TimersList", () => {
 			isError: false,
 		});
 
-		render(<TimersList />);
+		renderWithQueryClient(<TimersList />);
 
 		expect(screen.getByText("HIIT Workout")).toBeInTheDocument();
 		expect(screen.getByText("Boxing Rounds")).toBeInTheDocument();
@@ -156,7 +174,7 @@ describe("TimersList", () => {
 			isError: false,
 		});
 
-		render(<TimersList />);
+		renderWithQueryClient(<TimersList />);
 
 		// formatTimeMinutes shows total minutes for all durations
 		expect(screen.getByText(/100 min/i)).toBeInTheDocument();
@@ -187,7 +205,7 @@ describe("TimersList", () => {
 			isError: false,
 		});
 
-		const { container } = render(<TimersList />);
+		const { container } = renderWithQueryClient(<TimersList />);
 
 		// Check that menu button has h-11 w-11 (44px minimum)
 		const menuButton = container.querySelector(
