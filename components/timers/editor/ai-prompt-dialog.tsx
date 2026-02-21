@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogClose, DialogContent } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { AI_MAX_RETRIES } from "@/lib/constants/ai";
 import type { AdvancedConfig } from "@/types/advanced-timer";
 import { Loader2, Sparkles, X } from "lucide-react";
@@ -29,6 +30,9 @@ export function AiPromptDialog({
 	const [isGenerating, setIsGenerating] = useState(false);
 	const [currentAttempt, setCurrentAttempt] = useState(0);
 	const [errors, setErrors] = useState<string[]>([]);
+	const canEditCurrent =
+		!!currentConfig?.items && currentConfig.items.length > 0;
+	const [isEditMode, setIsEditMode] = useState(true);
 
 	const handleGenerate = async () => {
 		if (!prompt.trim()) {
@@ -42,16 +46,25 @@ export function AiPromptDialog({
 		setCurrentAttempt(1);
 		setErrors([]);
 
+		const body: {
+			prompt: string;
+			currentConfig?: AdvancedConfig;
+			currentName?: string;
+		} = {
+			prompt: prompt.trim(),
+		};
+		if (isEditMode && canEditCurrent) {
+			body.currentConfig = currentConfig;
+			body.currentName = currentName;
+		}
+
 		try {
 			const response = await fetch("/api/ai/generate-workout", {
 				method: "POST",
 				headers: {
 					"Content-Type": "application/json",
 				},
-				body: JSON.stringify({
-					prompt: prompt.trim(),
-					currentConfig,
-				}),
+				body: JSON.stringify(body),
 			});
 
 			const data = await response.json();
@@ -123,6 +136,25 @@ export function AiPromptDialog({
 				</div>
 
 				<div className="space-y-4">
+					{canEditCurrent && (
+						<div className="space-y-2">
+							<Label>Mode</Label>
+							<Tabs
+								value={isEditMode ? "edit" : "new"}
+								onValueChange={(v) => setIsEditMode(v === "edit")}
+							>
+								<TabsList className="grid w-full grid-cols-2">
+									<TabsTrigger value="new">New workout</TabsTrigger>
+									<TabsTrigger value="edit">Edit current</TabsTrigger>
+								</TabsList>
+							</Tabs>
+							<p className="text-xs text-muted-foreground">
+								{isEditMode
+									? "AI will modify the current workout and keep existing exercises."
+									: "AI will generate a completely new workout (current one is ignored)."}
+							</p>
+						</div>
+					)}
 					<div className="space-y-2">
 						<Label htmlFor="ai-prompt">Describe your workout</Label>
 						<Input

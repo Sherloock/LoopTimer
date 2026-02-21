@@ -324,9 +324,10 @@ export function buildInitialPrompt(
 		? `
 ## Current Workout State
 
-The user is currently editing an existing workout. You can either:
+The user is currently editing an existing workout. You MUST:
 - **Modify the existing workout** based on their request (preserve structure, adjust durations, change exercises, etc.)
-- **Generate a completely new workout** if the user explicitly asks for a new one or wants a major overhaul
+- **DO NOT delete existing exercises** unless explicitly requested by the user.
+- **NEVER generate a completely new workout** from scratch.
 
 **Original Workout Name**: "${currentName || "Untitled Workout"}"
 
@@ -335,9 +336,9 @@ The user is currently editing an existing workout. You can either:
 ${JSON.stringify({ items: currentConfig.items }, null, 2)}
 \`\`\`
 
-**IMPORTANT**: 
-- If the user asks for tweaks, modifications, or adjustments, preserve the overall structure and make targeted changes
-- If the user asks for a new workout or complete rewrite, generate a fresh workout structure
+**IMPORTANT**:
+- You MUST preserve the overall structure and make targeted changes based on the user's request.
+- Keep all existing exercises, loops, and intervals intact unless specifically instructed to remove them.
 - When editing, you can update the workout name if the user's request suggests a new name, or preserve the original name if it still fits
 - Always return BOTH the name field (updated or preserved) AND the items array
 `
@@ -524,7 +525,7 @@ export function buildRetryPrompt(
 ${JSON.stringify({ items: currentConfig.items }, null, 2)}
 \`\`\`
 
-Remember: You can modify the existing workout or generate a new one based on the user's request. Always return both name and items.
+Remember: You MUST modify the existing workout. DO NOT delete existing exercises unless explicitly requested. NEVER generate a completely new workout. Always return both name and items.
 `
 		: "";
 
