@@ -31,7 +31,7 @@ import { redirect } from "next/navigation";
 export default async function LandingPage() {
 	const { userId } = await auth();
 	if (!!userId) {
-		redirect(ROUTES.MENU);
+		redirect(ROUTES.TIMER_LIST);
 	}
 	return (
 		<div className="relative min-h-screen overflow-hidden bg-background">
@@ -58,7 +58,7 @@ export default async function LandingPage() {
 								</SignInButton>
 							</SignedOut>
 							<SignedIn>
-								<Link href={ROUTES.MENU}>
+								<Link href={ROUTES.TIMER_LIST}>
 									<Button variant="brand" className="neon-hover-glow">
 										Go to App
 									</Button>
@@ -105,7 +105,7 @@ export default async function LandingPage() {
 								</SignUpButton>
 							</SignedOut>
 							<SignedIn>
-								<Link href={ROUTES.MENU}>
+								<Link href={ROUTES.TIMER_LIST}>
 									<Button
 										variant="brand"
 										size="lg"
@@ -296,7 +296,7 @@ export default async function LandingPage() {
 							</SignUpButton>
 						</SignedOut>
 						<SignedIn>
-							<Link href={ROUTES.MENU}>
+							<Link href={ROUTES.TIMER_LIST}>
 								<Button
 									variant="brand"
 									size="lg"

@@ -54,6 +54,7 @@ export function useTimers() {
 	return useQuery({
 		queryKey: QUERY_KEYS.TIMERS,
 		queryFn: fetchTimers,
+		staleTime: 5 * 60 * 1000,
 		retry: (failureCount, error) => {
 			// Don't retry on authentication errors
 			if (error.message.includes("sign in")) {
